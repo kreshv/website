@@ -16,7 +16,7 @@ app.use(
     origin: corsOrigin ? corsOrigin.split(",").map((item) => item.trim()) : true,
   }),
 );
-app.use(express.json({ limit: "15mb" }));
+app.use(express.json({ limit: "50mb" }));
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
