@@ -1,3 +1,3 @@
 window.APP_CONFIG = {
-  API_BASE_URL: "http://127.0.0.1:5050",
+  API_BASE_URL: "https://apartment-api-ptpn.onrender.com",
 };
