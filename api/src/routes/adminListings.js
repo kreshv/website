@@ -23,6 +23,21 @@ const createListingSchema = z.object({
   subwayLines: z.array(z.string().trim().min(1)).default([]),
 });
 
+const demoTitles = [
+  "Bright 1BR near Jefferson L",
+  "Ridgewood 2BR with natural light",
+  "Williamsburg 1BR with gym access",
+  "Astoria studio with balcony",
+  "Chelsea 1BR full-service building",
+  "Riverdale 2BR with parking",
+  "Greenpoint 1BR with rooftop lounge",
+  "Long Island City studio corner unit",
+  "Upper West Side 2BR classic",
+  "Astoria 1BR with terrace",
+  "Park Slope 2BR near Prospect Park",
+  "Murray Hill 1BR renovated",
+];
+
 const hasCloudinaryConfig = Boolean(
   process.env.CLOUDINARY_CLOUD_NAME &&
     process.env.CLOUDINARY_API_KEY &&
@@ -207,6 +222,28 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error("POST /api/admin/listings failed", error);
     return res.status(500).json({ error: "Failed to create listing" });
+  }
+});
+
+router.delete("/demo", async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (!adminSecret) {
+    return res.status(503).json({ error: "ADMIN_SECRET is not configured on the server." });
+  }
+
+  const suppliedKey = req.get("x-admin-key");
+  if (!suppliedKey || suppliedKey !== adminSecret) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const deleted = await prisma.listing.deleteMany({
+      where: { title: { in: demoTitles } },
+    });
+    return res.json({ deleted: deleted.count });
+  } catch (error) {
+    console.error("DELETE /api/admin/listings/demo failed", error);
+    return res.status(500).json({ error: "Failed to delete demo listings" });
   }
 });
 

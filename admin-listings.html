@@ -231,6 +231,7 @@
 
           <div class="actions">
             <button id="submitBtn" type="submit">Create Listing</button>
+            <button id="deleteDemoBtn" type="button">Delete Demo Listings</button>
             <span class="status" id="status">Ready.</span>
           </div>
         </form>
@@ -243,6 +244,7 @@
       const adminKeyInput = document.getElementById("adminKey");
       const form = document.getElementById("listingForm");
       const submitBtn = document.getElementById("submitBtn");
+      const deleteDemoBtn = document.getElementById("deleteDemoBtn");
       const statusEl = document.getElementById("status");
       const imageFileInput = document.getElementById("imageFile");
       const imagePreview = document.getElementById("imagePreview");
@@ -375,6 +377,39 @@
           setStatus(`Error: ${error.message}`);
         } finally {
           submitBtn.disabled = false;
+        }
+      });
+
+      deleteDemoBtn.addEventListener("click", async () => {
+        if (!adminKeyInput.value.trim()) {
+          setStatus("Enter Admin Key first.");
+          return;
+        }
+        const confirmed = window.confirm("Delete all demo/sample listings?");
+        if (!confirmed) return;
+
+        setStatus("Deleting demo listings...");
+        deleteDemoBtn.disabled = true;
+
+        try {
+          const response = await fetch(
+            `${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings/demo`,
+            {
+              method: "DELETE",
+              headers: {
+                "x-admin-key": adminKeyInput.value,
+              },
+            }
+          );
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(body.error || `Request failed (${response.status})`);
+          }
+          setStatus(`Deleted ${body.deleted || 0} demo listing(s).`);
+        } catch (error) {
+          setStatus(`Error: ${error.message}`);
+        } finally {
+          deleteDemoBtn.disabled = false;
         }
       });
     </script>
