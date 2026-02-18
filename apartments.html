@@ -1,0 +1,1395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apartments</title>
+    <style>
+      :root {
+        --page-bg: #f8f1e6;
+        --card-bg: #fffdfa;
+        --line: #eadcc8;
+        --ink: #28231d;
+        --muted: #6e655a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 15% 10%, #fff7ea 0%, transparent 36%),
+          radial-gradient(circle at 87% 88%, #fff3df 0%, transparent 40%),
+          var(--page-bg);
+      }
+
+      .results-wrap {
+        width: min(1120px, 94vw);
+        margin: 0 auto;
+        padding: 48px 0 56px;
+      }
+
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 380px));
+        justify-content: center;
+        gap: 34px;
+      }
+
+      .apartment-card {
+        background: var(--card-bg);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 26px rgba(110, 87, 58, 0.08);
+        transform: translateY(10px);
+        opacity: 0;
+        animation: rise-in 520ms ease forwards;
+        cursor: pointer;
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .apartment-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 34px rgba(110, 87, 58, 0.18);
+        border-color: #e5cfaf;
+      }
+
+      .apartment-card:active {
+        transform: translateY(-1px);
+      }
+
+      .photo {
+        aspect-ratio: 16 / 10;
+        position: relative;
+        overflow: hidden;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-color: #f3eee4;
+      }
+
+      .card-top-meta {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 5px 8px;
+        border-radius: 10px;
+        background: rgba(90, 95, 104, 0.72);
+        color: #fff8ef;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+        transition-delay: 0ms;
+        pointer-events: none;
+      }
+
+      .apartment-card:hover .card-top-meta {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 90ms;
+      }
+
+      .card-top-address {
+        font-size: 0.72rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .card-top-price {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        flex-shrink: 0;
+      }
+
+      .photo.has-image {
+        aspect-ratio: auto;
+      }
+
+      .photo-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        image-orientation: from-image;
+      }
+
+      .photo-tone-1 {
+        background: linear-gradient(145deg, #dcc7ac, #f7ecdd 62%, #c89f6a);
+      }
+
+      .photo-tone-2 {
+        background: linear-gradient(145deg, #ceb9a2, #f6ece0 58%, #aa7f4f);
+      }
+
+      .photo-tone-3 {
+        background: linear-gradient(145deg, #d9c5aa, #f8efe2 54%, #b68d5f);
+      }
+
+      .photo-tone-4 {
+        background: linear-gradient(145deg, #d3bda1, #f9f0e4 55%, #a97d4d);
+      }
+
+      .photo-tone-5 {
+        background: linear-gradient(145deg, #d7c2a8, #fbf1e4 57%, #b38a5a);
+      }
+
+      .photo-tone-6 {
+        background: linear-gradient(145deg, #ceb79a, #f8ecdc 58%, #a67a4b);
+      }
+
+      .top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .price {
+        font-size: 1.08rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+
+      .meta {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      .location {
+        margin-top: 9px;
+        font-size: 0.92rem;
+      }
+
+      .feature-groups {
+        margin-top: 10px;
+      }
+
+      .feature-row {
+        display: block;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .feature-divider {
+        height: 1px;
+        background: transparent;
+        box-shadow: 0 1px 0 rgba(125, 100, 70, 0.16);
+        margin: 8px 0;
+      }
+
+      .card-body {
+        padding: 14px 14px 16px;
+        background: #ffffff;
+      }
+
+      .chip {
+        font-size: 0.72rem;
+        color: #5d5347;
+        border: 1px solid #e6d6bf;
+        border-radius: 999px;
+        padding: 3px 9px;
+        background: #fff9f1;
+      }
+
+      .chip-empty {
+        font-size: 0.72rem;
+        color: #8b7f73;
+        padding-top: 3px;
+      }
+
+      .hero-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(24, 18, 13, 0.7);
+        backdrop-filter: blur(3px);
+        display: grid;
+        place-items: center;
+        padding: 10px;
+        z-index: 40;
+      }
+
+      .hero-overlay[hidden] {
+        display: none;
+      }
+
+      .hero-card {
+        --hero-aspect: 1.6;
+        --hero-details-width: 340px;
+        width: min(94vw, calc(min(84vh, 760px) * var(--hero-aspect) + var(--hero-details-width)));
+        height: min(min(84vh, 760px), calc((94vw - var(--hero-details-width)) / var(--hero-aspect)));
+        border: none;
+        border-radius: 22px;
+        overflow: hidden;
+        background: #fdf8ef;
+        box-shadow: 0 22px 52px rgba(34, 25, 16, 0.35);
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) var(--hero-details-width);
+      }
+
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        padding: 1px;
+        border-radius: inherit;
+        background: linear-gradient(
+          165deg,
+          rgba(251, 236, 214, 0.9) 0%,
+          rgba(232, 211, 181, 0.42) 46%,
+          rgba(251, 236, 214, 0.08) 100%
+        );
+        pointer-events: none;
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+      }
+
+      .hero-media {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        overflow: hidden;
+        touch-action: none;
+      }
+
+      .hero-media.is-floorplan::before {
+        background:
+          radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.28), transparent 45%),
+          linear-gradient(to bottom, rgba(20, 14, 8, 0.08), rgba(20, 14, 8, 0.32));
+      }
+
+      .hero-media::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.36), transparent 45%),
+          linear-gradient(to bottom, rgba(20, 14, 8, 0.04), rgba(20, 14, 8, 0.22));
+        pointer-events: none;
+      }
+
+      .hero-image {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        transform-origin: center center;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      .hero-media.has-image .hero-image {
+        display: block;
+      }
+
+      .hero-media.is-dragging .hero-image {
+        cursor: grabbing;
+      }
+
+      .hero-mode-toggle {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 236, 210, 0.55);
+        background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.2), rgba(27, 20, 14, 0.64));
+        color: #fff8ef;
+        cursor: pointer;
+        z-index: 7;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 8px 20px rgba(18, 12, 8, 0.35);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        transition:
+          transform 140ms ease,
+          border-color 180ms ease,
+          background 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .hero-mode-toggle:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 236, 210, 0.9);
+      }
+
+      .hero-mode-toggle:active {
+        transform: scale(0.96);
+      }
+
+      .hero-mode-glyph {
+        position: relative;
+        width: 20px;
+        height: 20px;
+      }
+
+      .hero-mode-photo,
+      .hero-mode-plan {
+        position: absolute;
+        inset: 0;
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+      }
+
+      .hero-mode-photo {
+        border: 1.5px solid rgba(255, 241, 223, 0.95);
+        border-radius: 3px;
+      }
+
+      .hero-mode-photo::before {
+        content: "";
+        position: absolute;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        height: 7px;
+        background: linear-gradient(145deg, rgba(255, 241, 223, 0.9), rgba(255, 241, 223, 0.25));
+        clip-path: polygon(0 100%, 35% 35%, 55% 68%, 75% 42%, 100% 100%);
+      }
+
+      .hero-mode-photo::after {
+        content: "";
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        right: 3px;
+        top: 3px;
+        border-radius: 999px;
+        background: rgba(255, 241, 223, 0.95);
+      }
+
+      .hero-mode-plan {
+        opacity: 0;
+        transform: scale(0.84) rotate(-6deg);
+      }
+
+      .hero-mode-plan::before {
+        content: "";
+        position: absolute;
+        inset: 2px;
+        border: 1.5px solid rgba(255, 241, 223, 0.95);
+        border-radius: 2px;
+        background:
+          linear-gradient(rgba(255, 241, 223, 0.55), rgba(255, 241, 223, 0.55)) 50% 0 / 1.5px 100% no-repeat,
+          linear-gradient(rgba(255, 241, 223, 0.55), rgba(255, 241, 223, 0.55)) 0 50% / 100% 1.5px no-repeat;
+      }
+
+      .hero-mode-toggle[aria-pressed="true"] {
+        border-color: rgba(255, 242, 220, 0.92);
+        background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.28), rgba(120, 91, 60, 0.62));
+      }
+
+      .hero-mode-toggle[aria-pressed="true"] .hero-mode-photo {
+        opacity: 0;
+        transform: scale(0.84) rotate(6deg);
+      }
+
+      .hero-mode-toggle[aria-pressed="true"] .hero-mode-plan {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+      }
+
+      .hero-floorplan {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 6;
+      }
+
+      .hero-floorplan[hidden] {
+        display: none;
+      }
+
+      .hero-dim-line {
+        position: absolute;
+        border-color: rgba(255, 241, 221, 0.9);
+        border-style: solid;
+      }
+
+      .hero-dim-line::before,
+      .hero-dim-line::after {
+        content: "";
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(255, 241, 221, 0.95);
+      }
+
+      .hero-dim-line.width {
+        left: 24%;
+        top: 18%;
+        width: 52%;
+        border-top-width: 2px;
+      }
+
+      .hero-dim-line.width::before {
+        left: -3px;
+        top: -4px;
+      }
+
+      .hero-dim-line.width::after {
+        right: -3px;
+        top: -4px;
+      }
+
+      .hero-dim-line.depth {
+        right: 19%;
+        top: 27%;
+        height: 43%;
+        border-right-width: 2px;
+      }
+
+      .hero-dim-line.depth::before {
+        right: -4px;
+        top: -3px;
+      }
+
+      .hero-dim-line.depth::after {
+        right: -4px;
+        bottom: -3px;
+      }
+
+      .hero-dim-label {
+        position: absolute;
+        padding: 3px 7px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 236, 210, 0.44);
+        background: rgba(24, 17, 12, 0.68);
+        color: #fff6e8;
+        font-size: 0.72rem;
+        line-height: 1;
+        letter-spacing: 0.02em;
+      }
+
+      .hero-dim-label.width {
+        top: 12.5%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .hero-dim-label.depth {
+        top: 49%;
+        right: 10%;
+        transform: translateY(-50%) rotate(-90deg);
+      }
+
+      .hero-zoom-hint {
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%) translateY(0);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 236, 210, 0.35);
+        background: rgba(24, 17, 12, 0.68);
+        color: #fff6e8;
+        font-size: 0.78rem;
+        letter-spacing: 0.01em;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        pointer-events: none;
+        opacity: 0;
+        z-index: 6;
+      }
+
+      .hero-zoom-hint-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #ffe6bf;
+        box-shadow: 0 0 0 0 rgba(255, 230, 191, 0.5);
+      }
+
+      .hero-zoom-hint.is-visible {
+        animation: zoom-hint-fade 2200ms ease forwards;
+      }
+
+      .hero-zoom-hint.is-visible .hero-zoom-hint-dot {
+        animation: zoom-hint-pulse 1200ms ease-out 2;
+      }
+
+      .hero-details {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        background: #fffaf3;
+        border-left: 1px solid #ead9c1;
+        padding: 52px 16px 16px;
+        overflow-y: auto;
+      }
+
+      .hero-title {
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        font-size: 1.18rem;
+        font-weight: 700;
+        color: #3b2d21;
+        line-height: 1.35;
+        margin-bottom: 2px;
+      }
+
+      .hero-meta-list {
+        display: grid;
+        gap: 5px;
+        margin-bottom: 8px;
+      }
+
+      .hero-meta-item {
+        font-size: 0.8rem;
+        color: #6d5d4c;
+      }
+
+      .hero-section {
+        padding-top: 6px;
+      }
+
+      .hero-section + .hero-section {
+        border-top: 1px solid #ece0cf;
+        margin-top: 2px;
+        padding-top: 10px;
+      }
+
+      .hero-section-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.045em;
+        color: #8e806f;
+        margin-bottom: 6px;
+      }
+
+      .hero-section-value {
+        font-size: 0.8rem;
+        color: #4f3e2d;
+        line-height: 1.45;
+      }
+
+      .hero-map {
+        margin-top: auto;
+        border: 1px solid #e1d1bb;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f2e9dd;
+        min-height: 190px;
+      }
+
+      .hero-map img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .hero-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .hero-chip {
+        border: 1px solid #dfcfb8;
+        border-radius: 999px;
+        padding: 3px 8px;
+        background: #fff7eb;
+        font-size: 0.76rem;
+        color: #5a4937;
+        line-height: 1.2;
+      }
+
+      .hero-empty {
+        font-size: 0.8rem;
+        color: #7f7263;
+      }
+
+      .hero-price {
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: #3f3124;
+        margin-bottom: 2px;
+      }
+
+      .hero-location {
+        margin-top: 2px;
+        font-size: 0.88rem;
+        color: #6a5a49;
+      }
+
+      .hero-icons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-content: flex-start;
+      }
+
+      .hero-icon {
+        border: 1px solid #ddcaac;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        color: #5d4f3e;
+        background: #fff7eb;
+        padding: 4px 9px;
+      }
+
+      .hero-nav {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 48px;
+        border: 1px solid rgba(255, 236, 210, 0.55);
+        border-radius: 999px;
+        background: rgba(39, 29, 21, 0.56);
+        color: #fff8ef;
+        font-size: 1.35rem;
+        line-height: 1;
+        cursor: pointer;
+        z-index: 45;
+      }
+
+      .hero-prev {
+        left: max(14px, 2vw);
+      }
+
+      .hero-next {
+        right: max(14px, 2vw);
+      }
+
+      .hero-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border: 1px solid rgba(255, 236, 210, 0.75);
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: rgba(31, 23, 17, 0.6);
+        color: #fff6eb;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      @keyframes rise-in {
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes zoom-hint-fade {
+        0% {
+          opacity: 0;
+          transform: translateX(-50%) translateY(8px);
+        }
+        12%,
+        72% {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-6px);
+        }
+      }
+
+      @keyframes zoom-hint-pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(255, 230, 191, 0.5);
+        }
+        100% {
+          box-shadow: 0 0 0 12px rgba(255, 230, 191, 0);
+        }
+      }
+
+      @media (max-width: 1000px) {
+        .cards-grid {
+          grid-template-columns: repeat(2, minmax(0, 340px));
+          justify-content: center;
+          gap: 26px;
+        }
+
+        .hero-card {
+          width: min(96vw, calc(90vh * var(--hero-aspect)));
+          height: min(90vh, calc(96vw / var(--hero-aspect)));
+          grid-template-columns: 1fr;
+          grid-template-rows: 1fr auto;
+        }
+
+        .hero-details {
+          border-left: none;
+          border-top: 1px solid #ead9c1;
+          padding-top: 14px;
+        }
+
+        .hero-map {
+          min-height: 150px;
+        }
+
+      }
+
+      @media (max-width: 680px) {
+        .results-wrap {
+          padding-top: 20px;
+        }
+
+        .cards-grid {
+          grid-template-columns: minmax(0, 360px);
+          justify-content: center;
+          gap: 22px;
+        }
+
+        .hero-nav {
+          width: 42px;
+          height: 42px;
+        }
+
+        .hero-zoom-hint {
+          bottom: 10px;
+          font-size: 0.73rem;
+          padding: 7px 10px;
+        }
+
+      }
+    </style>
+  </head>
+  <body>
+    <main class="results-wrap">
+      <section class="cards-grid" id="cardsGrid" aria-label="Apartment options"></section>
+    </main>
+
+    <div class="hero-overlay" id="heroOverlay" hidden>
+      <button class="hero-nav hero-prev" id="heroPrev" type="button" aria-label="Previous apartment">&#8249;</button>
+      <div class="hero-card" id="heroCard" role="dialog" aria-modal="true" aria-label="Apartment viewer">
+        <button class="hero-mode-toggle" id="heroModeToggle" type="button" aria-label="Toggle floor plan view" aria-pressed="false">
+          <span class="hero-mode-glyph" aria-hidden="true">
+            <span class="hero-mode-photo"></span>
+            <span class="hero-mode-plan"></span>
+          </span>
+        </button>
+        <button class="hero-close" id="heroClose" type="button" aria-label="Close">&#10005;</button>
+        <div class="hero-media" id="heroMedia">
+          <img class="hero-image" id="heroImage" alt="Apartment preview" draggable="false" />
+          <div class="hero-floorplan" id="heroFloorplan" hidden>
+            <span class="hero-dim-line width"></span>
+            <span class="hero-dim-line depth"></span>
+            <span class="hero-dim-label width">22 ft</span>
+            <span class="hero-dim-label depth">18 ft</span>
+          </div>
+          <div class="hero-zoom-hint" id="heroZoomHint" hidden>
+            <span class="hero-zoom-hint-dot" aria-hidden="true"></span>
+            <span>Scroll or pinch to zoom</span>
+          </div>
+        </div>
+        <div class="hero-details">
+          <div class="hero-title" id="heroTitle"></div>
+          <div class="hero-location" id="heroLocation"></div>
+          <div>
+            <div class="hero-price" id="heroPrice"></div>
+          </div>
+          <div class="hero-meta-list" id="heroMetaList"></div>
+          <div class="hero-section">
+            <div class="hero-section-label">Unit Features</div>
+            <div class="hero-section-value" id="heroUnitFeatures"></div>
+          </div>
+          <div class="hero-section">
+            <div class="hero-section-label">Building Amenities</div>
+            <div class="hero-section-value" id="heroBuildingFeatures"></div>
+          </div>
+          <div class="hero-section">
+            <div class="hero-section-label">Transit</div>
+            <div class="hero-section-value" id="heroTransit"></div>
+          </div>
+          <div class="hero-map">
+            <img src="./image.png" alt="Neighborhood map" loading="lazy" />
+          </div>
+        </div>
+      </div>
+      <button class="hero-nav hero-next" id="heroNext" type="button" aria-label="Next apartment">&#8250;</button>
+    </div>
+
+    <script src="app-config.js"></script>
+    <script>
+      const apiBaseUrl =
+        (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || "http://127.0.0.1:5050";
+      const cardsGrid = document.getElementById("cardsGrid");
+      const tones = ["photo-tone-1", "photo-tone-2", "photo-tone-3", "photo-tone-4", "photo-tone-5", "photo-tone-6"];
+
+      const heroOverlay = document.getElementById("heroOverlay");
+      const heroCard = document.getElementById("heroCard");
+      const heroMedia = document.getElementById("heroMedia");
+      const heroImage = document.getElementById("heroImage");
+      const heroTitle = document.getElementById("heroTitle");
+      const heroLocation = document.getElementById("heroLocation");
+      const heroPrice = document.getElementById("heroPrice");
+      const heroMetaList = document.getElementById("heroMetaList");
+      const heroUnitFeatures = document.getElementById("heroUnitFeatures");
+      const heroBuildingFeatures = document.getElementById("heroBuildingFeatures");
+      const heroTransit = document.getElementById("heroTransit");
+      const heroPrev = document.getElementById("heroPrev");
+      const heroNext = document.getElementById("heroNext");
+      const heroClose = document.getElementById("heroClose");
+      const heroModeToggle = document.getElementById("heroModeToggle");
+      const heroFloorplan = document.getElementById("heroFloorplan");
+      const heroZoomHint = document.getElementById("heroZoomHint");
+
+      let listings = [];
+      let activeIndex = 0;
+      let heroHasImage = false;
+      let zoomScale = 1;
+      let zoomX = 0;
+      let zoomY = 0;
+      const minZoom = 1;
+      const maxZoom = 4;
+      const pointers = new Map();
+      let dragPointerId = null;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let dragOriginX = 0;
+      let dragOriginY = 0;
+      let pinchStartDistance = 0;
+      let pinchStartScale = 1;
+      let zoomHintTimer = null;
+      let zoomHintStartTimer = null;
+      let floorPlanMode = false;
+
+      const fallbackListings = [
+        {
+          title: "Bright 1BR near Jefferson L",
+          address: "148 Bleecker Street",
+          price: 2650,
+          beds: 1,
+          baths: 1,
+          borough: "Brooklyn",
+          neighborhood: "Bushwick",
+          imageUrl: "./floorplan.png",
+          unitFeatures: ["Dishwasher", "Hardwood Floors"],
+          buildingFeatures: ["Roof Deck"],
+          subwayLines: ["L", "M"],
+        },
+        {
+          title: "Ridgewood 2BR with natural light",
+          price: 2780,
+          beds: 2,
+          baths: 1,
+          borough: "Queens",
+          neighborhood: "Ridgewood",
+          imageUrl: "./sdss.png",
+          unitFeatures: ["Washer/Dryer", "Dishwasher"],
+          buildingFeatures: ["Package Room"],
+          subwayLines: ["M", "L"],
+        },
+        {
+          title: "Williamsburg 1BR with gym access",
+          price: 2800,
+          beds: 1,
+          baths: 1,
+          borough: "Brooklyn",
+          neighborhood: "Williamsburg",
+          imageUrl: "./floorplan.png",
+          unitFeatures: ["Balcony", "Hardwood Floors"],
+          buildingFeatures: ["Doorman", "Gym"],
+          subwayLines: ["L", "G"],
+        },
+        {
+          title: "Greenpoint 1BR with rooftop lounge",
+          address: "77 Eagle Street",
+          price: 3325,
+          beds: 1,
+          baths: 1,
+          borough: "Brooklyn",
+          neighborhood: "Greenpoint",
+          imageUrl: "./sdss.png",
+          unitFeatures: ["Dishwasher", "High Ceilings"],
+          buildingFeatures: ["Roof Deck", "Resident Lounge"],
+          subwayLines: ["G"],
+        },
+        {
+          title: "Long Island City studio corner unit",
+          address: "23 Jackson Avenue",
+          price: 2990,
+          beds: 0,
+          baths: 1,
+          borough: "Queens",
+          neighborhood: "Long Island City",
+          imageUrl: "./floorplan.png",
+          unitFeatures: ["City View", "Stainless Steel Appliances"],
+          buildingFeatures: ["Doorman", "Gym"],
+          subwayLines: ["7", "E"],
+        },
+        {
+          title: "Upper West Side 2BR classic",
+          address: "215 West 84th Street",
+          price: 4650,
+          beds: 2,
+          baths: 1,
+          borough: "Manhattan",
+          neighborhood: "Upper West Side",
+          imageUrl: "./sdss.png",
+          unitFeatures: ["Hardwood Floors", "Dishwasher"],
+          buildingFeatures: ["Elevator", "Laundry Room"],
+          subwayLines: ["1", "B", "C"],
+        },
+        {
+          title: "Astoria 1BR with terrace",
+          address: "31-44 29th Street",
+          price: 2875,
+          beds: 1,
+          baths: 1,
+          borough: "Queens",
+          neighborhood: "Astoria",
+          imageUrl: "./floorplan.png",
+          unitFeatures: ["Terrace", "Washer/Dryer"],
+          buildingFeatures: ["Bike Storage", "Virtual Doorman"],
+          subwayLines: ["N", "W"],
+        },
+        {
+          title: "Park Slope 2BR near Prospect Park",
+          address: "512 7th Avenue",
+          price: 3890,
+          beds: 2,
+          baths: 2,
+          borough: "Brooklyn",
+          neighborhood: "Park Slope",
+          imageUrl: "./sdss.png",
+          unitFeatures: ["Dishwasher", "Walk-in Closet"],
+          buildingFeatures: ["Elevator", "Package Room"],
+          subwayLines: ["F", "G", "R"],
+        },
+        {
+          title: "Murray Hill 1BR renovated",
+          address: "140 East 39th Street",
+          price: 3520,
+          beds: 1,
+          baths: 1,
+          borough: "Manhattan",
+          neighborhood: "Murray Hill",
+          imageUrl: "./floorplan.png",
+          unitFeatures: ["Renovated Kitchen", "Central Air"],
+          buildingFeatures: ["Doorman", "Laundry Room"],
+          subwayLines: ["4", "5", "6"],
+        },
+      ];
+
+      function formatNumber(n) {
+        return new Intl.NumberFormat("en-US").format(n);
+      }
+
+      function miniMeta(listing) {
+        const beds = listing.beds === null || Number(listing.beds) === 0 ? "Studio" : `${listing.beds} bd`;
+        const baths = listing.baths === null ? "" : `${listing.baths} ba`;
+        return [beds, baths].filter(Boolean).join(" | ");
+      }
+
+      function joinedOrFallback(values, fallbackText) {
+        if (!Array.isArray(values) || !values.length) return fallbackText;
+        return values.join(", ");
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function renderChipList(values, fallbackText) {
+        if (!Array.isArray(values) || !values.length) {
+          return `<div class="hero-empty">${escapeHtml(fallbackText)}</div>`;
+        }
+        return `<div class="hero-chip-list">${values
+          .map((value) => `<span class="hero-chip">${escapeHtml(value)}</span>`)
+          .join("")}</div>`;
+      }
+
+      function getListingImage(listing) {
+        return (
+          listing.imageUrl ||
+          listing.photoUrl ||
+          listing.thumbnailUrl ||
+          (Array.isArray(listing.images) && listing.images[0]) ||
+          (Array.isArray(listing.photos) && listing.photos[0]) ||
+          ""
+        );
+      }
+
+      function clampNumber(value, min, max) {
+        return Math.max(min, Math.min(value, max));
+      }
+
+      function setHeroAspectRatio(ratio) {
+        const safeRatio = clampNumber(Number(ratio) || 1.6, 0.55, 2.3);
+        heroCard.style.setProperty("--hero-aspect", String(safeRatio));
+      }
+
+      function clampPan() {
+        if (!heroHasImage || zoomScale <= 1) {
+          zoomX = 0;
+          zoomY = 0;
+          return;
+        }
+
+        const rect = heroMedia.getBoundingClientRect();
+        const maxX = ((zoomScale - 1) * rect.width) / 2;
+        const maxY = ((zoomScale - 1) * rect.height) / 2;
+        zoomX = clampNumber(zoomX, -maxX, maxX);
+        zoomY = clampNumber(zoomY, -maxY, maxY);
+      }
+
+      function applyImageTransform() {
+        clampPan();
+        const modeTransform = floorPlanMode ? " perspective(1100px) rotateX(11deg) rotateZ(-8deg)" : "";
+        heroImage.style.transform = `translate(${zoomX}px, ${zoomY}px) scale(${zoomScale})${modeTransform}`;
+      }
+
+      function setZoomScale(nextScale) {
+        zoomScale = clampNumber(nextScale, minZoom, maxZoom);
+        if (zoomScale <= 1) {
+          zoomX = 0;
+          zoomY = 0;
+        }
+        applyImageTransform();
+      }
+
+      function setZoomScaleAt(nextScale, originX, originY) {
+        const previousScale = zoomScale;
+        const clampedScale = clampNumber(nextScale, minZoom, maxZoom);
+        if (clampedScale === previousScale) return;
+
+        if (previousScale > 0 && clampedScale > 1) {
+          const scaleRatio = clampedScale / previousScale;
+          zoomX = originX - (originX - zoomX) * scaleRatio;
+          zoomY = originY - (originY - zoomY) * scaleRatio;
+        }
+
+        zoomScale = clampedScale;
+        if (zoomScale <= 1) {
+          zoomX = 0;
+          zoomY = 0;
+        }
+        applyImageTransform();
+      }
+
+      function resetImageTransform() {
+        pointers.clear();
+        dragPointerId = null;
+        pinchStartDistance = 0;
+        heroMedia.classList.remove("is-dragging");
+        zoomScale = 1;
+        zoomX = 0;
+        zoomY = 0;
+        applyImageTransform();
+      }
+
+      function showZoomHint() {
+        if (!heroHasImage) return;
+        if (zoomHintTimer) {
+          clearTimeout(zoomHintTimer);
+          zoomHintTimer = null;
+        }
+        heroZoomHint.hidden = false;
+        heroZoomHint.classList.remove("is-visible");
+        void heroZoomHint.offsetWidth;
+        heroZoomHint.classList.add("is-visible");
+        zoomHintTimer = setTimeout(() => {
+          heroZoomHint.classList.remove("is-visible");
+          heroZoomHint.hidden = true;
+          zoomHintTimer = null;
+        }, 2300);
+      }
+
+      function clearZoomHint() {
+        if (zoomHintStartTimer) {
+          clearTimeout(zoomHintStartTimer);
+          zoomHintStartTimer = null;
+        }
+        if (zoomHintTimer) {
+          clearTimeout(zoomHintTimer);
+          zoomHintTimer = null;
+        }
+        heroZoomHint.classList.remove("is-visible");
+        heroZoomHint.hidden = true;
+      }
+
+      function setFloorPlanMode(enabled) {
+        floorPlanMode = Boolean(enabled);
+        heroMedia.classList.toggle("is-floorplan", floorPlanMode);
+        heroFloorplan.hidden = !floorPlanMode;
+        heroModeToggle.setAttribute("aria-pressed", floorPlanMode ? "true" : "false");
+        applyImageTransform();
+      }
+
+      function distanceBetweenPointers() {
+        const points = [...pointers.values()];
+        if (points.length < 2) return 0;
+        const dx = points[0].x - points[1].x;
+        const dy = points[0].y - points[1].y;
+        return Math.hypot(dx, dy);
+      }
+
+      function renderCards(data) {
+        cardsGrid.innerHTML = data
+          .map((listing, index) => {
+            const toneClass = tones[index % tones.length];
+            const possibleImage = getListingImage(listing);
+            const photoClass = possibleImage ? "photo has-image" : `photo ${toneClass}`;
+            const photoMedia = possibleImage
+              ? `<img class="photo-image" src="${escapeHtml(possibleImage)}" alt="${escapeHtml(
+                  listing.title || "Apartment image"
+                )}" loading="lazy" decoding="async" />`
+              : "";
+            const addressText = listing.address || listing.title || "Apartment listing";
+            const priceText = typeof listing.price === "number" ? `$${formatNumber(listing.price)}/mo` : "";
+            return `
+              <article class="apartment-card" data-index="${index}" style="animation-delay:${index * 70}ms">
+                <div class="${photoClass}" aria-label="${escapeHtml(listing.title || "Apartment image")}">
+                  ${photoMedia}
+                  <div class="card-top-meta">
+                    <span class="card-top-address">${escapeHtml(addressText)}</span>
+                    <span class="card-top-price">${escapeHtml(priceText)}</span>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function renderHero() {
+        const listing = listings[activeIndex];
+        if (!listing) return;
+        const toneClass = tones[activeIndex % tones.length];
+        const possibleImage = getListingImage(listing);
+
+        heroMedia.className = `hero-media ${toneClass}`;
+        heroHasImage = Boolean(possibleImage);
+        heroMedia.classList.toggle("has-image", heroHasImage);
+        setHeroAspectRatio(1.6);
+        heroImage.src = heroHasImage ? possibleImage : "";
+        if (heroHasImage && heroImage.complete && heroImage.naturalWidth > 0 && heroImage.naturalHeight > 0) {
+          setHeroAspectRatio(heroImage.naturalWidth / heroImage.naturalHeight);
+        }
+        setFloorPlanMode(false);
+        heroModeToggle.hidden = !heroHasImage;
+        clearZoomHint();
+        heroTitle.textContent = listing.address || listing.title || "Apartment Listing";
+        heroLocation.textContent = `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`;
+        heroPrice.textContent = `$${formatNumber(listing.price)}/mo`;
+        heroMetaList.innerHTML = `<div class="hero-meta-item">${miniMeta(listing)}</div>`;
+        heroUnitFeatures.innerHTML = renderChipList(listing.unitFeatures, "No unit features listed");
+        heroBuildingFeatures.innerHTML = renderChipList(listing.buildingFeatures, "No amenities listed");
+        heroTransit.textContent = joinedOrFallback(listing.subwayLines, "No transit lines listed");
+        resetImageTransform();
+      }
+
+      heroImage.addEventListener("load", () => {
+        if (!heroHasImage || heroImage.naturalWidth <= 0 || heroImage.naturalHeight <= 0) return;
+        setHeroAspectRatio(heroImage.naturalWidth / heroImage.naturalHeight);
+      });
+
+      function openHero(index) {
+        activeIndex = index;
+        renderHero();
+        heroOverlay.hidden = false;
+        document.body.style.overflow = "hidden";
+        if (zoomHintStartTimer) {
+          clearTimeout(zoomHintStartTimer);
+        }
+        zoomHintStartTimer = setTimeout(() => {
+          zoomHintStartTimer = null;
+          if (heroOverlay.hidden) return;
+          showZoomHint();
+        }, 1000);
+      }
+
+      function closeHero() {
+        clearZoomHint();
+        resetImageTransform();
+        heroOverlay.hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      function navigateHero(step) {
+        if (!listings.length) return;
+        activeIndex = (activeIndex + step + listings.length) % listings.length;
+        renderHero();
+      }
+
+      async function loadListings() {
+        const params = new URLSearchParams(window.location.search);
+        const url = new URL(`${apiBaseUrl}/api/listings`);
+        const filterKeys = ["q", "minPrice", "maxPrice", "beds", "borough"];
+
+        filterKeys.forEach((key) => {
+          const value = params.get(key);
+          if (value) url.searchParams.set(key, value);
+        });
+        url.searchParams.set("limit", "12");
+
+        try {
+          const response = await fetch(url.toString());
+          if (!response.ok) throw new Error("Fetch failed");
+          const payload = await response.json();
+          listings = Array.isArray(payload.data) && payload.data.length ? payload.data : fallbackListings;
+        } catch (_error) {
+          listings = fallbackListings;
+        }
+
+        renderCards(listings);
+      }
+
+      cardsGrid.addEventListener("click", (event) => {
+        const card = event.target.closest(".apartment-card");
+        if (!card) return;
+        openHero(Number(card.dataset.index));
+      });
+
+      heroPrev.addEventListener("click", () => navigateHero(-1));
+      heroNext.addEventListener("click", () => navigateHero(1));
+      heroClose.addEventListener("click", closeHero);
+      heroModeToggle.addEventListener("click", () => {
+        if (!heroHasImage) return;
+        setFloorPlanMode(!floorPlanMode);
+      });
+
+      heroOverlay.addEventListener("click", (event) => {
+        if (event.target === heroOverlay) {
+          closeHero();
+        }
+      });
+
+      heroMedia.addEventListener(
+        "wheel",
+        (event) => {
+          if (!heroHasImage) return;
+          event.preventDefault();
+          const factor = event.deltaY < 0 ? 1.035 : 1 / 1.035;
+          const rect = heroMedia.getBoundingClientRect();
+          const pointerX = event.clientX - (rect.left + rect.width / 2);
+          const pointerY = event.clientY - (rect.top + rect.height / 2);
+          setZoomScaleAt(zoomScale * factor, pointerX, pointerY);
+        },
+        { passive: false }
+      );
+
+      heroMedia.addEventListener("dblclick", () => {
+        if (!heroHasImage) return;
+        setZoomScale(zoomScale > 1 ? 1 : 2);
+      });
+
+      heroMedia.addEventListener("pointerdown", (event) => {
+        if (!heroHasImage) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        heroMedia.setPointerCapture(event.pointerId);
+
+        if (pointers.size === 2) {
+          pinchStartDistance = distanceBetweenPointers();
+          pinchStartScale = zoomScale;
+          heroMedia.classList.remove("is-dragging");
+          dragPointerId = null;
+          return;
+        }
+
+        dragPointerId = event.pointerId;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        dragOriginX = zoomX;
+        dragOriginY = zoomY;
+        heroMedia.classList.add("is-dragging");
+      });
+
+      heroMedia.addEventListener("pointermove", (event) => {
+        if (!heroHasImage || !pointers.has(event.pointerId)) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+        if (pointers.size >= 2) {
+          const nextDistance = distanceBetweenPointers();
+          if (pinchStartDistance > 0 && nextDistance > 0) {
+            setZoomScale(pinchStartScale * (nextDistance / pinchStartDistance));
+          }
+          return;
+        }
+
+        if (event.pointerId === dragPointerId && zoomScale > 1) {
+          zoomX = dragOriginX + (event.clientX - dragStartX);
+          zoomY = dragOriginY + (event.clientY - dragStartY);
+          applyImageTransform();
+        }
+      });
+
+      function handlePointerEnd(event) {
+        pointers.delete(event.pointerId);
+        if (event.pointerId === dragPointerId) {
+          heroMedia.classList.remove("is-dragging");
+          dragPointerId = null;
+        }
+
+        if (pointers.size < 2) {
+          pinchStartDistance = 0;
+        }
+
+        if (pointers.size === 1) {
+          const [id, point] = pointers.entries().next().value;
+          dragPointerId = id;
+          dragStartX = point.x;
+          dragStartY = point.y;
+          dragOriginX = zoomX;
+          dragOriginY = zoomY;
+        }
+      }
+
+      heroMedia.addEventListener("pointerup", handlePointerEnd);
+      heroMedia.addEventListener("pointercancel", handlePointerEnd);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          if (!heroOverlay.hidden) closeHero();
+        }
+        if (heroOverlay.hidden) return;
+        if (event.key === "ArrowLeft") navigateHero(-1);
+        if (event.key === "ArrowRight") navigateHero(1);
+      });
+
+      loadListings();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Listings</title>
+    <style>
+      :root {
+        --bg: #f6efe4;
+        --card: #fffaf3;
+        --line: #e6d7c2;
+        --ink: #2f271f;
+        --muted: #716553;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+
+      .wrap {
+        width: min(900px, 94vw);
+        margin: 26px auto 40px;
+      }
+
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 1.3rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      form {
+        margin-top: 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      label {
+        display: grid;
+        gap: 5px;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid #dbc8ad;
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #fffdfa;
+        color: var(--ink);
+      }
+
+      textarea {
+        min-height: 68px;
+        resize: vertical;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 2px;
+      }
+
+      button {
+        border: 1px solid #d2b995;
+        background: #f1dfc3;
+        color: #3b2e1f;
+        border-radius: 999px;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .status {
+        font-size: 0.84rem;
+        color: #6d5f4d;
+      }
+
+      .preview {
+        margin-top: 6px;
+        border: 1px dashed #d9c5a7;
+        border-radius: 12px;
+        padding: 8px;
+      }
+
+      .preview img {
+        width: min(240px, 100%);
+        display: block;
+        border-radius: 8px;
+      }
+
+      @media (max-width: 760px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="panel">
+        <h1>Private Listing Admin</h1>
+        <p>Accountless public site. Use this private page + admin key to add listings.</p>
+
+        <form id="listingForm">
+          <div class="row">
+            <label>
+              API Base URL
+              <input id="apiBase" type="text" value="http://127.0.0.1:5050" />
+            </label>
+            <label>
+              Admin Key
+              <input id="adminKey" type="password" autocomplete="off" required />
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Address
+              <input id="address" type="text" required />
+            </label>
+            <label>
+              Title
+              <input id="title" type="text" required />
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Price
+              <input id="price" type="number" min="0" required />
+            </label>
+            <label>
+              Borough
+              <input id="borough" type="text" required />
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Neighborhood
+              <input id="neighborhood" type="text" required />
+            </label>
+            <label>
+              Pets Policy
+              <select id="petsPolicy">
+                <option>CASE_BY_CASE</option>
+                <option>ALLOWED</option>
+                <option>NOT_ALLOWED</option>
+                <option>CATS_ONLY</option>
+                <option>DOGS_ONLY</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Beds
+              <input id="beds" type="number" min="0" step="0.5" />
+            </label>
+            <label>
+              Baths
+              <input id="baths" type="number" min="0" step="0.5" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Unit Features (comma separated)
+              <textarea id="unitFeatures" placeholder="Dishwasher, Hardwood Floors"></textarea>
+            </label>
+            <label>
+              Building Amenities (comma separated)
+              <textarea id="buildingFeatures" placeholder="Roof Deck, Gym"></textarea>
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Subway Lines (comma separated)
+              <input id="subwayLines" type="text" placeholder="L, M" />
+            </label>
+            <label>
+              Image Upload
+              <input id="imageFile" type="file" accept="image/*" />
+            </label>
+          </div>
+
+          <div class="preview" id="imagePreviewWrap" hidden>
+            <img id="imagePreview" alt="Selected image preview" />
+          </div>
+
+          <div class="actions">
+            <button id="submitBtn" type="submit">Create Listing</button>
+            <span class="status" id="status">Ready.</span>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script src="app-config.js"></script>
+    <script>
+      const apiBaseInput = document.getElementById("apiBase");
+      const adminKeyInput = document.getElementById("adminKey");
+      const form = document.getElementById("listingForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const statusEl = document.getElementById("status");
+      const imageFileInput = document.getElementById("imageFile");
+      const imagePreview = document.getElementById("imagePreview");
+      const imagePreviewWrap = document.getElementById("imagePreviewWrap");
+
+      if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
+        apiBaseInput.value = window.APP_CONFIG.API_BASE_URL;
+      }
+
+      let imageDataUrl = "";
+
+      function setStatus(text) {
+        statusEl.textContent = text;
+      }
+
+      function splitCsv(value) {
+        if (!value) return [];
+        return value
+          .split(",")
+          .map((part) => part.trim())
+          .filter(Boolean);
+      }
+
+      function optionalNumber(value) {
+        if (!value) return null;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+
+      imageFileInput.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+          imageDataUrl = "";
+          imagePreviewWrap.hidden = true;
+          imagePreview.src = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          imageDataUrl = String(reader.result || "");
+          imagePreview.src = imageDataUrl;
+          imagePreviewWrap.hidden = !imageDataUrl;
+        };
+        reader.onerror = () => {
+          imageDataUrl = "";
+          imagePreviewWrap.hidden = true;
+          imagePreview.src = "";
+          setStatus("Failed to read image file.");
+        };
+        reader.readAsDataURL(file);
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setStatus("Creating listing...");
+        submitBtn.disabled = true;
+
+        const payload = {
+          title: document.getElementById("title").value.trim(),
+          address: document.getElementById("address").value.trim(),
+          price: Number(document.getElementById("price").value),
+          borough: document.getElementById("borough").value.trim(),
+          neighborhood: document.getElementById("neighborhood").value.trim(),
+          petsPolicy: document.getElementById("petsPolicy").value,
+          beds: optionalNumber(document.getElementById("beds").value.trim()),
+          baths: optionalNumber(document.getElementById("baths").value.trim()),
+          unitFeatures: splitCsv(document.getElementById("unitFeatures").value),
+          buildingFeatures: splitCsv(document.getElementById("buildingFeatures").value),
+          subwayLines: splitCsv(document.getElementById("subwayLines").value),
+        };
+
+        if (imageDataUrl) payload.imageUrl = imageDataUrl;
+
+        try {
+          const response = await fetch(`${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings`, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "x-admin-key": adminKeyInput.value,
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(body.error || `Request failed (${response.status})`);
+          }
+
+          setStatus(`Created listing #${body.data.id}`);
+          form.reset();
+          imageDataUrl = "";
+          imagePreviewWrap.hidden = true;
+          imagePreview.src = "";
+        } catch (error) {
+          setStatus(`Error: ${error.message}`);
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

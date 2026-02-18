@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum FeatureType {
+  UNIT
+  BUILDING
+}
+
+enum PetsPolicy {
+  ALLOWED
+  NOT_ALLOWED
+  CATS_ONLY
+  DOGS_ONLY
+  CASE_BY_CASE
+}
+
+model Borough {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  neighborhoods Neighborhood[]
+  listings      Listing[]
+}
+
+model Neighborhood {
+  id        Int       @id @default(autoincrement())
+  name      String
+  boroughId Int
+  borough   Borough   @relation(fields: [boroughId], references: [id], onDelete: Restrict)
+  listings  Listing[]
+
+  @@unique([boroughId, name])
+  @@index([boroughId])
+}
+
+model Listing {
+  id             Int                 @id @default(autoincrement())
+  title          String
+  address        String?
+  imageUrl       String?
+  price          Int
+  beds           Decimal?            @db.Decimal(3, 1)
+  baths          Decimal?            @db.Decimal(3, 1)
+  boroughId      Int
+  neighborhoodId Int
+  petsPolicy     PetsPolicy
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  borough        Borough             @relation(fields: [boroughId], references: [id], onDelete: Restrict)
+  neighborhood   Neighborhood        @relation(fields: [neighborhoodId], references: [id], onDelete: Restrict)
+  featureLinks   ListingFeature[]
+  subwayLinks    ListingSubwayLine[]
+
+  @@index([price])
+  @@index([boroughId])
+  @@index([neighborhoodId])
+  @@index([petsPolicy])
+}
+
+model Feature {
+  id           Int              @id @default(autoincrement())
+  name         String
+  featureType  FeatureType
+  listingLinks ListingFeature[]
+
+  @@unique([featureType, name])
+}
+
+model ListingFeature {
+  listingId Int
+  featureId Int
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  feature   Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, featureId])
+  @@index([featureId])
+}
+
+model SubwayLine {
+  id           Int                 @id @default(autoincrement())
+  lineCode     String              @unique
+  listingLinks ListingSubwayLine[]
+}
+
+model ListingSubwayLine {
+  listingId    Int
+  subwayLineId Int
+  listing      Listing    @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  subwayLine   SubwayLine @relation(fields: [subwayLineId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, subwayLineId])
+  @@index([subwayLineId])
+}

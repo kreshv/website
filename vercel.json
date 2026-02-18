@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/apartments",
+      "destination": "/apartments.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin-listings.html"
+    }
+  ]
+}

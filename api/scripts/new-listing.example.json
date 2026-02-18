@@ -1,0 +1,14 @@
+{
+  "title": "West Village 1BR with balcony",
+  "address": "244 W 4th Street",
+  "price": 4200,
+  "beds": 1,
+  "baths": 1,
+  "borough": "Manhattan",
+  "neighborhood": "West Village",
+  "petsPolicy": "ALLOWED",
+  "isActive": true,
+  "unitFeatures": ["Balcony", "Dishwasher", "Hardwood Floors"],
+  "buildingFeatures": ["Elevator", "Package Room"],
+  "subwayLines": ["A", "C", "E", "B", "D", "F", "M"]
+}

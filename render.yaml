@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: apartment-api
+    runtime: node
+    rootDir: api
+    plan: starter
+    buildCommand: npm install && npm run prisma:generate
+    startCommand: npm run prisma:deploy && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK
+        value: "1"
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: ADMIN_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        sync: false
+      - key: PORT
+        value: 10000

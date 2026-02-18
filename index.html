@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homepage</title>
+    <style>
+      :root {
+        --bg-start: #ffffff;
+        --bg-end: #fffaf0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        background: linear-gradient(160deg, var(--bg-start), var(--bg-end));
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+      }
+
+      .search-shell {
+        width: min(760px, 92vw);
+      }
+
+      .search-form {
+        display: grid;
+      }
+
+      .criteria-input {
+        width: 100%;
+        min-height: 78px;
+        max-height: 180px;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        color: #2d2a26;
+        background:
+          linear-gradient(#fffdf8, #fffdf8) padding-box,
+          linear-gradient(90deg, #e8dcc8, #ccb089, #e8dcc8) border-box;
+        background-size: 100% 100%, 220% 100%;
+        animation: thinking-border 1.3s ease-in-out infinite alternate;
+        resize: vertical;
+        outline: none;
+        box-shadow: 0 10px 30px rgba(130, 108, 78, 0.08);
+        transition: border-color 140ms ease, box-shadow 140ms ease;
+      }
+
+      .criteria-input:focus {
+        box-shadow: 0 14px 34px rgba(130, 108, 78, 0.14);
+      }
+
+      @keyframes thinking-border {
+        0% {
+          background-position: 0 0, 0% 50%;
+        }
+        100% {
+          background-position: 0 0, 100% 50%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="search-shell">
+      <form class="search-form" action="apartments.html" method="get">
+        <textarea
+          class="criteria-input"
+          name="q"
+          placeholder="What type of apartment are you looking for, which boroughs and neighborhoods, and what's your budget? Please include any additional details."
+          aria-label="Apartment search criteria"
+        ></textarea>
+      </form>
+    </main>
+    <script>
+      const form = document.querySelector(".search-form");
+      const textarea = document.querySelector(".criteria-input");
+
+      // Press Enter to submit; use Shift+Enter for a new line.
+      textarea.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          form.requestSubmit();
+        }
+      });
+    </script>
+  </body>
+</html>
