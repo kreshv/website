@@ -323,19 +323,22 @@
         position: absolute;
         top: 12px;
         left: 12px;
-        width: 42px;
-        height: 42px;
+        height: 38px;
+        min-width: 80px;
+        padding: 0 12px 0 10px;
         border-radius: 999px;
         border: 1px solid rgba(255, 236, 210, 0.55);
-        background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.2), rgba(27, 20, 14, 0.64));
+        background: linear-gradient(180deg, rgba(39, 29, 22, 0.72), rgba(20, 14, 10, 0.68));
         color: #fff8ef;
         cursor: pointer;
         z-index: 7;
-        display: grid;
-        place-items: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         box-shadow: 0 8px 20px rgba(18, 12, 8, 0.35);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
+        overflow: hidden;
         transition:
           transform 140ms ease,
           border-color 180ms ease,
@@ -354,60 +357,54 @@
 
       .hero-mode-glyph {
         position: relative;
-        width: 20px;
-        height: 20px;
-      }
-
-      .hero-mode-photo,
-      .hero-mode-plan {
-        position: absolute;
-        inset: 0;
-        transition:
-          opacity 180ms ease,
-          transform 180ms ease;
-      }
-
-      .hero-mode-photo {
+        width: 15px;
+        height: 15px;
         border: 1.5px solid rgba(255, 241, 223, 0.95);
         border-radius: 3px;
+        box-shadow:
+          inset 0 -4px 0 rgba(255, 241, 223, 0.18),
+          inset -4px 0 0 rgba(255, 241, 223, 0.12);
       }
 
-      .hero-mode-photo::before {
+      .hero-mode-glyph::before,
+      .hero-mode-glyph::after {
         content: "";
         position: absolute;
-        left: 2px;
-        right: 2px;
-        bottom: 2px;
-        height: 7px;
-        background: linear-gradient(145deg, rgba(255, 241, 223, 0.9), rgba(255, 241, 223, 0.25));
-        clip-path: polygon(0 100%, 35% 35%, 55% 68%, 75% 42%, 100% 100%);
-      }
-
-      .hero-mode-photo::after {
-        content: "";
-        position: absolute;
-        width: 3px;
-        height: 3px;
-        right: 3px;
-        top: 3px;
-        border-radius: 999px;
         background: rgba(255, 241, 223, 0.95);
+        border-radius: 999px;
       }
 
-      .hero-mode-plan {
-        opacity: 0;
-        transform: scale(0.84) rotate(-6deg);
+      .hero-mode-glyph::before {
+        width: 8px;
+        height: 1.6px;
+        right: -6px;
+        top: 3px;
+        transform: rotate(36deg);
       }
 
-      .hero-mode-plan::before {
+      .hero-mode-glyph::after {
+        width: 8px;
+        height: 1.6px;
+        right: -6px;
+        bottom: 3px;
+        transform: rotate(-36deg);
+      }
+
+      .hero-mode-label {
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .hero-mode-toggle.is-hinting::after {
         content: "";
         position: absolute;
-        inset: 2px;
-        border: 1.5px solid rgba(255, 241, 223, 0.95);
-        border-radius: 2px;
-        background:
-          linear-gradient(rgba(255, 241, 223, 0.55), rgba(255, 241, 223, 0.55)) 50% 0 / 1.5px 100% no-repeat,
-          linear-gradient(rgba(255, 241, 223, 0.55), rgba(255, 241, 223, 0.55)) 0 50% / 100% 1.5px no-repeat;
+        inset: 0;
+        border-radius: inherit;
+        border: 1px solid rgba(255, 236, 210, 0.45);
+        animation: hero-mode-pulse 1700ms ease-out infinite;
+        pointer-events: none;
       }
 
       .hero-mode-toggle[aria-pressed="true"] {
@@ -415,14 +412,18 @@
         background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.28), rgba(120, 91, 60, 0.62));
       }
 
-      .hero-mode-toggle[aria-pressed="true"] .hero-mode-photo {
-        opacity: 0;
-        transform: scale(0.84) rotate(6deg);
-      }
-
-      .hero-mode-toggle[aria-pressed="true"] .hero-mode-plan {
-        opacity: 1;
-        transform: scale(1) rotate(0);
+      @keyframes hero-mode-pulse {
+        0% {
+          opacity: 0;
+          transform: scale(1);
+        }
+        14% {
+          opacity: 0.85;
+        }
+        100% {
+          opacity: 0;
+          transform: scale(1.08);
+        }
       }
 
       .hero-floorplan {
@@ -800,9 +801,8 @@
       <div class="hero-card" id="heroCard" role="dialog" aria-modal="true" aria-label="Apartment viewer">
         <button class="hero-mode-toggle" id="heroModeToggle" type="button" aria-label="Toggle floor plan view" aria-pressed="false">
           <span class="hero-mode-glyph" aria-hidden="true">
-            <span class="hero-mode-photo"></span>
-            <span class="hero-mode-plan"></span>
           </span>
+          <span class="hero-mode-label" id="heroModeLabel">Plan</span>
         </button>
         <button class="hero-close" id="heroClose" type="button" aria-label="Close">&#10005;</button>
         <div class="hero-media" id="heroMedia">
@@ -868,6 +868,7 @@
       const heroNext = document.getElementById("heroNext");
       const heroClose = document.getElementById("heroClose");
       const heroModeToggle = document.getElementById("heroModeToggle");
+      const heroModeLabel = document.getElementById("heroModeLabel");
       const heroFloorplan = document.getElementById("heroFloorplan");
       const heroZoomHint = document.getElementById("heroZoomHint");
 
@@ -1179,9 +1180,11 @@
         );
         floorPlanMode = canToggleView ? Boolean(enabled) : false;
         heroModeToggle.hidden = !canToggleView;
+        heroModeToggle.classList.toggle("is-hinting", canToggleView && !floorPlanMode);
         heroMedia.classList.toggle("is-floorplan", floorPlanMode);
         heroFloorplan.hidden = true;
         heroModeToggle.setAttribute("aria-pressed", floorPlanMode ? "true" : "false");
+        heroModeLabel.textContent = floorPlanMode ? "Photo" : "Plan";
         heroModeToggle.setAttribute(
           "aria-label",
           floorPlanMode ? "Show main image" : "Show floor plan"
