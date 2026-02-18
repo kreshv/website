@@ -1230,16 +1230,54 @@
         resetImageTransform();
       }
 
+      function listingTokenForIndex(index) {
+        const listing = listings[index];
+        if (!listing) return "";
+        if (listing.id !== undefined && listing.id !== null && String(listing.id).trim()) {
+          return String(listing.id);
+        }
+        return `idx-${index}`;
+      }
+
+      function findListingIndexFromToken(token) {
+        if (!token) return -1;
+        const byId = listings.findIndex((listing) => String(listing.id) === token);
+        if (byId >= 0) return byId;
+        if (token.startsWith("idx-")) {
+          const indexValue = Number(token.slice(4));
+          if (Number.isInteger(indexValue) && indexValue >= 0 && indexValue < listings.length) {
+            return indexValue;
+          }
+        }
+        return -1;
+      }
+
+      function setListingParam(token, { replace = false } = {}) {
+        const url = new URL(window.location.href);
+        if (token) {
+          url.searchParams.set("listing", token);
+        } else {
+          url.searchParams.delete("listing");
+        }
+        const next = `${url.pathname}${url.search}${url.hash}`;
+        const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        if (next === current) return;
+        window.history[replace ? "replaceState" : "pushState"]({}, "", next);
+      }
+
       heroImage.addEventListener("load", () => {
         if (!heroHasImage || heroImage.naturalWidth <= 0 || heroImage.naturalHeight <= 0) return;
         setHeroAspectRatio(heroImage.naturalWidth / heroImage.naturalHeight);
       });
 
-      function openHero(index) {
+      function openHero(index, { syncUrl = true, replaceUrl = false } = {}) {
         activeIndex = index;
         renderHero();
         heroOverlay.hidden = false;
         document.body.style.overflow = "hidden";
+        if (syncUrl) {
+          setListingParam(listingTokenForIndex(index), { replace: replaceUrl });
+        }
         if (zoomHintStartTimer) {
           clearTimeout(zoomHintStartTimer);
         }
@@ -1250,17 +1288,23 @@
         }, 1000);
       }
 
-      function closeHero() {
+      function closeHero({ syncUrl = true, replaceUrl = true } = {}) {
         clearZoomHint();
         resetImageTransform();
         heroOverlay.hidden = true;
         document.body.style.overflow = "";
+        if (syncUrl) {
+          setListingParam("", { replace: replaceUrl });
+        }
       }
 
       function navigateHero(step) {
         if (!listings.length) return;
         activeIndex = (activeIndex + step + listings.length) % listings.length;
         renderHero();
+        if (!heroOverlay.hidden) {
+          setListingParam(listingTokenForIndex(activeIndex), { replace: true });
+        }
       }
 
       async function loadListings() {
@@ -1284,6 +1328,12 @@
         }
 
         renderCards(listings);
+
+        const selectedToken = new URLSearchParams(window.location.search).get("listing");
+        const selectedIndex = findListingIndexFromToken(selectedToken);
+        if (selectedIndex >= 0) {
+          openHero(selectedIndex, { syncUrl: false });
+        }
       }
 
       cardsGrid.addEventListener("click", (event) => {
@@ -1388,6 +1438,25 @@
 
       heroMedia.addEventListener("pointerup", handlePointerEnd);
       heroMedia.addEventListener("pointercancel", handlePointerEnd);
+
+      window.addEventListener("popstate", () => {
+        const selectedToken = new URLSearchParams(window.location.search).get("listing");
+        const selectedIndex = findListingIndexFromToken(selectedToken);
+
+        if (selectedIndex >= 0) {
+          if (heroOverlay.hidden) {
+            openHero(selectedIndex, { syncUrl: false });
+          } else {
+            activeIndex = selectedIndex;
+            renderHero();
+          }
+          return;
+        }
+
+        if (!heroOverlay.hidden) {
+          closeHero({ syncUrl: false });
+        }
+      });
 
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
