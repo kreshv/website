@@ -327,31 +327,27 @@
         height: 42px;
         padding: 0;
         border-radius: 999px;
-        border: 1px solid rgba(255, 236, 210, 0.55);
-        background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.2), rgba(27, 20, 14, 0.64));
-        color: #fff8ef;
+        border: 1px solid rgba(74, 74, 74, 0.9);
+        background: rgba(14, 14, 14, 0.94);
+        color: #c9c9c9;
         cursor: pointer;
         z-index: 7;
         display: grid;
         place-items: center;
-        box-shadow: 0 8px 20px rgba(18, 12, 8, 0.35);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
         overflow: hidden;
         transition:
-          transform 140ms ease,
+          opacity 140ms ease,
           border-color 180ms ease,
-          background 180ms ease,
-          box-shadow 180ms ease;
+          background 180ms ease;
       }
 
       .hero-mode-toggle:hover {
-        transform: translateY(-1px);
-        border-color: rgba(255, 236, 210, 0.9);
+        border-color: rgba(104, 104, 104, 0.95);
+        background: rgba(10, 10, 10, 0.96);
       }
 
       .hero-mode-toggle:active {
-        transform: scale(0.96);
+        opacity: 0.86;
       }
 
       .hero-mode-glyph {
@@ -364,11 +360,10 @@
         height: 100%;
         display: block;
         fill: none;
-        stroke: rgba(224, 243, 255, 0.98);
+        stroke: rgba(197, 204, 210, 0.95);
         stroke-width: 2;
         stroke-linecap: round;
         stroke-linejoin: round;
-        filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.18));
       }
 
       .hero-mode-toggle.is-hinting::after {
@@ -376,14 +371,14 @@
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        border: 1px solid rgba(255, 236, 210, 0.45);
+        border: 1px solid rgba(132, 132, 132, 0.5);
         animation: hero-mode-pulse 1700ms ease-out infinite;
         pointer-events: none;
       }
 
       .hero-mode-toggle[aria-pressed="true"] {
-        border-color: rgba(255, 242, 220, 0.92);
-        background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.28), rgba(120, 91, 60, 0.62));
+        border-color: rgba(118, 118, 118, 0.95);
+        background: rgba(23, 23, 23, 0.96);
       }
 
       .hero-mode-toggle[aria-pressed="true"] .hero-mode-glyph {
