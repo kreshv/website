@@ -11,6 +11,7 @@ const createListingSchema = z.object({
   title: z.string().trim().min(1),
   address: z.string().trim().min(1).optional(),
   imageUrl: z.string().trim().min(1).optional(),
+  mapImageUrl: z.string().trim().min(1).optional(),
   price: z.coerce.number().int().min(0),
   beds: z.coerce.number().min(0).max(20).nullable().optional(),
   baths: z.coerce.number().min(0).max(20).nullable().optional(),
@@ -72,6 +73,7 @@ function mapListingResponse(listing) {
     title: listing.title,
     address: listing.address,
     imageUrl: listing.imageUrl,
+    mapImageUrl: listing.mapImageUrl,
     price: listing.price,
     beds: listing.beds ? Number(listing.beds) : null,
     baths: listing.baths ? Number(listing.baths) : null,
@@ -88,9 +90,9 @@ function mapListingResponse(listing) {
   };
 }
 
-async function resolveImageUrl(inputImageUrl) {
-  if (!inputImageUrl) return null;
-  const trimmed = inputImageUrl.trim();
+async function resolveImageUrl(inputUrl) {
+  if (!inputUrl) return null;
+  const trimmed = inputUrl.trim();
   if (!trimmed) return null;
 
   // If client sent a data URL, upload it to Cloudinary and store the hosted URL.
@@ -126,8 +128,10 @@ router.post("/", async (req, res) => {
 
   const payload = parsed.data;
   let resolvedImageUrl = null;
+  let resolvedMapImageUrl = null;
   try {
     resolvedImageUrl = await resolveImageUrl(payload.imageUrl);
+    resolvedMapImageUrl = await resolveImageUrl(payload.mapImageUrl);
   } catch (error) {
     return res.status(400).json({ error: error.message || "Image upload failed." });
   }
@@ -160,6 +164,7 @@ router.post("/", async (req, res) => {
           title: payload.title,
           address: payload.address ?? null,
           imageUrl: resolvedImageUrl,
+          mapImageUrl: resolvedMapImageUrl,
           price: payload.price,
           beds: payload.beds ?? null,
           baths: payload.baths ?? null,

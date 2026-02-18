@@ -139,13 +139,13 @@
     <main class="wrap">
       <section class="panel">
         <h1>Private Listing Admin</h1>
-        <p>Accountless public site. Use this private page + admin key to add listings.</p>
+        <p>Accountless public site. Use this private page + admin key to add listings on the live website.</p>
 
         <form id="listingForm">
           <div class="row">
             <label>
               API Base URL
-              <input id="apiBase" type="text" value="http://127.0.0.1:5050" />
+              <input id="apiBase" type="text" value="https://apartment-api-ptpn.onrender.com" />
             </label>
             <label>
               Admin Key
@@ -220,13 +220,25 @@
               <input id="subwayLines" type="text" placeholder="L, M" />
             </label>
             <label>
-              Image Upload
+              Floorplan / Main Image
               <input id="imageFile" type="file" accept="image/*" />
             </label>
           </div>
 
           <div class="preview" id="imagePreviewWrap" hidden>
             <img id="imagePreview" alt="Selected image preview" />
+          </div>
+
+          <div class="row">
+            <label>
+              Map Image
+              <input id="mapImageFile" type="file" accept="image/*" />
+            </label>
+            <div></div>
+          </div>
+
+          <div class="preview" id="mapImagePreviewWrap" hidden>
+            <img id="mapImagePreview" alt="Selected map image preview" />
           </div>
 
           <div class="actions">
@@ -249,12 +261,16 @@
       const imageFileInput = document.getElementById("imageFile");
       const imagePreview = document.getElementById("imagePreview");
       const imagePreviewWrap = document.getElementById("imagePreviewWrap");
+      const mapImageFileInput = document.getElementById("mapImageFile");
+      const mapImagePreview = document.getElementById("mapImagePreview");
+      const mapImagePreviewWrap = document.getElementById("mapImagePreviewWrap");
 
       if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
         apiBaseInput.value = window.APP_CONFIG.API_BASE_URL;
       }
 
       let imageDataUrl = "";
+      let mapImageDataUrl = "";
 
       function setStatus(text) {
         statusEl.textContent = text;
@@ -308,28 +324,54 @@
         return canvas.toDataURL("image/jpeg", 0.82);
       }
 
-      imageFileInput.addEventListener("change", async (event) => {
-        const file = event.target.files && event.target.files[0];
+      async function handleImageSelection(file, onDataUrlReady, previewImg, previewWrap, label) {
         if (!file) {
-          imageDataUrl = "";
-          imagePreviewWrap.hidden = true;
-          imagePreview.src = "";
+          onDataUrlReady("");
+          previewWrap.hidden = true;
+          previewImg.src = "";
           return;
         }
 
         try {
-          setStatus("Optimizing image...");
-          imageDataUrl = await compressImageFile(file);
-          imagePreview.src = imageDataUrl;
-          imagePreviewWrap.hidden = !imageDataUrl;
-          const approxKb = Math.round((imageDataUrl.length * 0.75) / 1024);
-          setStatus(`Image ready (~${approxKb} KB).`);
+          setStatus(`Optimizing ${label}...`);
+          const dataUrl = await compressImageFile(file);
+          onDataUrlReady(dataUrl);
+          previewImg.src = dataUrl;
+          previewWrap.hidden = !dataUrl;
+          const approxKb = Math.round((dataUrl.length * 0.75) / 1024);
+          setStatus(`${label} ready (~${approxKb} KB).`);
         } catch (_error) {
-          imageDataUrl = "";
-          imagePreviewWrap.hidden = true;
-          imagePreview.src = "";
-          setStatus("Failed to process image file.");
+          onDataUrlReady("");
+          previewWrap.hidden = true;
+          previewImg.src = "";
+          setStatus(`Failed to process ${label}.`);
         }
+      }
+
+      imageFileInput.addEventListener("change", async (event) => {
+        const file = event.target.files && event.target.files[0];
+        await handleImageSelection(
+          file,
+          (value) => {
+            imageDataUrl = value;
+          },
+          imagePreview,
+          imagePreviewWrap,
+          "main image"
+        );
+      });
+
+      mapImageFileInput.addEventListener("change", async (event) => {
+        const file = event.target.files && event.target.files[0];
+        await handleImageSelection(
+          file,
+          (value) => {
+            mapImageDataUrl = value;
+          },
+          mapImagePreview,
+          mapImagePreviewWrap,
+          "map image"
+        );
       });
 
       form.addEventListener("submit", async (event) => {
@@ -352,6 +394,7 @@
         };
 
         if (imageDataUrl) payload.imageUrl = imageDataUrl;
+        if (mapImageDataUrl) payload.mapImageUrl = mapImageDataUrl;
 
         try {
           const response = await fetch(`${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings`, {
@@ -371,10 +414,17 @@
           setStatus(`Created listing #${body.data.id}`);
           form.reset();
           imageDataUrl = "";
+          mapImageDataUrl = "";
           imagePreviewWrap.hidden = true;
           imagePreview.src = "";
+          mapImagePreviewWrap.hidden = true;
+          mapImagePreview.src = "";
         } catch (error) {
-          setStatus(`Error: ${error.message}`);
+          const message =
+            error && error.message === "Failed to fetch"
+              ? "Network error. Confirm API Base URL is https://apartment-api-ptpn.onrender.com"
+              : error.message;
+          setStatus(`Error: ${message}`);
         } finally {
           submitBtn.disabled = false;
         }
@@ -407,7 +457,11 @@
           }
           setStatus(`Deleted ${body.deleted || 0} demo listing(s).`);
         } catch (error) {
-          setStatus(`Error: ${error.message}`);
+          const message =
+            error && error.message === "Failed to fetch"
+              ? "Network error. Confirm API Base URL is https://apartment-api-ptpn.onrender.com"
+              : error.message;
+          setStatus(`Error: ${message}`);
         } finally {
           deleteDemoBtn.disabled = false;
         }

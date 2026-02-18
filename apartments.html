@@ -838,7 +838,7 @@
             <div class="hero-section-value" id="heroTransit"></div>
           </div>
           <div class="hero-map">
-            <img src="./image.png" alt="Neighborhood map" loading="lazy" />
+            <img id="heroMapImage" src="./image.png" alt="Neighborhood map" loading="lazy" />
           </div>
         </div>
       </div>
@@ -863,6 +863,7 @@
       const heroUnitFeatures = document.getElementById("heroUnitFeatures");
       const heroBuildingFeatures = document.getElementById("heroBuildingFeatures");
       const heroTransit = document.getElementById("heroTransit");
+      const heroMapImage = document.getElementById("heroMapImage");
       const heroPrev = document.getElementById("heroPrev");
       const heroNext = document.getElementById("heroNext");
       const heroClose = document.getElementById("heroClose");
@@ -1218,6 +1219,7 @@
         heroUnitFeatures.innerHTML = renderChipList(listing.unitFeatures, "No unit features listed");
         heroBuildingFeatures.innerHTML = renderChipList(listing.buildingFeatures, "No amenities listed");
         heroTransit.textContent = joinedOrFallback(listing.subwayLines, "No transit lines listed");
+        heroMapImage.src = listing.mapImageUrl || "./image.png";
         resetImageTransform();
       }
 
