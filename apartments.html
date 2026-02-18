@@ -323,18 +323,17 @@
         position: absolute;
         top: 12px;
         left: 12px;
-        height: 38px;
-        min-width: 80px;
-        padding: 0 12px 0 10px;
+        width: 42px;
+        height: 42px;
+        padding: 0;
         border-radius: 999px;
         border: 1px solid rgba(255, 236, 210, 0.55);
-        background: linear-gradient(180deg, rgba(39, 29, 22, 0.72), rgba(20, 14, 10, 0.68));
+        background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.2), rgba(27, 20, 14, 0.64));
         color: #fff8ef;
         cursor: pointer;
         z-index: 7;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        display: grid;
+        place-items: center;
         box-shadow: 0 8px 20px rgba(18, 12, 8, 0.35);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
@@ -357,44 +356,36 @@
 
       .hero-mode-glyph {
         position: relative;
-        width: 15px;
-        height: 15px;
+        width: 18px;
+        height: 18px;
         border: 1.5px solid rgba(255, 241, 223, 0.95);
         border-radius: 3px;
-        box-shadow:
-          inset 0 -4px 0 rgba(255, 241, 223, 0.18),
-          inset -4px 0 0 rgba(255, 241, 223, 0.12);
+        background:
+          linear-gradient(rgba(255, 241, 223, 0.55), rgba(255, 241, 223, 0.55)) 50% 0 / 1.5px 100% no-repeat,
+          linear-gradient(rgba(255, 241, 223, 0.55), rgba(255, 241, 223, 0.55)) 0 50% / 100% 1.5px no-repeat;
       }
 
       .hero-mode-glyph::before,
       .hero-mode-glyph::after {
         content: "";
         position: absolute;
-        background: rgba(255, 241, 223, 0.95);
-        border-radius: 999px;
+        border: 1.5px solid rgba(255, 241, 223, 0.95);
+        border-radius: 2px;
+        background: rgba(255, 241, 223, 0.08);
       }
 
       .hero-mode-glyph::before {
-        width: 8px;
-        height: 1.6px;
-        right: -6px;
-        top: 3px;
-        transform: rotate(36deg);
+        width: 7px;
+        height: 7px;
+        top: -4px;
+        right: -4px;
       }
 
       .hero-mode-glyph::after {
-        width: 8px;
-        height: 1.6px;
-        right: -6px;
-        bottom: 3px;
-        transform: rotate(-36deg);
-      }
-
-      .hero-mode-label {
-        font-size: 0.74rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        font-weight: 600;
+        width: 7px;
+        height: 7px;
+        bottom: -4px;
+        left: -4px;
       }
 
       .hero-mode-toggle.is-hinting::after {
@@ -410,6 +401,10 @@
       .hero-mode-toggle[aria-pressed="true"] {
         border-color: rgba(255, 242, 220, 0.92);
         background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.28), rgba(120, 91, 60, 0.62));
+      }
+
+      .hero-mode-toggle[aria-pressed="true"] .hero-mode-glyph {
+        transform: rotate(-5deg) scale(1.03);
       }
 
       @keyframes hero-mode-pulse {
@@ -800,9 +795,7 @@
       <button class="hero-nav hero-prev" id="heroPrev" type="button" aria-label="Previous apartment">&#8249;</button>
       <div class="hero-card" id="heroCard" role="dialog" aria-modal="true" aria-label="Apartment viewer">
         <button class="hero-mode-toggle" id="heroModeToggle" type="button" aria-label="Toggle floor plan view" aria-pressed="false">
-          <span class="hero-mode-glyph" aria-hidden="true">
-          </span>
-          <span class="hero-mode-label" id="heroModeLabel">Plan</span>
+          <span class="hero-mode-glyph" aria-hidden="true"></span>
         </button>
         <button class="hero-close" id="heroClose" type="button" aria-label="Close">&#10005;</button>
         <div class="hero-media" id="heroMedia">
@@ -868,7 +861,6 @@
       const heroNext = document.getElementById("heroNext");
       const heroClose = document.getElementById("heroClose");
       const heroModeToggle = document.getElementById("heroModeToggle");
-      const heroModeLabel = document.getElementById("heroModeLabel");
       const heroFloorplan = document.getElementById("heroFloorplan");
       const heroZoomHint = document.getElementById("heroZoomHint");
 
@@ -1184,7 +1176,6 @@
         heroMedia.classList.toggle("is-floorplan", floorPlanMode);
         heroFloorplan.hidden = true;
         heroModeToggle.setAttribute("aria-pressed", floorPlanMode ? "true" : "false");
-        heroModeLabel.textContent = floorPlanMode ? "Photo" : "Plan";
         heroModeToggle.setAttribute(
           "aria-label",
           floorPlanMode ? "Show main image" : "Show floor plan"
