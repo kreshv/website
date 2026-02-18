@@ -11,6 +11,7 @@ const createListingSchema = z.object({
   title: z.string().trim().min(1),
   address: z.string().trim().min(1).optional(),
   imageUrl: z.string().trim().min(1).optional(),
+  floorplanImageUrl: z.string().trim().min(1).optional(),
   mapImageUrl: z.string().trim().min(1).optional(),
   price: z.coerce.number().int().min(0),
   beds: z.coerce.number().min(0).max(20).nullable().optional(),
@@ -73,6 +74,7 @@ function mapListingResponse(listing) {
     title: listing.title,
     address: listing.address,
     imageUrl: listing.imageUrl,
+    floorplanImageUrl: listing.floorplanImageUrl,
     mapImageUrl: listing.mapImageUrl,
     price: listing.price,
     beds: listing.beds ? Number(listing.beds) : null,
@@ -128,9 +130,11 @@ router.post("/", async (req, res) => {
 
   const payload = parsed.data;
   let resolvedImageUrl = null;
+  let resolvedFloorplanImageUrl = null;
   let resolvedMapImageUrl = null;
   try {
     resolvedImageUrl = await resolveImageUrl(payload.imageUrl);
+    resolvedFloorplanImageUrl = await resolveImageUrl(payload.floorplanImageUrl);
     resolvedMapImageUrl = await resolveImageUrl(payload.mapImageUrl);
   } catch (error) {
     return res.status(400).json({ error: error.message || "Image upload failed." });
@@ -164,6 +168,7 @@ router.post("/", async (req, res) => {
           title: payload.title,
           address: payload.address ?? null,
           imageUrl: resolvedImageUrl,
+          floorplanImageUrl: resolvedFloorplanImageUrl,
           mapImageUrl: resolvedMapImageUrl,
           price: payload.price,
           beds: payload.beds ?? null,

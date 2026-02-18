@@ -220,13 +220,25 @@
               <input id="subwayLines" type="text" placeholder="L, M" />
             </label>
             <label>
-              Floorplan / Main Image
+              Main Image
               <input id="imageFile" type="file" accept="image/*" />
             </label>
           </div>
 
           <div class="preview" id="imagePreviewWrap" hidden>
             <img id="imagePreview" alt="Selected image preview" />
+          </div>
+
+          <div class="row">
+            <label>
+              Floor Plan Image
+              <input id="floorplanImageFile" type="file" accept="image/*" />
+            </label>
+            <div></div>
+          </div>
+
+          <div class="preview" id="floorplanImagePreviewWrap" hidden>
+            <img id="floorplanImagePreview" alt="Selected floor plan image preview" />
           </div>
 
           <div class="row">
@@ -261,6 +273,9 @@
       const imageFileInput = document.getElementById("imageFile");
       const imagePreview = document.getElementById("imagePreview");
       const imagePreviewWrap = document.getElementById("imagePreviewWrap");
+      const floorplanImageFileInput = document.getElementById("floorplanImageFile");
+      const floorplanImagePreview = document.getElementById("floorplanImagePreview");
+      const floorplanImagePreviewWrap = document.getElementById("floorplanImagePreviewWrap");
       const mapImageFileInput = document.getElementById("mapImageFile");
       const mapImagePreview = document.getElementById("mapImagePreview");
       const mapImagePreviewWrap = document.getElementById("mapImagePreviewWrap");
@@ -270,6 +285,7 @@
       }
 
       let imageDataUrl = "";
+      let floorplanImageDataUrl = "";
       let mapImageDataUrl = "";
 
       function setStatus(text) {
@@ -374,6 +390,19 @@
         );
       });
 
+      floorplanImageFileInput.addEventListener("change", async (event) => {
+        const file = event.target.files && event.target.files[0];
+        await handleImageSelection(
+          file,
+          (value) => {
+            floorplanImageDataUrl = value;
+          },
+          floorplanImagePreview,
+          floorplanImagePreviewWrap,
+          "floor plan image"
+        );
+      });
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         setStatus("Creating listing...");
@@ -394,6 +423,7 @@
         };
 
         if (imageDataUrl) payload.imageUrl = imageDataUrl;
+        if (floorplanImageDataUrl) payload.floorplanImageUrl = floorplanImageDataUrl;
         if (mapImageDataUrl) payload.mapImageUrl = mapImageDataUrl;
 
         try {
@@ -414,9 +444,12 @@
           setStatus(`Created listing #${body.data.id}`);
           form.reset();
           imageDataUrl = "";
+          floorplanImageDataUrl = "";
           mapImageDataUrl = "";
           imagePreviewWrap.hidden = true;
           imagePreview.src = "";
+          floorplanImagePreviewWrap.hidden = true;
+          floorplanImagePreview.src = "";
           mapImagePreviewWrap.hidden = true;
           mapImagePreview.src = "";
         } catch (error) {

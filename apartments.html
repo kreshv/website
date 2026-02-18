@@ -890,6 +890,8 @@
       let zoomHintTimer = null;
       let zoomHintStartTimer = null;
       let floorPlanMode = false;
+      let activeHeroMainImageUrl = "";
+      let activeHeroFloorplanImageUrl = "";
 
       const fallbackListings = [
         {
@@ -1045,12 +1047,18 @@
       function getListingImage(listing) {
         return (
           listing.imageUrl ||
+          listing.floorplanImageUrl ||
+          listing.floorPlanImageUrl ||
           listing.photoUrl ||
           listing.thumbnailUrl ||
           (Array.isArray(listing.images) && listing.images[0]) ||
           (Array.isArray(listing.photos) && listing.photos[0]) ||
           ""
         );
+      }
+
+      function getListingFloorplanImage(listing) {
+        return listing.floorplanImageUrl || listing.floorPlanImageUrl || "";
       }
 
       function clampNumber(value, min, max) {
@@ -1078,8 +1086,7 @@
 
       function applyImageTransform() {
         clampPan();
-        const modeTransform = floorPlanMode ? " perspective(1100px) rotateX(11deg) rotateZ(-8deg)" : "";
-        heroImage.style.transform = `translate(${zoomX}px, ${zoomY}px) scale(${zoomScale})${modeTransform}`;
+        heroImage.style.transform = `translate(${zoomX}px, ${zoomY}px) scale(${zoomScale})`;
       }
 
       function setZoomScale(nextScale) {
@@ -1151,11 +1158,35 @@
         heroZoomHint.hidden = true;
       }
 
+      function syncHeroImageSource() {
+        const selectedImageUrl =
+          floorPlanMode && activeHeroFloorplanImageUrl
+            ? activeHeroFloorplanImageUrl
+            : activeHeroMainImageUrl || activeHeroFloorplanImageUrl;
+        heroHasImage = Boolean(selectedImageUrl);
+        heroMedia.classList.toggle("has-image", heroHasImage);
+        heroImage.src = heroHasImage ? selectedImageUrl : "";
+        if (heroHasImage && heroImage.complete && heroImage.naturalWidth > 0 && heroImage.naturalHeight > 0) {
+          setHeroAspectRatio(heroImage.naturalWidth / heroImage.naturalHeight);
+        }
+      }
+
       function setFloorPlanMode(enabled) {
-        floorPlanMode = Boolean(enabled);
+        const canToggleView = Boolean(
+          activeHeroMainImageUrl &&
+            activeHeroFloorplanImageUrl &&
+            activeHeroMainImageUrl !== activeHeroFloorplanImageUrl
+        );
+        floorPlanMode = canToggleView ? Boolean(enabled) : false;
+        heroModeToggle.hidden = !canToggleView;
         heroMedia.classList.toggle("is-floorplan", floorPlanMode);
-        heroFloorplan.hidden = !floorPlanMode;
+        heroFloorplan.hidden = true;
         heroModeToggle.setAttribute("aria-pressed", floorPlanMode ? "true" : "false");
+        heroModeToggle.setAttribute(
+          "aria-label",
+          floorPlanMode ? "Show main image" : "Show floor plan"
+        );
+        syncHeroImageSource();
         applyImageTransform();
       }
 
@@ -1199,18 +1230,12 @@
         const listing = listings[activeIndex];
         if (!listing) return;
         const toneClass = tones[activeIndex % tones.length];
-        const possibleImage = getListingImage(listing);
+        activeHeroMainImageUrl = getListingImage(listing);
+        activeHeroFloorplanImageUrl = getListingFloorplanImage(listing);
 
         heroMedia.className = `hero-media ${toneClass}`;
-        heroHasImage = Boolean(possibleImage);
-        heroMedia.classList.toggle("has-image", heroHasImage);
         setHeroAspectRatio(1.6);
-        heroImage.src = heroHasImage ? possibleImage : "";
-        if (heroHasImage && heroImage.complete && heroImage.naturalWidth > 0 && heroImage.naturalHeight > 0) {
-          setHeroAspectRatio(heroImage.naturalWidth / heroImage.naturalHeight);
-        }
         setFloorPlanMode(false);
-        heroModeToggle.hidden = !heroHasImage;
         clearZoomHint();
         heroTitle.textContent = listing.address || listing.title || "Apartment Listing";
         heroLocation.textContent = `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`;

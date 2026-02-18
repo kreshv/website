@@ -44,6 +44,7 @@ model Listing {
   title          String
   address        String?
   imageUrl       String?
+  floorplanImageUrl String?
   mapImageUrl    String?
   price          Int
   beds           Decimal?            @db.Decimal(3, 1)

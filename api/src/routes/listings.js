@@ -138,6 +138,7 @@ router.get("/", async (req, res) => {
         title: listing.title,
         address: listing.address,
         imageUrl: listing.imageUrl,
+        floorplanImageUrl: listing.floorplanImageUrl,
         mapImageUrl: listing.mapImageUrl,
         price: listing.price,
         beds: listing.beds ? Number(listing.beds) : null,
