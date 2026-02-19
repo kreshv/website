@@ -46,11 +46,11 @@
       }
 
       .apartment-card {
-        background: var(--card-bg);
-        border: 1px solid var(--line);
+        background: transparent;
+        border: 1px solid transparent;
         border-radius: 18px;
         overflow: hidden;
-        box-shadow: 0 10px 26px rgba(110, 87, 58, 0.08);
+        box-shadow: none;
         transform: translateY(10px);
         opacity: 0;
         animation: rise-in 520ms ease forwards;
@@ -63,8 +63,8 @@
 
       .apartment-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 20px 34px rgba(110, 87, 58, 0.18);
-        border-color: #e5cfaf;
+        box-shadow: 0 14px 26px rgba(110, 87, 58, 0.08);
+        border-color: transparent;
       }
 
       .apartment-card:active {
