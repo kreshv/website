@@ -326,36 +326,30 @@
         position: absolute;
         right: 12px;
         bottom: 12px;
-        width: 42px;
-        height: 42px;
+        width: 28px;
+        height: 28px;
         padding: 0;
-        border-radius: 999px;
-        border: 1px solid rgba(74, 74, 74, 0.9);
-        background: rgba(14, 14, 14, 0.94);
-        color: #c9c9c9;
+        border: none;
+        background: transparent;
+        color: inherit;
         cursor: pointer;
         z-index: 7;
         display: grid;
         place-items: center;
-        overflow: hidden;
-        transition:
-          opacity 140ms ease,
-          border-color 180ms ease,
-          background 180ms ease;
+        transition: opacity 140ms ease;
       }
 
       .hero-mode-toggle:hover {
-        border-color: rgba(104, 104, 104, 0.95);
-        background: rgba(10, 10, 10, 0.96);
+        opacity: 0.78;
       }
 
       .hero-mode-toggle:active {
-        opacity: 0.86;
+        opacity: 0.58;
       }
 
       .hero-mode-glyph {
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
       }
 
       .hero-mode-icon {
@@ -369,41 +363,12 @@
         stroke-linejoin: round;
       }
 
-      .hero-mode-toggle.is-hinting::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        border: 1px solid rgba(132, 132, 132, 0.5);
-        animation: hero-mode-pulse 1700ms ease-out infinite;
-        pointer-events: none;
-      }
-
-      .hero-mode-toggle[aria-pressed="true"] {
-        border-color: rgba(118, 118, 118, 0.95);
-        background: rgba(23, 23, 23, 0.96);
-      }
-
       .hero-mode-toggle[aria-pressed="true"] .hero-mode-glyph {
         transform: scale(1.04);
       }
 
       .hero-mode-toggle[aria-pressed="true"] .hero-mode-icon {
         stroke: #2f353b;
-      }
-
-      @keyframes hero-mode-pulse {
-        0% {
-          opacity: 0;
-          transform: scale(1);
-        }
-        14% {
-          opacity: 0.85;
-        }
-        100% {
-          opacity: 0;
-          transform: scale(1.08);
-        }
       }
 
       .hero-floorplan {
@@ -1175,7 +1140,6 @@
         );
         floorPlanMode = canToggleView ? Boolean(enabled) : false;
         heroModeToggle.hidden = !canToggleView;
-        heroModeToggle.classList.toggle("is-hinting", canToggleView && !floorPlanMode);
         heroMedia.classList.toggle("is-floorplan", floorPlanMode);
         heroFloorplan.hidden = true;
         heroModeToggle.setAttribute("aria-pressed", floorPlanMode ? "true" : "false");
