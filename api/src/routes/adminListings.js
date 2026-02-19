@@ -130,87 +130,104 @@ router.post("/", async (req, res) => {
   const subwayLines = normalizeList(payload.subwayLines).map((line) => line.toUpperCase());
 
   try {
-    const createdListing = await prisma.$transaction(async (tx) => {
-      let borough = await tx.borough.findFirst({
-        where: { name: { equals: payload.borough, mode: "insensitive" } },
-      });
-      if (!borough) borough = await tx.borough.create({ data: { name: payload.borough } });
+    let borough = await prisma.borough.findFirst({
+      where: { name: { equals: payload.borough, mode: "insensitive" } },
+    });
+    if (!borough) borough = await prisma.borough.create({ data: { name: payload.borough } });
 
-      let neighborhood = await tx.neighborhood.findFirst({
-        where: {
-          boroughId: borough.id,
-          name: { equals: payload.neighborhood, mode: "insensitive" },
-        },
+    let neighborhood = await prisma.neighborhood.findFirst({
+      where: {
+        boroughId: borough.id,
+        name: { equals: payload.neighborhood, mode: "insensitive" },
+      },
+    });
+    if (!neighborhood) {
+      neighborhood = await prisma.neighborhood.create({
+        data: { name: payload.neighborhood, boroughId: borough.id },
       });
-      if (!neighborhood) {
-        neighborhood = await tx.neighborhood.create({
-          data: { name: payload.neighborhood, boroughId: borough.id },
-        });
-      }
+    }
 
-      const listing = await tx.listing.create({
-        data: {
-          title: payload.title,
-          address: payload.address ?? null,
-          imageUrl: resolvedImageUrl,
-          floorplanImageUrl: resolvedFloorplanImageUrl,
-          mapImageUrl: resolvedMapImageUrl,
-          price: payload.price,
-          beds: payload.beds ?? null,
-          baths: payload.baths ?? null,
-          boroughId: borough.id,
-          neighborhoodId: neighborhood.id,
-          petsPolicy: payload.petsPolicy,
-          isActive: payload.isActive,
-        },
-      });
+    const listing = await prisma.listing.create({
+      data: {
+        title: payload.title,
+        address: payload.address ?? null,
+        imageUrl: resolvedImageUrl,
+        floorplanImageUrl: resolvedFloorplanImageUrl,
+        mapImageUrl: resolvedMapImageUrl,
+        price: payload.price,
+        beds: payload.beds ?? null,
+        baths: payload.baths ?? null,
+        boroughId: borough.id,
+        neighborhoodId: neighborhood.id,
+        petsPolicy: payload.petsPolicy,
+        isActive: payload.isActive,
+      },
+    });
 
-      for (const name of unitFeatures) {
-        const feature = await tx.feature.upsert({
+    const unitFeatureIds = await Promise.all(
+      unitFeatures.map(async (name) => {
+        const feature = await prisma.feature.upsert({
           where: { featureType_name: { featureType: "UNIT", name } },
           update: {},
           create: { featureType: "UNIT", name },
         });
-        await tx.listingFeature.create({
-          data: { listingId: listing.id, featureId: feature.id },
-        });
-      }
+        return feature.id;
+      }),
+    );
 
-      for (const name of buildingFeatures) {
-        const feature = await tx.feature.upsert({
+    const buildingFeatureIds = await Promise.all(
+      buildingFeatures.map(async (name) => {
+        const feature = await prisma.feature.upsert({
           where: { featureType_name: { featureType: "BUILDING", name } },
           update: {},
           create: { featureType: "BUILDING", name },
         });
-        await tx.listingFeature.create({
-          data: { listingId: listing.id, featureId: feature.id },
-        });
-      }
+        return feature.id;
+      }),
+    );
 
-      for (const lineCode of subwayLines) {
-        const line = await tx.subwayLine.upsert({
+    const allFeatureIds = [...new Set([...unitFeatureIds, ...buildingFeatureIds])];
+    if (allFeatureIds.length) {
+      await prisma.listingFeature.createMany({
+        data: allFeatureIds.map((featureId) => ({ listingId: listing.id, featureId })),
+        skipDuplicates: true,
+      });
+    }
+
+    const subwayLineIds = await Promise.all(
+      subwayLines.map(async (lineCode) => {
+        const line = await prisma.subwayLine.upsert({
           where: { lineCode },
           update: {},
           create: { lineCode },
         });
-        await tx.listingSubwayLine.create({
-          data: { listingId: listing.id, subwayLineId: line.id },
-        });
-      }
+        return line.id;
+      }),
+    );
 
-      return tx.listing.findUnique({
-        where: { id: listing.id },
-        include: {
-          borough: true,
-          neighborhood: true,
-          featureLinks: { include: { feature: true } },
-          subwayLinks: { include: { subwayLine: true } },
-        },
+    const dedupedSubwayLineIds = [...new Set(subwayLineIds)];
+    if (dedupedSubwayLineIds.length) {
+      await prisma.listingSubwayLine.createMany({
+        data: dedupedSubwayLineIds.map((subwayLineId) => ({
+          listingId: listing.id,
+          subwayLineId,
+        })),
+        skipDuplicates: true,
       });
+    }
+
+    const createdListing = await prisma.listing.findUnique({
+      where: { id: listing.id },
+      include: {
+        borough: true,
+        neighborhood: true,
+        featureLinks: { include: { feature: true } },
+        subwayLinks: { include: { subwayLine: true } },
+      },
     });
 
     if (!createdListing) {
-      throw new Error("Listing create transaction returned empty result");
+      throw new Error("Listing create readback returned empty result");
     }
 
     return res.status(201).json({ data: mapListingResponse(createdListing) });
