@@ -873,6 +873,7 @@
       let floorPlanMode = false;
       let activeHeroMainImageUrl = "";
       let activeHeroFloorplanImageUrl = "";
+      let heroPrimaryAspectRatio = 1.6;
 
       const fallbackListings = [
         {
@@ -1147,8 +1148,18 @@
         heroHasImage = Boolean(selectedImageUrl);
         heroMedia.classList.toggle("has-image", heroHasImage);
         heroImage.src = heroHasImage ? selectedImageUrl : "";
-        if (heroHasImage && heroImage.complete && heroImage.naturalWidth > 0 && heroImage.naturalHeight > 0) {
-          setHeroAspectRatio(heroImage.naturalWidth / heroImage.naturalHeight);
+        if (
+          heroHasImage &&
+          heroImage.complete &&
+          heroImage.naturalWidth > 0 &&
+          heroImage.naturalHeight > 0 &&
+          (!floorPlanMode || !activeHeroMainImageUrl)
+        ) {
+          const ratio = heroImage.naturalWidth / heroImage.naturalHeight;
+          if (!floorPlanMode) {
+            heroPrimaryAspectRatio = ratio;
+          }
+          setHeroAspectRatio(floorPlanMode && activeHeroMainImageUrl ? heroPrimaryAspectRatio : ratio);
         }
       }
 
@@ -1214,6 +1225,7 @@
         const toneClass = tones[activeIndex % tones.length];
         activeHeroMainImageUrl = getListingImage(listing);
         activeHeroFloorplanImageUrl = getListingFloorplanImage(listing);
+        heroPrimaryAspectRatio = 1.6;
 
         heroMedia.className = `hero-media ${toneClass}`;
         setHeroAspectRatio(1.6);
@@ -1267,7 +1279,17 @@
 
       heroImage.addEventListener("load", () => {
         if (!heroHasImage || heroImage.naturalWidth <= 0 || heroImage.naturalHeight <= 0) return;
-        setHeroAspectRatio(heroImage.naturalWidth / heroImage.naturalHeight);
+        const loadedRatio = heroImage.naturalWidth / heroImage.naturalHeight;
+        if (!floorPlanMode) {
+          heroPrimaryAspectRatio = loadedRatio;
+          setHeroAspectRatio(loadedRatio);
+          return;
+        }
+        if (!activeHeroMainImageUrl) {
+          setHeroAspectRatio(loadedRatio);
+          return;
+        }
+        setHeroAspectRatio(heroPrimaryAspectRatio);
       });
 
       function openHero(index, { syncUrl = true, replaceUrl = false } = {}) {
