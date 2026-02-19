@@ -128,6 +128,19 @@
         aspect-ratio: auto;
       }
 
+      .photo.has-image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background:
+          linear-gradient(to right, rgba(248, 241, 230, 0.52), rgba(248, 241, 230, 0) 32px),
+          linear-gradient(to left, rgba(248, 241, 230, 0.52), rgba(248, 241, 230, 0) 32px),
+          linear-gradient(to bottom, rgba(248, 241, 230, 0.38), rgba(248, 241, 230, 0) 26px),
+          linear-gradient(to top, rgba(248, 241, 230, 0.38), rgba(248, 241, 230, 0) 26px);
+      }
+
       .photo-image {
         width: 100%;
         height: auto;
