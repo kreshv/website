@@ -1370,7 +1370,11 @@
       heroPrev.addEventListener("click", () => navigateHero(-1));
       heroNext.addEventListener("click", () => navigateHero(1));
       heroClose.addEventListener("click", closeHero);
-      heroModeToggle.addEventListener("click", () => {
+      heroModeToggle.addEventListener("pointerdown", (event) => {
+        event.stopPropagation();
+      });
+      heroModeToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
         if (!heroHasImage) return;
         setFloorPlanMode(!floorPlanMode);
       });
@@ -1402,6 +1406,7 @@
 
       heroMedia.addEventListener("pointerdown", (event) => {
         if (!heroHasImage) return;
+        if (event.target.closest("#heroModeToggle")) return;
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         heroMedia.setPointerCapture(event.pointerId);
 
