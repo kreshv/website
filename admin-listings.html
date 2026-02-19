@@ -68,14 +68,12 @@
 
       input,
       select,
-      textarea,
       button {
         font: inherit;
       }
 
       input,
-      select,
-      textarea {
+      select {
         width: 100%;
         border: 1px solid #dbc8ad;
         border-radius: 10px;
@@ -84,9 +82,39 @@
         color: var(--ink);
       }
 
-      textarea {
-        min-height: 68px;
-        resize: vertical;
+      .picker-group {
+        display: grid;
+        gap: 7px;
+      }
+
+      .picker-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        border: 1px solid #dbc8ad;
+        border-radius: 10px;
+        padding: 8px;
+        background: #fffdfa;
+      }
+
+      .picker-chip {
+        border: 1px solid #ddceb8;
+        background: #fff7eb;
+        color: #4b3d2d;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        line-height: 1.2;
+      }
+
+      .picker-chip:hover {
+        border-color: #c9b08f;
+      }
+
+      .picker-chip.is-selected {
+        background: #f1dfc3;
+        border-color: #be9b6f;
+        color: #2f2417;
       }
 
       .actions {
@@ -204,14 +232,20 @@
           </div>
 
           <div class="row">
-            <label>
-              Unit Features (comma separated)
-              <textarea id="unitFeatures" placeholder="Dishwasher, Hardwood Floors"></textarea>
-            </label>
-            <label>
-              Building Amenities (comma separated)
-              <textarea id="buildingFeatures" placeholder="Roof Deck, Gym"></textarea>
-            </label>
+            <div class="picker-group">
+              <label>Unit Features</label>
+              <div class="picker-grid" id="unitFeaturePicker"></div>
+              <input id="unitFeaturesCustom" type="text" placeholder="Other unit features (comma separated)" />
+            </div>
+            <div class="picker-group">
+              <label>Building Amenities</label>
+              <div class="picker-grid" id="buildingFeaturePicker"></div>
+              <input
+                id="buildingFeaturesCustom"
+                type="text"
+                placeholder="Other building amenities (comma separated)"
+              />
+            </div>
           </div>
 
           <div class="row">
@@ -287,6 +321,38 @@
       const mapImageFileInput = document.getElementById("mapImageFile");
       const mapImagePreview = document.getElementById("mapImagePreview");
       const mapImagePreviewWrap = document.getElementById("mapImagePreviewWrap");
+      const unitFeaturePicker = document.getElementById("unitFeaturePicker");
+      const buildingFeaturePicker = document.getElementById("buildingFeaturePicker");
+      const unitFeaturesCustomInput = document.getElementById("unitFeaturesCustom");
+      const buildingFeaturesCustomInput = document.getElementById("buildingFeaturesCustom");
+
+      const unitFeatureSelection = new Set();
+      const buildingFeatureSelection = new Set();
+      const UNIT_FEATURE_OPTIONS = [
+        "Hardwood Floors",
+        "Dishwasher",
+        "Washer/Dryer",
+        "Balcony",
+        "Central AC",
+        "Walk-in Closet",
+        "High Ceilings",
+      ];
+      const BUILDING_FEATURE_OPTIONS = [
+        "Elevator",
+        "Doorman",
+        "Roof Deck",
+        "Gym",
+        "Working Space",
+        "Laundry",
+        "Package Room",
+        "Bike Room",
+        "Kids Room",
+        "Pickleball Court",
+        "Podcast Room",
+        "Pet Wash",
+        "Party Room",
+        "Theater Room",
+      ];
 
       if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
         apiBaseInput.value = window.APP_CONFIG.API_BASE_URL;
@@ -306,6 +372,35 @@
           .split(",")
           .map((part) => part.trim())
           .filter(Boolean);
+      }
+
+      function uniqCaseInsensitive(values) {
+        const seen = new Set();
+        const out = [];
+        for (const raw of values) {
+          const value = String(raw || "").trim();
+          if (!value) continue;
+          const key = value.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(value);
+        }
+        return out;
+      }
+
+      function renderPicker(container, options, selectedSet) {
+        container.innerHTML = options
+          .map((name) => {
+            const selected = selectedSet.has(name) ? " is-selected" : "";
+            return `<button type="button" class="picker-chip${selected}" data-feature="${name}">${name}</button>`;
+          })
+          .join("");
+      }
+
+      function getCombinedFeatures(selectedSet, customInputEl) {
+        const selected = Array.from(selectedSet);
+        const custom = splitCsv(customInputEl.value);
+        return uniqCaseInsensitive([...selected, ...custom]);
       }
 
       function optionalNumber(value) {
@@ -411,6 +506,35 @@
         );
       });
 
+      unitFeaturePicker.addEventListener("click", (event) => {
+        const chip = event.target.closest(".picker-chip");
+        if (!chip) return;
+        const name = chip.dataset.feature;
+        if (!name) return;
+        if (unitFeatureSelection.has(name)) {
+          unitFeatureSelection.delete(name);
+        } else {
+          unitFeatureSelection.add(name);
+        }
+        renderPicker(unitFeaturePicker, UNIT_FEATURE_OPTIONS, unitFeatureSelection);
+      });
+
+      buildingFeaturePicker.addEventListener("click", (event) => {
+        const chip = event.target.closest(".picker-chip");
+        if (!chip) return;
+        const name = chip.dataset.feature;
+        if (!name) return;
+        if (buildingFeatureSelection.has(name)) {
+          buildingFeatureSelection.delete(name);
+        } else {
+          buildingFeatureSelection.add(name);
+        }
+        renderPicker(buildingFeaturePicker, BUILDING_FEATURE_OPTIONS, buildingFeatureSelection);
+      });
+
+      renderPicker(unitFeaturePicker, UNIT_FEATURE_OPTIONS, unitFeatureSelection);
+      renderPicker(buildingFeaturePicker, BUILDING_FEATURE_OPTIONS, buildingFeatureSelection);
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         setStatus("Creating listing...");
@@ -425,8 +549,8 @@
           petsPolicy: document.getElementById("petsPolicy").value,
           beds: optionalNumber(document.getElementById("beds").value.trim()),
           baths: optionalNumber(document.getElementById("baths").value.trim()),
-          unitFeatures: splitCsv(document.getElementById("unitFeatures").value),
-          buildingFeatures: splitCsv(document.getElementById("buildingFeatures").value),
+          unitFeatures: getCombinedFeatures(unitFeatureSelection, unitFeaturesCustomInput),
+          buildingFeatures: getCombinedFeatures(buildingFeatureSelection, buildingFeaturesCustomInput),
           subwayLines: splitCsv(document.getElementById("subwayLines").value),
         };
 
@@ -451,6 +575,10 @@
 
           setStatus(`Created listing #${body.data.id}`);
           form.reset();
+          unitFeatureSelection.clear();
+          buildingFeatureSelection.clear();
+          renderPicker(unitFeaturePicker, UNIT_FEATURE_OPTIONS, unitFeatureSelection);
+          renderPicker(buildingFeaturePicker, BUILDING_FEATURE_OPTIONS, buildingFeatureSelection);
           imageDataUrl = "";
           floorplanImageDataUrl = "";
           mapImageDataUrl = "";
