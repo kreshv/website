@@ -25,6 +25,15 @@ const createListingSchema = z.object({
   subwayLines: z.array(z.string().trim().min(1)).default([]),
 });
 
+const statusUpdateSchema = z.object({
+  isActive: z.boolean(),
+});
+
+const manageQuerySchema = z.object({
+  q: z.string().trim().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+});
+
 const hasCloudinaryConfig = Boolean(
   process.env.CLOUDINARY_CLOUD_NAME &&
     process.env.CLOUDINARY_API_KEY &&
@@ -97,16 +106,74 @@ async function resolveImageUrl(inputUrl) {
   return trimmed;
 }
 
-router.post("/", async (req, res) => {
+function requireAdmin(req, res) {
   const adminSecret = process.env.ADMIN_SECRET;
   if (!adminSecret) {
-    return res.status(503).json({ error: "ADMIN_SECRET is not configured on the server." });
+    res.status(503).json({ error: "ADMIN_SECRET is not configured on the server." });
+    return false;
   }
 
   const suppliedKey = req.get("x-admin-key");
   if (!suppliedKey || suppliedKey !== adminSecret) {
-    return res.status(401).json({ error: "Unauthorized" });
+    res.status(401).json({ error: "Unauthorized" });
+    return false;
   }
+
+  return true;
+}
+
+router.get("/", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const parsed = manageQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid query params", details: parsed.error.issues });
+  }
+
+  const { q, limit } = parsed.data;
+  const search = (q || "").trim();
+  const terms = search ? search.split(/\s+/).filter(Boolean).slice(0, 6) : [];
+
+  try {
+    const rows = await prisma.listing.findMany({
+      where: terms.length
+        ? {
+            OR: terms.flatMap((term) => [
+              { address: { contains: term, mode: "insensitive" } },
+              { title: { contains: term, mode: "insensitive" } },
+              { neighborhood: { name: { contains: term, mode: "insensitive" } } },
+              { borough: { name: { contains: term, mode: "insensitive" } } },
+            ]),
+          }
+        : undefined,
+      include: {
+        borough: true,
+        neighborhood: true,
+      },
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      take: limit,
+    });
+
+    return res.json({
+      data: rows.map((listing) => ({
+        id: listing.id,
+        title: listing.title,
+        address: listing.address,
+        price: listing.price,
+        isActive: listing.isActive,
+        borough: listing.borough.name,
+        neighborhood: listing.neighborhood.name,
+        updatedAt: listing.updatedAt,
+      })),
+    });
+  } catch (error) {
+    console.error("GET /api/admin/listings failed", error);
+    return res.status(500).json({ error: "Failed to fetch admin listings" });
+  }
+});
+
+router.post("/", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
 
   const parsed = createListingSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -238,15 +305,7 @@ router.post("/", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (!adminSecret) {
-    return res.status(503).json({ error: "ADMIN_SECRET is not configured on the server." });
-  }
-
-  const suppliedKey = req.get("x-admin-key");
-  if (!suppliedKey || suppliedKey !== adminSecret) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  if (!requireAdmin(req, res)) return;
 
   const listingId = Number(req.params.id);
   if (!Number.isInteger(listingId) || listingId <= 0) {
@@ -264,6 +323,35 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.error("DELETE /api/admin/listings/:id failed", error);
     return res.status(500).json({ error: "Failed to delete listing" });
+  }
+});
+
+router.patch("/:id/status", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const listingId = Number(req.params.id);
+  if (!Number.isInteger(listingId) || listingId <= 0) {
+    return res.status(400).json({ error: "Invalid listing id" });
+  }
+
+  const parsed = statusUpdateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
+  }
+
+  try {
+    const updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: { isActive: parsed.data.isActive },
+      include: { borough: true, neighborhood: true, featureLinks: { include: { feature: true } }, subwayLinks: { include: { subwayLine: true } } },
+    });
+    return res.json({ data: mapListingResponse(updated) });
+  } catch (error) {
+    if (error && error.code === "P2025") {
+      return res.status(404).json({ error: "Not found" });
+    }
+    console.error("PATCH /api/admin/listings/:id/status failed", error);
+    return res.status(500).json({ error: "Failed to update listing status" });
   }
 });
 

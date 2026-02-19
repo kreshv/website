@@ -156,6 +156,81 @@
         border-radius: 8px;
       }
 
+      .manage-panel {
+        margin-top: 18px;
+        border-top: 1px solid #e6d7c2;
+        padding-top: 14px;
+      }
+
+      .manage-title {
+        margin: 0 0 8px;
+        font-size: 0.98rem;
+        color: #4a3e31;
+      }
+
+      .manage-search {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .manage-search input {
+        flex: 1;
+      }
+
+      .manage-results {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .manage-item {
+        border: 1px solid #e6d7c2;
+        border-radius: 10px;
+        background: #fffdfa;
+        padding: 9px 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .manage-item-main {
+        min-width: 0;
+      }
+
+      .manage-item-title {
+        font-size: 0.9rem;
+        color: #30271e;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .manage-item-sub {
+        margin-top: 2px;
+        font-size: 0.78rem;
+        color: #7a6d5c;
+      }
+
+      .status-pill {
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 0.72rem;
+        border: 1px solid #d4c2a8;
+      }
+
+      .status-pill.active {
+        background: #e9f5e8;
+        color: #2f6030;
+        border-color: #bad9b8;
+      }
+
+      .status-pill.inactive {
+        background: #f3ece4;
+        color: #6e6356;
+      }
+
       @media (max-width: 760px) {
         .row {
           grid-template-columns: 1fr;
@@ -300,6 +375,15 @@
           </label>
           <button id="deleteListingBtn" type="button">Delete Listing</button>
         </div>
+
+        <section class="manage-panel">
+          <h2 class="manage-title">Manage Existing Listings</h2>
+          <div class="manage-search">
+            <input id="manageSearchInput" type="text" placeholder="Search by address, title, neighborhood..." />
+            <button id="manageSearchBtn" type="button">Search</button>
+          </div>
+          <div class="manage-results" id="manageResults"></div>
+        </section>
       </section>
     </main>
 
@@ -311,6 +395,9 @@
       const submitBtn = document.getElementById("submitBtn");
       const deleteListingIdInput = document.getElementById("deleteListingId");
       const deleteListingBtn = document.getElementById("deleteListingBtn");
+      const manageSearchInput = document.getElementById("manageSearchInput");
+      const manageSearchBtn = document.getElementById("manageSearchBtn");
+      const manageResults = document.getElementById("manageResults");
       const statusEl = document.getElementById("status");
       const imageFileInput = document.getElementById("imageFile");
       const imagePreview = document.getElementById("imagePreview");
@@ -361,9 +448,19 @@
       let imageDataUrl = "";
       let floorplanImageDataUrl = "";
       let mapImageDataUrl = "";
+      let isManageLoading = false;
 
       function setStatus(text) {
         statusEl.textContent = text;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
       }
 
       function splitCsv(value) {
@@ -401,6 +498,112 @@
         const selected = Array.from(selectedSet);
         const custom = splitCsv(customInputEl.value);
         return uniqCaseInsensitive([...selected, ...custom]);
+      }
+
+      function renderManageResults(items) {
+        if (!Array.isArray(items) || !items.length) {
+          manageResults.innerHTML = `<div class="manage-item"><div class="manage-item-sub">No listings found.</div></div>`;
+          return;
+        }
+
+        manageResults.innerHTML = items
+          .map((listing) => {
+            const address = listing.address || listing.title || `Listing #${listing.id}`;
+            const statusClass = listing.isActive ? "active" : "inactive";
+            const statusText = listing.isActive ? "Active" : "Inactive";
+            const toggleText = listing.isActive ? "Set Inactive" : "Set Active";
+            return `
+              <div class="manage-item" data-id="${listing.id}">
+                <div class="manage-item-main">
+                  <div class="manage-item-title">${escapeHtml(address)} (#${listing.id})</div>
+                  <div class="manage-item-sub">${escapeHtml(
+                    `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`
+                  )} • $${Number(listing.price || 0).toLocaleString()}/mo</div>
+                </div>
+                <div style="display:grid;gap:6px;justify-items:end;">
+                  <span class="status-pill ${statusClass}">${statusText}</span>
+                  <button type="button" class="manage-toggle-btn" data-id="${listing.id}" data-next="${listing.isActive ? "false" : "true"}">${toggleText}</button>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      async function fetchManageListings() {
+        if (!adminKeyInput.value.trim()) {
+          setStatus("Enter Admin Key first.");
+          return;
+        }
+        if (isManageLoading) return;
+
+        isManageLoading = true;
+        manageSearchBtn.disabled = true;
+        manageResults.innerHTML = `<div class="manage-item"><div class="manage-item-sub">Loading...</div></div>`;
+        setStatus("Loading listings...");
+
+        try {
+          const url = new URL(`${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings`);
+          const q = manageSearchInput.value.trim();
+          if (q) url.searchParams.set("q", q);
+          url.searchParams.set("limit", "40");
+
+          const response = await fetch(url.toString(), {
+            headers: { "x-admin-key": adminKeyInput.value },
+          });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(body.error || `Request failed (${response.status})`);
+          }
+
+          renderManageResults(body.data || []);
+          setStatus(`Loaded ${(body.data || []).length} listing(s).`);
+        } catch (error) {
+          const message =
+            error && error.message === "Failed to fetch"
+              ? "Network error. Confirm API Base URL is https://apartment-api-ptpn.onrender.com"
+              : error.message;
+          setStatus(`Error: ${message}`);
+          manageResults.innerHTML = `<div class="manage-item"><div class="manage-item-sub">Failed to load listings.</div></div>`;
+        } finally {
+          isManageLoading = false;
+          manageSearchBtn.disabled = false;
+        }
+      }
+
+      async function updateListingStatus(id, isActive) {
+        if (!adminKeyInput.value.trim()) {
+          setStatus("Enter Admin Key first.");
+          return;
+        }
+
+        setStatus(`Updating listing #${id}...`);
+        try {
+          const response = await fetch(
+            `${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings/${id}/status`,
+            {
+              method: "PATCH",
+              headers: {
+                "content-type": "application/json",
+                "x-admin-key": adminKeyInput.value,
+              },
+              body: JSON.stringify({ isActive }),
+            }
+          );
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(body.error || `Request failed (${response.status})`);
+          }
+
+          setStatus(`Listing #${id} set to ${isActive ? "Active" : "Inactive"}.`);
+          await fetchManageListings();
+        } catch (error) {
+          const message =
+            error && error.message === "Failed to fetch"
+              ? "Network error. Confirm API Base URL is https://apartment-api-ptpn.onrender.com"
+              : error.message;
+          setStatus(`Error: ${message}`);
+        }
       }
 
       function optionalNumber(value) {
@@ -641,6 +844,23 @@
         } finally {
           deleteListingBtn.disabled = false;
         }
+      });
+
+      manageSearchBtn.addEventListener("click", fetchManageListings);
+      manageSearchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          fetchManageListings();
+        }
+      });
+
+      manageResults.addEventListener("click", async (event) => {
+        const btn = event.target.closest(".manage-toggle-btn");
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        const next = btn.dataset.next === "true";
+        if (!Number.isInteger(id) || id <= 0) return;
+        await updateListingStatus(id, next);
       });
     </script>
   </body>
