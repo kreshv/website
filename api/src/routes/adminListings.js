@@ -133,17 +133,26 @@ router.get("/", async (req, res) => {
   const { q, limit } = parsed.data;
   const search = (q || "").trim();
   const terms = search ? search.split(/\s+/).filter(Boolean).slice(0, 6) : [];
+  const numericQuery = Number(search);
+  const isNumericQuery = Number.isInteger(numericQuery) && numericQuery > 0;
 
   try {
     const rows = await prisma.listing.findMany({
-      where: terms.length
+      where: search
         ? {
-            OR: terms.flatMap((term) => [
-              { address: { contains: term, mode: "insensitive" } },
-              { title: { contains: term, mode: "insensitive" } },
-              { neighborhood: { name: { contains: term, mode: "insensitive" } } },
-              { borough: { name: { contains: term, mode: "insensitive" } } },
-            ]),
+            OR: [
+              { address: { contains: search, mode: "insensitive" } },
+              { title: { contains: search, mode: "insensitive" } },
+              { neighborhood: { name: { contains: search, mode: "insensitive" } } },
+              { borough: { name: { contains: search, mode: "insensitive" } } },
+              ...(isNumericQuery ? [{ id: numericQuery }] : []),
+              ...terms.flatMap((term) => [
+                { address: { contains: term, mode: "insensitive" } },
+                { title: { contains: term, mode: "insensitive" } },
+                { neighborhood: { name: { contains: term, mode: "insensitive" } } },
+                { borough: { name: { contains: term, mode: "insensitive" } } },
+              ]),
+            ],
           }
         : undefined,
       include: {
