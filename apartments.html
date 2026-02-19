@@ -38,6 +38,45 @@
         padding: 48px 0 56px;
       }
 
+      .page-filter-btn {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        width: 44px;
+        height: 36px;
+        border: 1px solid #d8c8b1;
+        border-radius: 10px;
+        background: rgba(246, 239, 228, 0.92);
+        color: #4f5860;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        z-index: 20;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        transition: background-color 160ms ease, border-color 160ms ease, transform 120ms ease;
+      }
+
+      .page-filter-btn:hover {
+        background: rgba(241, 231, 216, 0.95);
+        border-color: #ccb695;
+      }
+
+      .page-filter-btn:active {
+        transform: scale(0.96);
+      }
+
+      .page-filter-btn svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
       .cards-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 380px));
@@ -752,6 +791,14 @@
     </style>
   </head>
   <body>
+    <button class="page-filter-btn" id="pageFilterBtn" type="button" aria-label="Filters">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16" />
+        <circle cx="9" cy="7" r="2.2" />
+        <path d="M4 17h16" />
+        <circle cx="15" cy="17" r="2.2" />
+      </svg>
+    </button>
     <main class="results-wrap">
       <section class="cards-grid" id="cardsGrid" aria-label="Apartment options"></section>
     </main>
@@ -814,6 +861,7 @@
     <script>
       const apiBaseUrl =
         (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || "http://127.0.0.1:5050";
+      const pageFilterBtn = document.getElementById("pageFilterBtn");
       const cardsGrid = document.getElementById("cardsGrid");
       const tones = ["photo-tone-1", "photo-tone-2", "photo-tone-3", "photo-tone-4", "photo-tone-5", "photo-tone-6"];
 
@@ -1475,6 +1523,10 @@
         if (heroOverlay.hidden) return;
         if (event.key === "ArrowLeft") navigateHero(-1);
         if (event.key === "ArrowRight") navigateHero(1);
+      });
+
+      pageFilterBtn.addEventListener("click", () => {
+        // Placeholder hook for future filters panel.
       });
 
       loadListings();
