@@ -162,6 +162,42 @@
         padding-top: 14px;
       }
 
+      .mode-switch {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .mode-btn {
+        border: 1px solid #d9c6a9;
+        background: #fff7eb;
+        color: #4a3c2b;
+      }
+
+      .mode-btn.active {
+        background: #f1dfc3;
+        border-color: #bf9c70;
+      }
+
+      .mode-section[hidden] {
+        display: none;
+      }
+
+      .edit-pick-panel {
+        margin-top: 14px;
+        margin-bottom: 10px;
+        border: 1px solid #e6d7c2;
+        border-radius: 12px;
+        padding: 10px;
+        background: #fffdf8;
+      }
+
+      .edit-selected {
+        margin-top: 8px;
+        font-size: 0.82rem;
+        color: #6d5f4d;
+      }
+
       .manage-title {
         margin: 0 0 8px;
         font-size: 0.98rem;
@@ -244,7 +280,23 @@
         <h1>Private Listing Admin</h1>
         <p>Accountless public site. Use this private page + admin key to add listings on the live website.</p>
 
-        <form id="listingForm">
+        <div class="mode-switch">
+          <button class="mode-btn active" id="modeCreateBtn" type="button">Create Listing</button>
+          <button class="mode-btn" id="modeEditBtn" type="button">Edit Listing</button>
+          <button class="mode-btn" id="modeManageBtn" type="button">Manage Listings</button>
+        </div>
+
+        <section class="mode-section" id="createEditSection">
+          <div class="edit-pick-panel" id="editPickPanel" hidden>
+            <div class="manage-search">
+              <input id="editSearchInput" type="text" placeholder="Find listing to edit by address/title/#id..." />
+              <button id="editSearchBtn" type="button">Search</button>
+            </div>
+            <div class="manage-results" id="editResults"></div>
+            <div class="edit-selected" id="editSelected">No listing selected.</div>
+          </div>
+
+          <form id="listingForm">
           <div class="row">
             <label>
               API Base URL
@@ -366,23 +418,26 @@
             <button id="submitBtn" type="submit">Create Listing</button>
             <span class="status" id="status">Ready.</span>
           </div>
-        </form>
+          </form>
+        </section>
 
-        <div class="actions" style="margin-top: 14px">
+        <section class="mode-section" id="manageSection" hidden>
+          <div class="actions" style="margin-top: 14px">
           <label style="display: inline-grid; gap: 4px; min-width: 220px">
             Delete Listing ID
             <input id="deleteListingId" type="number" min="1" placeholder="e.g. 42" />
           </label>
           <button id="deleteListingBtn" type="button">Delete Listing</button>
-        </div>
-
-        <section class="manage-panel">
-          <h2 class="manage-title">Manage Existing Listings</h2>
-          <div class="manage-search">
-            <input id="manageSearchInput" type="text" placeholder="Search by address, title, neighborhood..." />
-            <button id="manageSearchBtn" type="button">Search</button>
           </div>
-          <div class="manage-results" id="manageResults"></div>
+
+          <section class="manage-panel">
+            <h2 class="manage-title">Manage Existing Listings</h2>
+            <div class="manage-search">
+              <input id="manageSearchInput" type="text" placeholder="Search by address, title, neighborhood..." />
+              <button id="manageSearchBtn" type="button">Search</button>
+            </div>
+            <div class="manage-results" id="manageResults"></div>
+          </section>
         </section>
       </section>
     </main>
@@ -391,6 +446,16 @@
     <script>
       const apiBaseInput = document.getElementById("apiBase");
       const adminKeyInput = document.getElementById("adminKey");
+      const modeCreateBtn = document.getElementById("modeCreateBtn");
+      const modeEditBtn = document.getElementById("modeEditBtn");
+      const modeManageBtn = document.getElementById("modeManageBtn");
+      const createEditSection = document.getElementById("createEditSection");
+      const manageSection = document.getElementById("manageSection");
+      const editPickPanel = document.getElementById("editPickPanel");
+      const editSearchInput = document.getElementById("editSearchInput");
+      const editSearchBtn = document.getElementById("editSearchBtn");
+      const editResults = document.getElementById("editResults");
+      const editSelected = document.getElementById("editSelected");
       const form = document.getElementById("listingForm");
       const submitBtn = document.getElementById("submitBtn");
       const deleteListingIdInput = document.getElementById("deleteListingId");
@@ -449,6 +514,10 @@
       let floorplanImageDataUrl = "";
       let mapImageDataUrl = "";
       let isManageLoading = false;
+      let isEditSearchLoading = false;
+      let currentMode = "create";
+      let editingListingId = null;
+      let existingImageUrls = { imageUrl: "", floorplanImageUrl: "", mapImageUrl: "" };
 
       function setStatus(text) {
         statusEl.textContent = text;
@@ -530,6 +599,44 @@
           .join("");
       }
 
+      function renderEditResults(items) {
+        if (!Array.isArray(items) || !items.length) {
+          editResults.innerHTML = `<div class="manage-item"><div class="manage-item-sub">No listings found.</div></div>`;
+          return;
+        }
+
+        editResults.innerHTML = items
+          .map((listing) => {
+            const address = listing.address || listing.title || `Listing #${listing.id}`;
+            return `
+              <div class="manage-item">
+                <div class="manage-item-main">
+                  <div class="manage-item-title">${escapeHtml(address)} (#${listing.id})</div>
+                  <div class="manage-item-sub">${escapeHtml(
+                    `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`
+                  )} • $${Number(listing.price || 0).toLocaleString()}/mo</div>
+                </div>
+                <button type="button" class="edit-select-btn" data-id="${listing.id}">Edit</button>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      async function fetchAdminListingsByQuery(q, limit = 40) {
+        const url = new URL(`${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings`);
+        if (q) url.searchParams.set("q", q);
+        url.searchParams.set("limit", String(limit));
+        const response = await fetch(url.toString(), {
+          headers: { "x-admin-key": adminKeyInput.value },
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(body.error || `Request failed (${response.status})`);
+        }
+        return body.data || [];
+      }
+
       async function fetchManageListings() {
         if (!adminKeyInput.value.trim()) {
           setStatus("Enter Admin Key first.");
@@ -543,21 +650,9 @@
         setStatus("Loading listings...");
 
         try {
-          const url = new URL(`${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings`);
-          const q = manageSearchInput.value.trim();
-          if (q) url.searchParams.set("q", q);
-          url.searchParams.set("limit", "40");
-
-          const response = await fetch(url.toString(), {
-            headers: { "x-admin-key": adminKeyInput.value },
-          });
-          const body = await response.json().catch(() => ({}));
-          if (!response.ok) {
-            throw new Error(body.error || `Request failed (${response.status})`);
-          }
-
-          renderManageResults(body.data || []);
-          setStatus(`Loaded ${(body.data || []).length} listing(s).`);
+          const rows = await fetchAdminListingsByQuery(manageSearchInput.value.trim(), 40);
+          renderManageResults(rows);
+          setStatus(`Loaded ${rows.length} listing(s).`);
         } catch (error) {
           const message =
             error && error.message === "Failed to fetch"
@@ -568,6 +663,157 @@
         } finally {
           isManageLoading = false;
           manageSearchBtn.disabled = false;
+        }
+      }
+
+      async function fetchEditListings() {
+        if (!adminKeyInput.value.trim()) {
+          setStatus("Enter Admin Key first.");
+          return;
+        }
+        if (isEditSearchLoading) return;
+
+        isEditSearchLoading = true;
+        editSearchBtn.disabled = true;
+        editResults.innerHTML = `<div class="manage-item"><div class="manage-item-sub">Loading...</div></div>`;
+        setStatus("Searching listings to edit...");
+
+        try {
+          const rows = await fetchAdminListingsByQuery(editSearchInput.value.trim(), 40);
+          renderEditResults(rows);
+          setStatus(`Found ${rows.length} listing(s). Select one to edit.`);
+        } catch (error) {
+          const message =
+            error && error.message === "Failed to fetch"
+              ? "Network error. Confirm API Base URL is https://apartment-api-ptpn.onrender.com"
+              : error.message;
+          setStatus(`Error: ${message}`);
+          editResults.innerHTML = `<div class="manage-item"><div class="manage-item-sub">Failed to search listings.</div></div>`;
+        } finally {
+          isEditSearchLoading = false;
+          editSearchBtn.disabled = false;
+        }
+      }
+
+      function parseImageUrl(value) {
+        if (!value) return "";
+        return String(value).trim();
+      }
+
+      function parseOptionalNumberValue(value) {
+        if (value === null || value === undefined || value === "") return "";
+        const n = Number(value);
+        return Number.isFinite(n) ? String(n) : "";
+      }
+
+      async function loadListingForEdit(listingId) {
+        if (!adminKeyInput.value.trim()) {
+          setStatus("Enter Admin Key first.");
+          return;
+        }
+        setStatus(`Loading listing #${listingId}...`);
+        try {
+          const response = await fetch(
+            `${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings/${listingId}`,
+            { headers: { "x-admin-key": adminKeyInput.value } }
+          );
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(body.error || `Request failed (${response.status})`);
+          }
+
+          const listing = body.data || {};
+          editingListingId = Number(listing.id);
+          existingImageUrls = {
+            imageUrl: parseImageUrl(listing.imageUrl),
+            floorplanImageUrl: parseImageUrl(listing.floorplanImageUrl),
+            mapImageUrl: parseImageUrl(listing.mapImageUrl),
+          };
+
+          document.getElementById("title").value = listing.title || "";
+          document.getElementById("address").value = listing.address || "";
+          document.getElementById("price").value = parseOptionalNumberValue(listing.price);
+          document.getElementById("borough").value = listing.borough || "";
+          document.getElementById("neighborhood").value = listing.neighborhood || "";
+          document.getElementById("petsPolicy").value = listing.petsPolicy || "CASE_BY_CASE";
+          document.getElementById("beds").value = parseOptionalNumberValue(listing.beds);
+          document.getElementById("baths").value = parseOptionalNumberValue(listing.baths);
+          document.getElementById("subwayLines").value = (listing.subwayLines || []).join(", ");
+
+          unitFeatureSelection.clear();
+          buildingFeatureSelection.clear();
+          (listing.unitFeatures || []).forEach((name) => unitFeatureSelection.add(name));
+          (listing.buildingFeatures || []).forEach((name) => buildingFeatureSelection.add(name));
+          renderPicker(unitFeaturePicker, UNIT_FEATURE_OPTIONS, unitFeatureSelection);
+          renderPicker(buildingFeaturePicker, BUILDING_FEATURE_OPTIONS, buildingFeatureSelection);
+          unitFeaturesCustomInput.value = "";
+          buildingFeaturesCustomInput.value = "";
+
+          imageDataUrl = "";
+          floorplanImageDataUrl = "";
+          mapImageDataUrl = "";
+          imageFileInput.value = "";
+          floorplanImageFileInput.value = "";
+          mapImageFileInput.value = "";
+          imagePreviewWrap.hidden = !existingImageUrls.imageUrl;
+          imagePreview.src = existingImageUrls.imageUrl || "";
+          floorplanImagePreviewWrap.hidden = !existingImageUrls.floorplanImageUrl;
+          floorplanImagePreview.src = existingImageUrls.floorplanImageUrl || "";
+          mapImagePreviewWrap.hidden = !existingImageUrls.mapImageUrl;
+          mapImagePreview.src = existingImageUrls.mapImageUrl || "";
+
+          editSelected.textContent = `Editing #${listing.id}: ${listing.address || listing.title || "Listing"}`;
+          submitBtn.textContent = "Save Changes";
+          setStatus(`Loaded listing #${listing.id} for editing.`);
+        } catch (error) {
+          const message =
+            error && error.message === "Failed to fetch"
+              ? "Network error. Confirm API Base URL is https://apartment-api-ptpn.onrender.com"
+              : error.message;
+          setStatus(`Error: ${message}`);
+        }
+      }
+
+      function resetCreateFormForNewListing() {
+        editingListingId = null;
+        existingImageUrls = { imageUrl: "", floorplanImageUrl: "", mapImageUrl: "" };
+        form.reset();
+        imageDataUrl = "";
+        floorplanImageDataUrl = "";
+        mapImageDataUrl = "";
+        unitFeatureSelection.clear();
+        buildingFeatureSelection.clear();
+        renderPicker(unitFeaturePicker, UNIT_FEATURE_OPTIONS, unitFeatureSelection);
+        renderPicker(buildingFeaturePicker, BUILDING_FEATURE_OPTIONS, buildingFeatureSelection);
+        imagePreviewWrap.hidden = true;
+        imagePreview.src = "";
+        floorplanImagePreviewWrap.hidden = true;
+        floorplanImagePreview.src = "";
+        mapImagePreviewWrap.hidden = true;
+        mapImagePreview.src = "";
+        editSelected.textContent = "No listing selected.";
+        submitBtn.textContent = "Create Listing";
+      }
+
+      function setMode(mode) {
+        currentMode = mode;
+        modeCreateBtn.classList.toggle("active", mode === "create");
+        modeEditBtn.classList.toggle("active", mode === "edit");
+        modeManageBtn.classList.toggle("active", mode === "manage");
+
+        const isCreateOrEdit = mode === "create" || mode === "edit";
+        createEditSection.hidden = !isCreateOrEdit;
+        manageSection.hidden = mode !== "manage";
+        editPickPanel.hidden = mode !== "edit";
+
+        if (mode === "create") {
+          resetCreateFormForNewListing();
+          setStatus("Create mode.");
+        } else if (mode === "edit") {
+          submitBtn.textContent = editingListingId ? "Save Changes" : "Update Listing";
+          setStatus("Edit mode. Search and select a listing.");
+        } else {
+          setStatus("Manage mode.");
         }
       }
 
@@ -740,7 +986,12 @@
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        setStatus("Creating listing...");
+        const isEdit = currentMode === "edit";
+        if (isEdit && !editingListingId) {
+          setStatus("Select a listing to edit first.");
+          return;
+        }
+        setStatus(isEdit ? `Updating listing #${editingListingId}...` : "Creating listing...");
         submitBtn.disabled = true;
 
         const payload = {
@@ -758,12 +1009,19 @@
         };
 
         if (imageDataUrl) payload.imageUrl = imageDataUrl;
+        else if (isEdit && existingImageUrls.imageUrl) payload.imageUrl = existingImageUrls.imageUrl;
         if (floorplanImageDataUrl) payload.floorplanImageUrl = floorplanImageDataUrl;
+        else if (isEdit && existingImageUrls.floorplanImageUrl)
+          payload.floorplanImageUrl = existingImageUrls.floorplanImageUrl;
         if (mapImageDataUrl) payload.mapImageUrl = mapImageDataUrl;
+        else if (isEdit && existingImageUrls.mapImageUrl) payload.mapImageUrl = existingImageUrls.mapImageUrl;
 
         try {
-          const response = await fetch(`${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings`, {
-            method: "POST",
+          const url = isEdit
+            ? `${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings/${editingListingId}`
+            : `${apiBaseInput.value.replace(/\/$/, "")}/api/admin/listings`;
+          const response = await fetch(url, {
+            method: isEdit ? "PATCH" : "POST",
             headers: {
               "content-type": "application/json",
               "x-admin-key": adminKeyInput.value,
@@ -776,21 +1034,13 @@
             throw new Error(body.error || `Request failed (${response.status})`);
           }
 
-          setStatus(`Created listing #${body.data.id}`);
-          form.reset();
-          unitFeatureSelection.clear();
-          buildingFeatureSelection.clear();
-          renderPicker(unitFeaturePicker, UNIT_FEATURE_OPTIONS, unitFeatureSelection);
-          renderPicker(buildingFeaturePicker, BUILDING_FEATURE_OPTIONS, buildingFeatureSelection);
-          imageDataUrl = "";
-          floorplanImageDataUrl = "";
-          mapImageDataUrl = "";
-          imagePreviewWrap.hidden = true;
-          imagePreview.src = "";
-          floorplanImagePreviewWrap.hidden = true;
-          floorplanImagePreview.src = "";
-          mapImagePreviewWrap.hidden = true;
-          mapImagePreview.src = "";
+          if (isEdit) {
+            setStatus(`Updated listing #${body.data.id}`);
+            await loadListingForEdit(body.data.id);
+          } else {
+            setStatus(`Created listing #${body.data.id}`);
+            resetCreateFormForNewListing();
+          }
         } catch (error) {
           const message =
             error && error.message === "Failed to fetch"
@@ -862,6 +1112,30 @@
         if (!Number.isInteger(id) || id <= 0) return;
         await updateListingStatus(id, next);
       });
+
+      editSearchBtn.addEventListener("click", fetchEditListings);
+      editSearchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          fetchEditListings();
+        }
+      });
+      editResults.addEventListener("click", async (event) => {
+        const btn = event.target.closest(".edit-select-btn");
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        if (!Number.isInteger(id) || id <= 0) return;
+        await loadListingForEdit(id);
+      });
+
+      modeCreateBtn.addEventListener("click", () => setMode("create"));
+      modeEditBtn.addEventListener("click", () => setMode("edit"));
+      modeManageBtn.addEventListener("click", async () => {
+        setMode("manage");
+        await fetchManageListings();
+      });
+
+      setMode("create");
     </script>
   </body>
 </html>

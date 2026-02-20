@@ -25,6 +25,8 @@ const createListingSchema = z.object({
   subwayLines: z.array(z.string().trim().min(1)).default([]),
 });
 
+const updateListingSchema = createListingSchema;
+
 const statusUpdateSchema = z.object({
   isActive: z.boolean(),
 });
@@ -122,6 +124,85 @@ function requireAdmin(req, res) {
   return true;
 }
 
+async function resolveBoroughAndNeighborhood(prismaClient, boroughName, neighborhoodName) {
+  let borough = await prismaClient.borough.findFirst({
+    where: { name: { equals: boroughName, mode: "insensitive" } },
+  });
+  if (!borough) borough = await prismaClient.borough.create({ data: { name: boroughName } });
+
+  let neighborhood = await prismaClient.neighborhood.findFirst({
+    where: {
+      boroughId: borough.id,
+      name: { equals: neighborhoodName, mode: "insensitive" },
+    },
+  });
+  if (!neighborhood) {
+    neighborhood = await prismaClient.neighborhood.create({
+      data: { name: neighborhoodName, boroughId: borough.id },
+    });
+  }
+
+  return { borough, neighborhood };
+}
+
+async function syncListingFeatures(prismaClient, listingId, unitFeatures, buildingFeatures) {
+  const unitFeatureIds = await Promise.all(
+    unitFeatures.map(async (name) => {
+      const feature = await prismaClient.feature.upsert({
+        where: { featureType_name: { featureType: "UNIT", name } },
+        update: {},
+        create: { featureType: "UNIT", name },
+      });
+      return feature.id;
+    }),
+  );
+
+  const buildingFeatureIds = await Promise.all(
+    buildingFeatures.map(async (name) => {
+      const feature = await prismaClient.feature.upsert({
+        where: { featureType_name: { featureType: "BUILDING", name } },
+        update: {},
+        create: { featureType: "BUILDING", name },
+      });
+      return feature.id;
+    }),
+  );
+
+  const allFeatureIds = [...new Set([...unitFeatureIds, ...buildingFeatureIds])];
+  await prismaClient.listingFeature.deleteMany({ where: { listingId } });
+  if (allFeatureIds.length) {
+    await prismaClient.listingFeature.createMany({
+      data: allFeatureIds.map((featureId) => ({ listingId, featureId })),
+      skipDuplicates: true,
+    });
+  }
+}
+
+async function syncListingSubwayLines(prismaClient, listingId, subwayLines) {
+  const subwayLineIds = await Promise.all(
+    subwayLines.map(async (lineCode) => {
+      const line = await prismaClient.subwayLine.upsert({
+        where: { lineCode },
+        update: {},
+        create: { lineCode },
+      });
+      return line.id;
+    }),
+  );
+
+  const dedupedSubwayLineIds = [...new Set(subwayLineIds)];
+  await prismaClient.listingSubwayLine.deleteMany({ where: { listingId } });
+  if (dedupedSubwayLineIds.length) {
+    await prismaClient.listingSubwayLine.createMany({
+      data: dedupedSubwayLineIds.map((subwayLineId) => ({
+        listingId,
+        subwayLineId,
+      })),
+      skipDuplicates: true,
+    });
+  }
+}
+
 router.get("/", async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
@@ -181,6 +262,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const listingId = Number(req.params.id);
+  if (!Number.isInteger(listingId) || listingId <= 0) {
+    return res.status(400).json({ error: "Invalid listing id" });
+  }
+
+  try {
+    const listing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      include: {
+        borough: true,
+        neighborhood: true,
+        featureLinks: { include: { feature: true } },
+        subwayLinks: { include: { subwayLine: true } },
+      },
+    });
+    if (!listing) return res.status(404).json({ error: "Not found" });
+    return res.json({ data: mapListingResponse(listing), isActive: listing.isActive });
+  } catch (error) {
+    console.error("GET /api/admin/listings/:id failed", error);
+    return res.status(500).json({ error: "Failed to fetch listing" });
+  }
+});
+
 router.post("/", async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
@@ -206,22 +313,11 @@ router.post("/", async (req, res) => {
   const subwayLines = normalizeList(payload.subwayLines).map((line) => line.toUpperCase());
 
   try {
-    let borough = await prisma.borough.findFirst({
-      where: { name: { equals: payload.borough, mode: "insensitive" } },
-    });
-    if (!borough) borough = await prisma.borough.create({ data: { name: payload.borough } });
-
-    let neighborhood = await prisma.neighborhood.findFirst({
-      where: {
-        boroughId: borough.id,
-        name: { equals: payload.neighborhood, mode: "insensitive" },
-      },
-    });
-    if (!neighborhood) {
-      neighborhood = await prisma.neighborhood.create({
-        data: { name: payload.neighborhood, boroughId: borough.id },
-      });
-    }
+    const { borough, neighborhood } = await resolveBoroughAndNeighborhood(
+      prisma,
+      payload.borough,
+      payload.neighborhood,
+    );
 
     const listing = await prisma.listing.create({
       data: {
@@ -240,57 +336,8 @@ router.post("/", async (req, res) => {
       },
     });
 
-    const unitFeatureIds = await Promise.all(
-      unitFeatures.map(async (name) => {
-        const feature = await prisma.feature.upsert({
-          where: { featureType_name: { featureType: "UNIT", name } },
-          update: {},
-          create: { featureType: "UNIT", name },
-        });
-        return feature.id;
-      }),
-    );
-
-    const buildingFeatureIds = await Promise.all(
-      buildingFeatures.map(async (name) => {
-        const feature = await prisma.feature.upsert({
-          where: { featureType_name: { featureType: "BUILDING", name } },
-          update: {},
-          create: { featureType: "BUILDING", name },
-        });
-        return feature.id;
-      }),
-    );
-
-    const allFeatureIds = [...new Set([...unitFeatureIds, ...buildingFeatureIds])];
-    if (allFeatureIds.length) {
-      await prisma.listingFeature.createMany({
-        data: allFeatureIds.map((featureId) => ({ listingId: listing.id, featureId })),
-        skipDuplicates: true,
-      });
-    }
-
-    const subwayLineIds = await Promise.all(
-      subwayLines.map(async (lineCode) => {
-        const line = await prisma.subwayLine.upsert({
-          where: { lineCode },
-          update: {},
-          create: { lineCode },
-        });
-        return line.id;
-      }),
-    );
-
-    const dedupedSubwayLineIds = [...new Set(subwayLineIds)];
-    if (dedupedSubwayLineIds.length) {
-      await prisma.listingSubwayLine.createMany({
-        data: dedupedSubwayLineIds.map((subwayLineId) => ({
-          listingId: listing.id,
-          subwayLineId,
-        })),
-        skipDuplicates: true,
-      });
-    }
+    await syncListingFeatures(prisma, listing.id, unitFeatures, buildingFeatures);
+    await syncListingSubwayLines(prisma, listing.id, subwayLines);
 
     const createdListing = await prisma.listing.findUnique({
       where: { id: listing.id },
@@ -310,6 +357,84 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error("POST /api/admin/listings failed", error);
     return res.status(500).json({ error: "Failed to create listing" });
+  }
+});
+
+router.patch("/:id", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const listingId = Number(req.params.id);
+  if (!Number.isInteger(listingId) || listingId <= 0) {
+    return res.status(400).json({ error: "Invalid listing id" });
+  }
+
+  const parsed = updateListingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
+  }
+
+  const payload = parsed.data;
+  let resolvedImageUrl = null;
+  let resolvedFloorplanImageUrl = null;
+  let resolvedMapImageUrl = null;
+  try {
+    resolvedImageUrl = await resolveImageUrl(payload.imageUrl);
+    resolvedFloorplanImageUrl = await resolveImageUrl(payload.floorplanImageUrl);
+    resolvedMapImageUrl = await resolveImageUrl(payload.mapImageUrl);
+  } catch (error) {
+    return res.status(400).json({ error: error.message || "Image upload failed." });
+  }
+
+  const unitFeatures = normalizeList(payload.unitFeatures);
+  const buildingFeatures = normalizeList(payload.buildingFeatures);
+  const subwayLines = normalizeList(payload.subwayLines).map((line) => line.toUpperCase());
+
+  try {
+    const existing = await prisma.listing.findUnique({ where: { id: listingId } });
+    if (!existing) return res.status(404).json({ error: "Not found" });
+
+    const { borough, neighborhood } = await resolveBoroughAndNeighborhood(
+      prisma,
+      payload.borough,
+      payload.neighborhood,
+    );
+
+    await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        title: payload.title,
+        address: payload.address ?? null,
+        imageUrl: resolvedImageUrl,
+        floorplanImageUrl: resolvedFloorplanImageUrl,
+        mapImageUrl: resolvedMapImageUrl,
+        price: payload.price,
+        beds: payload.beds ?? null,
+        baths: payload.baths ?? null,
+        boroughId: borough.id,
+        neighborhoodId: neighborhood.id,
+        petsPolicy: payload.petsPolicy,
+        isActive: payload.isActive,
+      },
+    });
+
+    await syncListingFeatures(prisma, listingId, unitFeatures, buildingFeatures);
+    await syncListingSubwayLines(prisma, listingId, subwayLines);
+
+    const updatedListing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      include: {
+        borough: true,
+        neighborhood: true,
+        featureLinks: { include: { feature: true } },
+        subwayLinks: { include: { subwayLine: true } },
+      },
+    });
+    if (!updatedListing) return res.status(404).json({ error: "Not found" });
+
+    return res.json({ data: mapListingResponse(updatedListing) });
+  } catch (error) {
+    console.error("PATCH /api/admin/listings/:id failed", error);
+    return res.status(500).json({ error: "Failed to update listing" });
   }
 });
 

@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 
 const listingsRouter = require("./routes/listings");
 const adminListingsRouter = require("./routes/adminListings");
 
-dotenv.config();
+const envFile = process.env.USE_LOCAL_ENV === "1" ? ".env.local" : ".env";
+dotenv.config({ path: path.resolve(__dirname, "..", envFile) });
 
 const app = express();
 const port = Number(process.env.PORT || 5050);

@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const dotenv = require("dotenv");
 
-dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
+const envFile = process.env.USE_LOCAL_ENV === "1" ? ".env.local" : ".env";
+dotenv.config({ path: path.resolve(__dirname, "..", envFile) });
 
 function getArg(name) {
   const index = process.argv.indexOf(name);

@@ -35,17 +35,17 @@
       .results-wrap {
         width: min(1120px, 94vw);
         margin: 0 auto;
-        padding: 48px 0 56px;
+        padding: 72px 0 56px;
       }
 
       .page-filter-btn {
         position: fixed;
         top: 18px;
         left: 18px;
-        width: 44px;
-        height: 36px;
-        border: 1px solid #d8c8b1;
-        border-radius: 10px;
+        width: 42px;
+        height: 34px;
+        border: none;
+        border-radius: 9px;
         background: rgba(246, 239, 228, 0.92);
         color: #4f5860;
         display: grid;
@@ -55,11 +55,11 @@
         backdrop-filter: blur(3px);
         -webkit-backdrop-filter: blur(3px);
         transition: background-color 160ms ease, border-color 160ms ease, transform 120ms ease;
+        overflow: hidden;
       }
 
       .page-filter-btn:hover {
         background: rgba(241, 231, 216, 0.95);
-        border-color: #ccb695;
       }
 
       .page-filter-btn:active {
@@ -67,19 +67,350 @@
       }
 
       .page-filter-btn svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .page-search {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        width: 42px;
+        height: 34px;
+        border-radius: 9px;
+        background: rgba(246, 239, 228, 0.92);
+        color: #4f5860;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        transition: width 220ms ease, background-color 160ms ease;
+      }
+
+      .page-search:hover {
+        background: rgba(241, 231, 216, 0.95);
+      }
+
+      .page-search.is-open {
+        width: min(320px, calc(100vw - 36px));
+        background: rgba(246, 239, 228, 0.94);
+        box-shadow: inset 0 0 0 1px rgba(214, 196, 169, 0.18);
+      }
+
+      .page-search-btn {
+        width: 42px;
+        height: 34px;
+        border: none;
+        background: transparent;
+        color: inherit;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .page-search.is-open .page-search-btn {
+        background: rgba(216, 202, 179, 0.08);
+      }
+
+      .page-search-btn svg {
         width: 18px;
         height: 18px;
         display: block;
         fill: none;
         stroke: currentColor;
-        stroke-width: 2;
+        stroke-width: 2.2;
         stroke-linecap: round;
         stroke-linejoin: round;
+        transition: transform 180ms ease;
+      }
+
+      .page-search-btn:hover svg {
+        transform: rotate(-8deg) scale(1.06);
+      }
+
+      .page-search-btn:active svg {
+        transform: rotate(-2deg) scale(0.96);
+      }
+
+      .page-search-input {
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #3c332a;
+        font: inherit;
+        font-size: 0.84rem;
+        width: 0;
+        opacity: 0;
+        padding: 0;
+        transition: width 220ms ease, opacity 160ms ease;
+      }
+
+      .page-search.is-open .page-search-input {
+        width: 100%;
+        opacity: 1;
+        padding-right: 10px;
+      }
+
+      .filter-scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(27, 21, 15, 0.34);
+        backdrop-filter: blur(1.5px);
+        opacity: 0;
+        transition: opacity 180ms ease;
+        z-index: 24;
+      }
+
+      .filter-scrim[hidden] {
+        display: none;
+      }
+
+      .filter-scrim.is-visible {
+        opacity: 1;
+      }
+
+      .filter-panel {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: min(330px, 88vw);
+        background: #f8efe2;
+        border-right: 1px solid #e2ceb0;
+        border-radius: 0 18px 18px 0;
+        box-shadow: 18px 0 36px rgba(33, 24, 16, 0.18);
+        transform: translateX(-102%);
+        transition: transform 220ms ease;
+        z-index: 25;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        overflow: hidden;
+      }
+
+      .filter-panel.is-open {
+        transform: translateX(0);
+      }
+
+      .filter-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 12px 16px 8px;
+        border-bottom: none;
+      }
+
+      .filter-panel-title {
+        margin: 0;
+        font-size: 1.02rem;
+        color: #3a2d20;
+      }
+
+      .filter-close-btn {
+        border: none;
+        background: transparent;
+        color: #6b5d4b;
+        font-size: 1.45rem;
+        line-height: 1;
+        padding: 0 4px;
+        cursor: pointer;
+      }
+
+      .filter-panel-body {
+        padding: 14px 16px;
+        overflow: auto;
+        display: grid;
+        gap: 14px;
+        align-content: start;
+      }
+
+      .filter-section {
+        display: grid;
+        gap: 8px;
+      }
+
+      .filter-section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6e5e4c;
+      }
+
+      .filter-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-chip {
+        border: 1px solid #d7c1a0;
+        border-radius: 999px;
+        background: #fffaf1;
+        color: #4c3d2d;
+        padding: 7px 11px;
+        font: inherit;
+        font-size: 0.8rem;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+          transform 120ms ease,
+          background-color 150ms ease,
+          border-color 150ms ease,
+          color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .filter-chip:hover {
+        background: #f5e8d3;
+      }
+
+      .filter-chip:active {
+        transform: translateY(1px);
+      }
+
+      .filter-chip.is-selected {
+        background: #615443;
+        border-color: #615443;
+        color: #fff5e8;
+        box-shadow: 0 4px 10px rgba(45, 32, 19, 0.15);
+      }
+
+      .filter-summary {
+        margin: 0;
+        font-size: 0.76rem;
+        color: #776856;
+      }
+
+      .filter-more-btn {
+        border: none;
+        background: transparent;
+        color: #6c5a47;
+        font: inherit;
+        font-size: 0.78rem;
+        text-align: left;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .filter-empty {
+        margin: 0;
+        font-size: 0.76rem;
+        color: #8a7967;
+      }
+
+      .price-range {
+        display: grid;
+        gap: 8px;
+      }
+
+      .price-values {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: #5f503f;
+      }
+
+      .price-tracks {
+        position: relative;
+        height: 24px;
+      }
+
+      .price-track-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 11px;
+        height: 3px;
+        border-radius: 999px;
+        background: #dfceb8;
+      }
+
+      .price-track-fill {
+        position: absolute;
+        top: 11px;
+        height: 3px;
+        border-radius: 999px;
+        background: #6a5a49;
+      }
+
+      .price-range input[type="range"] {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        height: 24px;
+        background: none;
+        -webkit-appearance: none;
+        appearance: none;
+        pointer-events: none;
+      }
+
+      .price-range input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 2px solid #fff8ec;
+        background: #4f4335;
+        box-shadow: 0 2px 6px rgba(42, 31, 21, 0.24);
+        pointer-events: auto;
+        cursor: pointer;
+      }
+
+      .price-range input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 2px solid #fff8ec;
+        background: #4f4335;
+        box-shadow: 0 2px 6px rgba(42, 31, 21, 0.24);
+        pointer-events: auto;
+        cursor: pointer;
+      }
+
+      .filter-panel-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 12px 16px 16px;
+        border-top: 1px solid #e2ceb0;
+      }
+
+      .filter-action-btn {
+        border: 1px solid #d7c1a0;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .filter-action-btn.apply {
+        background: #3f3224;
+        color: #fff5e8;
+        border-color: #3f3224;
+      }
+
+      .filter-action-btn.reset {
+        background: #fff8ed;
+        color: #5d5040;
       }
 
       .cards-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 380px));
+        grid-template-columns: repeat(3, minmax(0, 330px));
         justify-content: center;
         gap: 34px;
       }
@@ -111,7 +442,7 @@
       }
 
       .photo {
-        aspect-ratio: 16 / 10;
+        aspect-ratio: 1 / 1;
         position: relative;
         overflow: hidden;
         background-size: cover;
@@ -165,7 +496,7 @@
       }
 
       .photo.has-image {
-        aspect-ratio: auto;
+        aspect-ratio: 1 / 1;
       }
 
       .photo.has-image::after {
@@ -184,9 +515,11 @@
 
       .photo-image {
         width: 100%;
-        height: auto;
+        height: 100%;
         display: block;
         image-orientation: from-image;
+        object-fit: cover;
+        object-position: center;
       }
 
       .photo-tone-1 {
@@ -286,6 +619,12 @@
         place-items: center;
         padding: 10px;
         z-index: 40;
+        opacity: 0;
+        transition: opacity 220ms ease;
+      }
+
+      .hero-overlay.is-open {
+        opacity: 1;
       }
 
       .hero-overlay[hidden] {
@@ -295,16 +634,22 @@
       .hero-card {
         --hero-aspect: 1.6;
         --hero-details-width: 340px;
-        width: min(94vw, calc(min(84vh, 760px) * var(--hero-aspect) + var(--hero-details-width)));
-        height: min(min(84vh, 760px), calc((94vw - var(--hero-details-width)) / var(--hero-aspect)));
+        width: min(94vw, calc(min(84vh, 760px) * var(--hero-aspect)));
+        height: min(min(84vh, 760px), calc(94vw / var(--hero-aspect)));
         border: none;
         border-radius: 22px;
         overflow: hidden;
         background: #fdf8ef;
         box-shadow: 0 22px 52px rgba(34, 25, 16, 0.35);
         position: relative;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) var(--hero-details-width);
+        transition:
+          width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          height 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      .hero-card.has-details {
+        width: min(94vw, calc(min(84vh, 760px) * var(--hero-aspect) + var(--hero-details-width)));
+        height: min(min(84vh, 760px), calc((94vw - var(--hero-details-width)) / var(--hero-aspect)));
       }
 
       .hero-card::before {
@@ -336,6 +681,13 @@
         position: relative;
         overflow: hidden;
         touch-action: none;
+        transition: width 260ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: width, transform;
+      }
+
+      .hero-card.has-details .hero-media {
+        width: calc(100% - var(--hero-details-width));
+        transform: translateX(0);
       }
 
       .hero-media.is-floorplan {
@@ -358,6 +710,8 @@
 
       .hero-image {
         display: none;
+        position: relative;
+        z-index: 2;
         width: 100%;
         height: 100%;
         object-fit: contain;
@@ -376,53 +730,93 @@
         cursor: grabbing;
       }
 
-      .hero-mode-toggle {
+      .hero-details-toggle {
         position: absolute;
-        left: 12px;
-        top: 12px;
-        width: 28px;
-        height: 28px;
-        padding: 0;
-        border: none;
-        background: transparent;
-        color: inherit;
+        top: 10px;
+        right: 10px;
+        border: 1px solid rgba(255, 236, 210, 0.75);
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: rgba(31, 23, 17, 0.6);
+        color: #fff6eb;
         cursor: pointer;
-        z-index: 7;
+        z-index: 10;
+        padding: 0;
         display: grid;
         place-items: center;
-        transition: opacity 140ms ease;
+        transition: right 220ms ease, background-color 160ms ease;
+        overflow: hidden;
       }
 
-      .hero-mode-toggle:hover {
-        opacity: 0.78;
+      .hero-card.has-details .hero-details-toggle {
+        right: 10px;
       }
 
-      .hero-mode-toggle:active {
-        opacity: 0.58;
+      .hero-details-toggle:hover {
+        background: rgba(31, 23, 17, 0.74);
       }
 
-      .hero-mode-glyph {
-        width: 24px;
-        height: 24px;
-      }
-
-      .hero-mode-icon {
-        width: 100%;
-        height: 100%;
+      .hero-details-toggle svg {
+        width: 18px;
+        height: 18px;
         display: block;
         fill: none;
-        stroke: #4f565d;
-        stroke-width: 2;
+        stroke: currentColor;
+        stroke-width: 1.9;
         stroke-linecap: round;
         stroke-linejoin: round;
       }
 
-      .hero-mode-toggle[aria-pressed="true"] .hero-mode-glyph {
-        transform: scale(1.04);
+      .hero-details-toggle::after {
+        content: "";
+        position: absolute;
+        top: -30%;
+        bottom: -30%;
+        width: 40%;
+        left: -55%;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 245, 222, 0.72), rgba(255, 255, 255, 0));
+        transform: rotate(16deg);
+        pointer-events: none;
+        opacity: 0;
       }
 
-      .hero-mode-toggle[aria-pressed="true"] .hero-mode-icon {
-        stroke: #2f353b;
+      .hero-details-toggle::before {
+        content: "";
+        position: absolute;
+        top: -30%;
+        bottom: -30%;
+        width: 40%;
+        left: 120%;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 245, 222, 0.66), rgba(255, 255, 255, 0));
+        transform: rotate(-16deg);
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .hero-details-toggle.is-hinting::after {
+        animation: details-laser-sweep 900ms ease-out 1;
+      }
+
+      .hero-details-toggle.is-hinting::before {
+        animation: details-laser-sweep-reverse 900ms ease-out 1 920ms;
+      }
+
+      .hero-details-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(var(--hero-details-width), 90vw);
+        background: #fffaf3;
+        border-left: 1px solid #ead9c1;
+        transform: translateX(100%);
+        transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        z-index: 8;
+      }
+
+      .hero-details-panel.is-open {
+        transform: translateX(0);
       }
 
       .hero-floorplan {
@@ -553,10 +947,9 @@
         flex-direction: column;
         gap: 10px;
         font-family: "Avenir Next", "Segoe UI", sans-serif;
-        background: #fffaf3;
-        border-left: 1px solid #ead9c1;
         padding: 52px 16px 16px;
         overflow-y: auto;
+        height: 100%;
       }
 
       .hero-title {
@@ -685,6 +1078,11 @@
         z-index: 45;
       }
 
+      .hero-nav:disabled {
+        opacity: 0.38;
+        cursor: default;
+      }
+
       .hero-prev {
         left: max(14px, 2vw);
       }
@@ -739,9 +1137,43 @@
         }
       }
 
+      @keyframes details-laser-sweep {
+        0% {
+          left: -55%;
+          opacity: 0;
+        }
+        14% {
+          opacity: 1;
+        }
+        86% {
+          opacity: 1;
+        }
+        100% {
+          left: 120%;
+          opacity: 0;
+        }
+      }
+
+      @keyframes details-laser-sweep-reverse {
+        0% {
+          left: 120%;
+          opacity: 0;
+        }
+        14% {
+          opacity: 1;
+        }
+        86% {
+          opacity: 1;
+        }
+        100% {
+          left: -55%;
+          opacity: 0;
+        }
+      }
+
       @media (max-width: 1000px) {
         .cards-grid {
-          grid-template-columns: repeat(2, minmax(0, 340px));
+          grid-template-columns: repeat(2, minmax(0, 300px));
           justify-content: center;
           gap: 26px;
         }
@@ -749,18 +1181,19 @@
         .hero-card {
           width: min(96vw, calc(90vh * var(--hero-aspect)));
           height: min(90vh, calc(96vw / var(--hero-aspect)));
-          grid-template-columns: 1fr;
-          grid-template-rows: 1fr auto;
         }
 
-        .hero-details {
-          border-left: none;
-          border-top: 1px solid #ead9c1;
-          padding-top: 14px;
+        .hero-card.has-details {
+          width: min(96vw, calc(90vh * var(--hero-aspect) + var(--hero-details-width)));
+          height: min(90vh, calc((96vw - var(--hero-details-width)) / var(--hero-aspect)));
         }
 
         .hero-map {
           min-height: 150px;
+        }
+
+        .hero-details-panel {
+          width: min(360px, 94vw);
         }
 
       }
@@ -793,12 +1226,99 @@
   <body>
     <button class="page-filter-btn" id="pageFilterBtn" type="button" aria-label="Filters">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 7h16" />
-        <circle cx="9" cy="7" r="2.2" />
-        <path d="M4 17h16" />
-        <circle cx="15" cy="17" r="2.2" />
+        <path d="M3 5h18" />
+        <circle cx="9" cy="5" r="1.9" />
+        <path d="M3 12h18" />
+        <circle cx="15" cy="12" r="1.9" />
+        <path d="M3 19h18" />
+        <circle cx="11" cy="19" r="1.9" />
       </svg>
     </button>
+    <form class="page-search" id="pageSearchForm" role="search" aria-label="Search listings">
+      <button class="page-search-btn" id="pageSearchBtn" type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6"></circle>
+          <line x1="16" y1="16" x2="21" y2="21"></line>
+        </svg>
+      </button>
+      <input
+        class="page-search-input"
+        id="pageSearchInput"
+        type="search"
+        inputmode="search"
+        autocomplete="off"
+        placeholder="Search by address"
+        aria-label="Search by address"
+      />
+    </form>
+    <div class="filter-scrim" id="filterScrim" hidden></div>
+    <aside class="filter-panel" id="filterPanel" aria-hidden="true">
+      <div class="filter-panel-head">
+        <button class="filter-close-btn" id="filterCloseBtn" type="button" aria-label="Close filters">
+          &times;
+        </button>
+      </div>
+      <div class="filter-panel-body">
+        <section class="filter-section">
+          <div class="filter-section-title">Borough</div>
+          <div class="filter-chip-row" id="boroughChips"></div>
+        </section>
+        <section class="filter-section">
+          <div class="filter-section-title">Neighborhoods</div>
+          <div class="filter-chip-row" id="neighborhoodChips"></div>
+          <p class="filter-empty" id="neighborhoodEmpty" hidden>No neighborhoods found for selected borough(s).</p>
+          <button class="filter-more-btn" id="neighborhoodMoreBtn" type="button" hidden>Show more neighborhoods</button>
+        </section>
+        <section class="filter-section">
+          <div class="filter-section-title">Price</div>
+          <div class="price-range">
+            <div class="price-values">
+              <span id="priceFromLabel">$1,500</span>
+              <span id="priceToLabel">$10,000+</span>
+            </div>
+            <div class="price-tracks">
+              <span class="price-track-line" aria-hidden="true"></span>
+              <span class="price-track-fill" id="priceTrackFill" aria-hidden="true"></span>
+              <input id="priceMinRange" type="range" min="1500" max="10000" step="100" value="1500" aria-label="Minimum price" />
+              <input id="priceMaxRange" type="range" min="1500" max="10000" step="100" value="10000" aria-label="Maximum price" />
+            </div>
+          </div>
+        </section>
+        <section class="filter-section">
+          <div class="filter-section-title">Bed/Bath</div>
+          <div class="filter-chip-row">
+            <button class="filter-chip" data-group="minBeds" data-value="0" type="button">Studio+</button>
+            <button class="filter-chip" data-group="minBeds" data-value="1" type="button">1+ Bed</button>
+            <button class="filter-chip" data-group="minBeds" data-value="2" type="button">2+ Beds</button>
+            <button class="filter-chip" data-group="minBeds" data-value="3" type="button">3+ Beds</button>
+            <button class="filter-chip" data-group="minBeds" data-value="4" type="button">4 Bedroom</button>
+          </div>
+          <div class="filter-chip-row">
+            <button class="filter-chip" data-group="minBaths" data-value="1" type="button">1+ Bath</button>
+            <button class="filter-chip" data-group="minBaths" data-value="2" type="button">2+ Baths</button>
+            <button class="filter-chip" data-group="minBaths" data-value="3" type="button">3+ Baths</button>
+          </div>
+        </section>
+        <section class="filter-section">
+          <div class="filter-section-title">Features</div>
+          <div class="filter-chip-row" id="featureChips"></div>
+        </section>
+        <section class="filter-section">
+          <div class="filter-section-title">Amenities</div>
+          <div class="filter-chip-row" id="amenityChips"></div>
+        </section>
+        <section class="filter-section">
+          <div class="filter-section-title">Transit</div>
+          <div class="filter-chip-row" id="transitChips"></div>
+          <p class="filter-empty" id="transitEmpty" hidden>No transit lines found for selected borough(s).</p>
+        </section>
+        <p class="filter-summary" id="filterSummary">No filters selected</p>
+      </div>
+      <div class="filter-panel-actions">
+        <button class="filter-action-btn reset" id="filterResetBtn" type="button">Reset</button>
+        <button class="filter-action-btn apply" id="filterApplyBtn" type="button">Apply</button>
+      </div>
+    </aside>
     <main class="results-wrap">
       <section class="cards-grid" id="cardsGrid" aria-label="Apartment options"></section>
     </main>
@@ -809,16 +1329,6 @@
         <button class="hero-close" id="heroClose" type="button" aria-label="Close">&#10005;</button>
         <div class="hero-media" id="heroMedia">
           <img class="hero-image" id="heroImage" alt="Apartment preview" draggable="false" />
-          <button class="hero-mode-toggle" id="heroModeToggle" type="button" aria-label="Toggle floor plan view" aria-pressed="false">
-            <span class="hero-mode-glyph" aria-hidden="true">
-              <svg class="hero-mode-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4.5" y="5.5" width="15" height="13" rx="2.2" />
-                <path d="M12 5.5v13" />
-                <path d="M8 9h1.2" />
-                <path d="M14.8 9h1.2" />
-              </svg>
-            </span>
-          </button>
           <div class="hero-floorplan" id="heroFloorplan" hidden>
             <span class="hero-dim-line width"></span>
             <span class="hero-dim-line depth"></span>
@@ -830,27 +1340,30 @@
             <span>Scroll or pinch to zoom</span>
           </div>
         </div>
-        <div class="hero-details">
-          <div class="hero-title" id="heroTitle"></div>
-          <div class="hero-location" id="heroLocation"></div>
-          <div>
-            <div class="hero-price" id="heroPrice"></div>
-          </div>
-          <div class="hero-meta-list" id="heroMetaList"></div>
-          <div class="hero-section">
-            <div class="hero-section-label">Unit Features</div>
-            <div class="hero-section-value" id="heroUnitFeatures"></div>
-          </div>
-          <div class="hero-section">
-            <div class="hero-section-label">Building Amenities</div>
-            <div class="hero-section-value" id="heroBuildingFeatures"></div>
-          </div>
-          <div class="hero-section">
-            <div class="hero-section-label">Transit</div>
-            <div class="hero-section-value" id="heroTransit"></div>
-          </div>
-          <div class="hero-map">
-            <img id="heroMapImage" src="./image.png" alt="Neighborhood map" loading="lazy" />
+        <button class="hero-details-toggle" id="heroDetailsToggle" type="button" aria-expanded="false" aria-label="Show details"></button>
+        <div class="hero-details-panel" id="heroDetailsPanel">
+          <div class="hero-details">
+            <div class="hero-title" id="heroTitle"></div>
+            <div class="hero-location" id="heroLocation"></div>
+            <div>
+              <div class="hero-price" id="heroPrice"></div>
+            </div>
+            <div class="hero-meta-list" id="heroMetaList"></div>
+            <div class="hero-section">
+              <div class="hero-section-label">Unit Features</div>
+              <div class="hero-section-value" id="heroUnitFeatures"></div>
+            </div>
+            <div class="hero-section">
+              <div class="hero-section-label">Building Amenities</div>
+              <div class="hero-section-value" id="heroBuildingFeatures"></div>
+            </div>
+            <div class="hero-section">
+              <div class="hero-section-label">Transit</div>
+              <div class="hero-section-value" id="heroTransit"></div>
+            </div>
+            <div class="hero-map">
+              <img id="heroMapImage" src="./image.png" alt="Neighborhood map" loading="lazy" />
+            </div>
           </div>
         </div>
       </div>
@@ -862,6 +1375,28 @@
       const apiBaseUrl =
         (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || "http://127.0.0.1:5050";
       const pageFilterBtn = document.getElementById("pageFilterBtn");
+      const pageSearchForm = document.getElementById("pageSearchForm");
+      const pageSearchBtn = document.getElementById("pageSearchBtn");
+      const pageSearchInput = document.getElementById("pageSearchInput");
+      const filterPanel = document.getElementById("filterPanel");
+      const filterScrim = document.getElementById("filterScrim");
+      const filterCloseBtn = document.getElementById("filterCloseBtn");
+      const filterApplyBtn = document.getElementById("filterApplyBtn");
+      const filterResetBtn = document.getElementById("filterResetBtn");
+      const filterSummary = document.getElementById("filterSummary");
+      const boroughChips = document.getElementById("boroughChips");
+      const neighborhoodChips = document.getElementById("neighborhoodChips");
+      const neighborhoodEmpty = document.getElementById("neighborhoodEmpty");
+      const neighborhoodMoreBtn = document.getElementById("neighborhoodMoreBtn");
+      const featureChips = document.getElementById("featureChips");
+      const amenityChips = document.getElementById("amenityChips");
+      const transitChips = document.getElementById("transitChips");
+      const transitEmpty = document.getElementById("transitEmpty");
+      const priceMinRange = document.getElementById("priceMinRange");
+      const priceMaxRange = document.getElementById("priceMaxRange");
+      const priceFromLabel = document.getElementById("priceFromLabel");
+      const priceToLabel = document.getElementById("priceToLabel");
+      const priceTrackFill = document.getElementById("priceTrackFill");
       const cardsGrid = document.getElementById("cardsGrid");
       const tones = ["photo-tone-1", "photo-tone-2", "photo-tone-3", "photo-tone-4", "photo-tone-5", "photo-tone-6"];
 
@@ -880,7 +1415,8 @@
       const heroPrev = document.getElementById("heroPrev");
       const heroNext = document.getElementById("heroNext");
       const heroClose = document.getElementById("heroClose");
-      const heroModeToggle = document.getElementById("heroModeToggle");
+      const heroDetailsToggle = document.getElementById("heroDetailsToggle");
+      const heroDetailsPanel = document.getElementById("heroDetailsPanel");
       const heroFloorplan = document.getElementById("heroFloorplan");
       const heroZoomHint = document.getElementById("heroZoomHint");
 
@@ -902,10 +1438,106 @@
       let pinchStartScale = 1;
       let zoomHintTimer = null;
       let zoomHintStartTimer = null;
-      let floorPlanMode = false;
-      let activeHeroMainImageUrl = "";
-      let activeHeroFloorplanImageUrl = "";
+      let detailsHintTimer = null;
+      let heroCloseTimer = null;
+      let heroOpenRequestId = 0;
+      let heroDetailsOpen = false;
+      let heroMediaItems = [];
+      let heroMediaIndex = 0;
       let heroPrimaryAspectRatio = 1.6;
+      let isFilterPanelOpen = false;
+      let isSearchOpen = false;
+      let showAllNeighborhoods = false;
+      const defaultSubwayByBorough = {
+        Manhattan: ["1", "2", "3", "4", "5", "6", "7", "A", "B", "C", "D", "E", "F", "G", "J", "L", "M", "N", "Q", "R", "S", "W", "Z"],
+        Brooklyn: ["2", "3", "4", "5", "A", "B", "C", "D", "F", "G", "J", "L", "M", "N", "Q", "R", "S", "Z"],
+        Queens: ["7", "E", "F", "G", "J", "M", "N", "R", "W", "Z"],
+        Bronx: ["1", "2", "4", "5", "6", "B", "D"],
+        "Staten Island": ["SIR"],
+      };
+      const defaultNeighborhoodsByBorough = {
+        Manhattan: ["Battery Park City", "Bowery", "Chelsea", "Chinatown", "East Harlem", "East Village", "Financial District", "Flatiron", "Gramercy", "Greenwich Village", "Hamilton Heights", "Harlem", "Hell's Kitchen", "Inwood", "Kips Bay", "Lenox Hill", "Little Italy", "Lower East Side", "Morningside Heights", "Murray Hill", "NoHo", "NoMad", "SoHo", "Tribeca", "Two Bridges", "Upper East Side", "Upper West Side", "Washington Heights", "West Village"],
+        Brooklyn: ["Bushwick", "Bedford-Stuyvesant", "Boerum Hill", "Brooklyn Heights", "Carroll Gardens", "Clinton Hill", "Cobble Hill", "Crown Heights", "Downtown Brooklyn", "DUMBO", "East New York", "Flatbush", "Fort Greene", "Gowanus", "Greenpoint", "Kensington", "Midwood", "Park Slope", "Prospect Heights", "Prospect Lefferts Gardens", "Red Hook", "Sunset Park", "Williamsburg"],
+        Queens: ["Astoria", "Bayside", "Bellerose", "Briarwood", "College Point", "Corona", "Elmhurst", "Far Rockaway", "Flushing", "Forest Hills", "Fresh Meadows", "Jackson Heights", "Jamaica", "Kew Gardens", "Long Island City", "Maspeth", "Middle Village", "Rego Park", "Ridgewood", "Sunnyside", "Woodside"],
+        Bronx: ["Allerton", "Belmont", "Concourse", "Fordham", "Kingsbridge", "Morris Park", "Mott Haven", "Parkchester", "Pelham Bay", "Riverdale", "Soundview", "Throgs Neck", "University Heights", "Wakefield", "Woodlawn"],
+        "Staten Island": ["Arrochar", "Clifton", "Grant City", "Great Kills", "New Dorp", "Port Richmond", "Rosebank", "St. George", "Stapleton", "Tottenville", "West Brighton", "Westerleigh"],
+      };
+      const defaultUnitFeatures = [
+        "Balcony",
+        "Central Air",
+        "Dishwasher",
+        "Washer/Dryer",
+        "Hardwood Floors",
+        "Stainless Steel Appliances",
+        "Terrace",
+      ];
+      const defaultBuildingAmenities = [
+        "Doorman",
+        "Elevator",
+        "Gym",
+        "Roof Deck",
+        "Package Room",
+        "Bike Room",
+        "Parking",
+        "Garage Parking",
+        "Laundry Room",
+        "Laundry",
+        "Concierge",
+        "Resident Lounge",
+        "Children's Playroom",
+        "Kids Room",
+        "Working Space",
+        "Pet Wash",
+        "Pool",
+        "Sauna",
+        "Virtual Doorman",
+        "Pickleball Court",
+        "Podcast Room",
+        "Party Room",
+        "Theater Room",
+      ];
+      const removedUnitFeatures = new Set([
+        "city view",
+        "floor-to-ceiling windows",
+        "home office nook",
+        "high ceilings",
+        "microwave",
+        "renovated bathroom",
+        "renovated kitchen",
+        "smart thermostat",
+        "storage",
+        "private patio",
+        "walk-in closet",
+        "central ac",
+      ]);
+      const unitFeatureAliases = {
+        "central ac": "Central Air",
+      };
+      const amenityAliases = {
+        lounge: "Resident Lounge",
+        "pet spa": "Pet Wash",
+        "co-working space": "Working Space",
+        "bike storage": "Bike Room",
+      };
+      let filterMeta = {
+        boroughs: ["Brooklyn", "Manhattan", "Queens", "Bronx", "Staten Island"],
+        neighborhoodsByBorough: { ...defaultNeighborhoodsByBorough },
+        unitFeatures: [...defaultUnitFeatures],
+        amenities: [...defaultBuildingAmenities],
+        subwayLinesByBorough: { ...defaultSubwayByBorough },
+      };
+      const priceBounds = { min: 1500, max: 10000, step: 100 };
+      let filterState = {
+        minPrice: "",
+        maxPrice: "",
+        boroughs: [],
+        minBeds: "",
+        minBaths: "",
+        neighborhoods: [],
+        features: [],
+        amenities: [],
+        subway: [],
+      };
 
       const fallbackListings = [
         {
@@ -1084,6 +1716,45 @@
         heroCard.style.setProperty("--hero-aspect", String(safeRatio));
       }
 
+      function detailsToggleIcon(open) {
+        return open
+          ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12" /><path d="M6 12h8" /><path d="M6 17h12" /><path d="M18 9l3 3-3 3" /></svg>`
+          : `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2.5" /><path d="M10 5v14" /><path d="M13.5 9h4" /><path d="M13.5 12h4" /><path d="M13.5 15h3" /></svg>`;
+      }
+
+      function setHeroDetailsOpen(open) {
+        heroDetailsOpen = Boolean(open);
+        heroCard.classList.toggle("has-details", heroDetailsOpen);
+        heroDetailsPanel.classList.toggle("is-open", heroDetailsOpen);
+        heroDetailsToggle.setAttribute("aria-expanded", heroDetailsOpen ? "true" : "false");
+        heroDetailsToggle.setAttribute("aria-label", heroDetailsOpen ? "Hide details" : "Show details");
+        heroDetailsToggle.innerHTML = detailsToggleIcon(heroDetailsOpen);
+      }
+
+      function animateHeroFromSourceRect(sourceRect) {
+        if (!sourceRect) return;
+        const finalRect = heroCard.getBoundingClientRect();
+        if (finalRect.width <= 0 || finalRect.height <= 0) return;
+        const scaleX = clampNumber(sourceRect.width / finalRect.width, 0.2, 2);
+        const scaleY = clampNumber(sourceRect.height / finalRect.height, 0.2, 2);
+        const translateX = sourceRect.left - finalRect.left;
+        const translateY = sourceRect.top - finalRect.top;
+        heroCard.animate(
+          [
+            {
+              transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`,
+              opacity: 0.92,
+            },
+            { transform: "translate(0, 0) scale(1, 1)", opacity: 1 },
+          ],
+          {
+            duration: 280,
+            easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+            fill: "both",
+          }
+        );
+      }
+
       function clampPan() {
         if (!heroHasImage || zoomScale <= 1) {
           zoomX = 0;
@@ -1172,46 +1843,112 @@
         heroZoomHint.hidden = true;
       }
 
-      function syncHeroImageSource() {
-        const selectedImageUrl =
-          floorPlanMode && activeHeroFloorplanImageUrl
-            ? activeHeroFloorplanImageUrl
-            : activeHeroMainImageUrl || activeHeroFloorplanImageUrl;
+      function triggerDetailsHint() {
+        if (detailsHintTimer) {
+          clearTimeout(detailsHintTimer);
+          detailsHintTimer = null;
+        }
+        heroDetailsToggle.classList.remove("is-hinting");
+        void heroDetailsToggle.offsetWidth;
+        heroDetailsToggle.classList.add("is-hinting");
+        detailsHintTimer = setTimeout(() => {
+          heroDetailsToggle.classList.remove("is-hinting");
+          detailsHintTimer = null;
+        }, 1950);
+      }
+
+      function buildHeroMediaItems(listing) {
+        const mainImageUrl = getListingImage(listing);
+        const floorplanImageUrl = getListingFloorplanImage(listing);
+        const mapImageUrl = listing.mapImageUrl || "";
+        const items = [];
+        const seen = new Set();
+
+        function pushItem(url, type) {
+          const normalized = String(url || "").trim();
+          if (!normalized || seen.has(normalized)) return;
+          seen.add(normalized);
+          items.push({ url: normalized, type });
+        }
+
+        pushItem(mainImageUrl, "main");
+
+        const additional = [
+          ...(Array.isArray(listing.images) ? listing.images : []),
+          ...(Array.isArray(listing.photos) ? listing.photos : []),
+          ...(Array.isArray(listing.gallery) ? listing.gallery : []),
+        ];
+        additional.forEach((candidate) => {
+          const url =
+            typeof candidate === "string"
+              ? candidate
+              : candidate && typeof candidate.url === "string"
+                ? candidate.url
+                : "";
+          const normalized = String(url || "").trim();
+          if (!normalized || normalized === floorplanImageUrl || normalized === mapImageUrl) return;
+          pushItem(normalized, "photo");
+        });
+
+        if (floorplanImageUrl && floorplanImageUrl !== mainImageUrl) {
+          pushItem(floorplanImageUrl, "floorplan");
+        }
+
+        return items;
+      }
+
+      function syncHeroMediaArrows() {
+        const hasMultiple = heroMediaItems.length > 1;
+        heroPrev.disabled = !hasMultiple;
+        heroNext.disabled = !hasMultiple;
+        heroPrev.setAttribute("aria-label", "Previous image");
+        heroNext.setAttribute("aria-label", "Next image");
+      }
+
+      function renderActiveHeroMedia({ preserveZoom = false } = {}) {
+        const activeMedia = heroMediaItems[heroMediaIndex] || null;
+        const selectedImageUrl = activeMedia ? activeMedia.url : "";
         heroHasImage = Boolean(selectedImageUrl);
         heroMedia.classList.toggle("has-image", heroHasImage);
+        heroMedia.classList.toggle("is-floorplan", Boolean(activeMedia && activeMedia.type === "floorplan"));
+        heroFloorplan.hidden = true;
         heroImage.src = heroHasImage ? selectedImageUrl : "";
-        if (
-          heroHasImage &&
-          heroImage.complete &&
-          heroImage.naturalWidth > 0 &&
-          heroImage.naturalHeight > 0 &&
-          (!floorPlanMode || !activeHeroMainImageUrl)
-        ) {
-          const ratio = heroImage.naturalWidth / heroImage.naturalHeight;
-          if (!floorPlanMode) {
-            heroPrimaryAspectRatio = ratio;
-          }
-          setHeroAspectRatio(floorPlanMode && activeHeroMainImageUrl ? heroPrimaryAspectRatio : ratio);
+        syncHeroMediaArrows();
+        if (!preserveZoom) {
+          resetImageTransform();
+        } else {
+          applyImageTransform();
         }
       }
 
-      function setFloorPlanMode(enabled) {
-        const canToggleView = Boolean(
-          activeHeroMainImageUrl &&
-            activeHeroFloorplanImageUrl &&
-            activeHeroMainImageUrl !== activeHeroFloorplanImageUrl
-        );
-        floorPlanMode = canToggleView ? Boolean(enabled) : false;
-        heroModeToggle.hidden = !canToggleView;
-        heroMedia.classList.toggle("is-floorplan", floorPlanMode);
-        heroFloorplan.hidden = true;
-        heroModeToggle.setAttribute("aria-pressed", floorPlanMode ? "true" : "false");
-        heroModeToggle.setAttribute(
-          "aria-label",
-          floorPlanMode ? "Show main image" : "Show floor plan"
-        );
-        syncHeroImageSource();
-        applyImageTransform();
+      function preloadImage(url, timeoutMs = 4500) {
+        const src = String(url || "").trim();
+        if (!src) return Promise.resolve();
+        return new Promise((resolve) => {
+          const img = new Image();
+          let settled = false;
+          const done = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+          };
+          img.onload = done;
+          img.onerror = done;
+          img.src = src;
+          setTimeout(done, timeoutMs);
+        });
+      }
+
+      function setHeroMediaIndex(nextIndex, { preserveZoom = false } = {}) {
+        if (!heroMediaItems.length) return;
+        const count = heroMediaItems.length;
+        heroMediaIndex = ((nextIndex % count) + count) % count;
+        renderActiveHeroMedia({ preserveZoom });
+      }
+
+      function navigateHeroMedia(step) {
+        if (heroMediaItems.length <= 1) return;
+        setHeroMediaIndex(heroMediaIndex + step);
       }
 
       function distanceBetweenPointers() {
@@ -1254,13 +1991,13 @@
         const listing = listings[activeIndex];
         if (!listing) return;
         const toneClass = tones[activeIndex % tones.length];
-        activeHeroMainImageUrl = getListingImage(listing);
-        activeHeroFloorplanImageUrl = getListingFloorplanImage(listing);
+        heroMediaItems = buildHeroMediaItems(listing);
+        heroMediaIndex = 0;
         heroPrimaryAspectRatio = 1.6;
 
         heroMedia.className = `hero-media ${toneClass}`;
         setHeroAspectRatio(1.6);
-        setFloorPlanMode(false);
+        renderActiveHeroMedia();
         clearZoomHint();
         heroTitle.textContent = listing.address || listing.title || "Apartment Listing";
         heroLocation.textContent = `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`;
@@ -1270,7 +2007,6 @@
         heroBuildingFeatures.innerHTML = renderChipList(listing.buildingFeatures, "No amenities listed");
         heroTransit.textContent = joinedOrFallback(listing.subwayLines, "No transit lines listed");
         heroMapImage.src = listing.mapImageUrl || "./image.png";
-        resetImageTransform();
       }
 
       function listingTokenForIndex(index) {
@@ -1308,25 +2044,577 @@
         window.history[replace ? "replaceState" : "pushState"]({}, "", next);
       }
 
+      function getFilterValuesFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+
+        function parseCsv(key) {
+          const raw = params.get(key) || "";
+          return raw
+            .split(",")
+            .map((part) => part.trim())
+            .filter(Boolean);
+        }
+
+        function parsePositiveNumberString(key) {
+          const raw = (params.get(key) || "").trim();
+          if (!raw) return "";
+          const value = Number(raw);
+          if (!Number.isFinite(value) || value < 0) return "";
+          return String(Math.floor(value));
+        }
+
+        return {
+          minPrice: parsePositiveNumberString("minPrice"),
+          maxPrice: parsePositiveNumberString("maxPrice"),
+          boroughs: (() => {
+            const multi = parseCsv("boroughs");
+            if (multi.length) return multi;
+            const single = (params.get("borough") || "").trim();
+            return single ? [single] : [];
+          })(),
+          minBeds: parsePositiveNumberString("minBeds"),
+          minBaths: parsePositiveNumberString("minBaths"),
+          neighborhoods: parseCsv("neighborhoods"),
+          features: parseCsv("features"),
+          subway: parseCsv("subway"),
+        };
+      }
+
+      function isPriceDefault(minPrice, maxPrice) {
+        return !minPrice && !maxPrice;
+      }
+
+      function formatPriceLabel(value, { plus = false } = {}) {
+        return `$${formatNumber(value)}${plus ? "+" : ""}`;
+      }
+
+      function syncPriceTrackUi() {
+        const minVal = Number(priceMinRange.value);
+        const maxVal = Number(priceMaxRange.value);
+        const percentMin =
+          ((minVal - priceBounds.min) / (priceBounds.max - priceBounds.min)) * 100;
+        const percentMax =
+          ((maxVal - priceBounds.min) / (priceBounds.max - priceBounds.min)) * 100;
+
+        priceTrackFill.style.left = `${percentMin}%`;
+        priceTrackFill.style.right = `${100 - percentMax}%`;
+
+        const isDefault = isPriceDefault(filterState.minPrice, filterState.maxPrice);
+        priceFromLabel.textContent = isDefault
+          ? formatPriceLabel(priceBounds.min)
+          : formatPriceLabel(minVal);
+        priceToLabel.textContent =
+          isDefault || !filterState.maxPrice
+            ? formatPriceLabel(priceBounds.max, { plus: true })
+            : formatPriceLabel(maxVal);
+      }
+
+      function syncPriceSlidersFromState() {
+        const minVal = filterState.minPrice ? Number(filterState.minPrice) : priceBounds.min;
+        const maxVal = filterState.maxPrice ? Number(filterState.maxPrice) : priceBounds.max;
+        priceMinRange.value = String(Math.max(priceBounds.min, Math.min(minVal, maxVal)));
+        priceMaxRange.value = String(Math.min(priceBounds.max, Math.max(maxVal, minVal)));
+        syncPriceTrackUi();
+      }
+
+      function handlePriceSliderChange(source) {
+        let minVal = Number(priceMinRange.value);
+        let maxVal = Number(priceMaxRange.value);
+
+        if (source === "min" && minVal > maxVal) {
+          maxVal = minVal;
+          priceMaxRange.value = String(maxVal);
+        }
+        if (source === "max" && maxVal < minVal) {
+          minVal = maxVal;
+          priceMinRange.value = String(minVal);
+        }
+
+        const defaultMin = minVal <= priceBounds.min;
+        const defaultMax = maxVal >= priceBounds.max;
+        filterState.minPrice = defaultMin ? "" : String(minVal);
+        filterState.maxPrice = defaultMax ? "" : String(maxVal);
+        syncPriceTrackUi();
+      }
+
+      function asSet(values) {
+        return new Set((values || []).map((value) => String(value).toLowerCase()));
+      }
+
+      function upsertUniqueValue(list, value) {
+        if (!value) return;
+        const key = String(value).toLowerCase();
+        if (list.some((item) => String(item).toLowerCase() === key)) return;
+        list.push(value);
+      }
+
+      function normalizeUnitFeature(value) {
+        const raw = String(value || "").trim();
+        if (!raw) return "";
+        const key = raw.toLowerCase();
+        if (removedUnitFeatures.has(key)) {
+          return unitFeatureAliases[key] || "";
+        }
+        return unitFeatureAliases[key] || raw;
+      }
+
+      function normalizeAmenity(value) {
+        const raw = String(value || "").trim();
+        if (!raw) return "";
+        const key = raw.toLowerCase();
+        return amenityAliases[key] || raw;
+      }
+
+      function sortLineCodes(values) {
+        return [...values].sort((a, b) => {
+          const aNum = /^\d+$/.test(a);
+          const bNum = /^\d+$/.test(b);
+          if (aNum && bNum) return Number(a) - Number(b);
+          if (aNum) return -1;
+          if (bNum) return 1;
+          return a.localeCompare(b);
+        });
+      }
+
+      function hydrateFilterMetaFromListings(data) {
+        if (!Array.isArray(data) || !data.length) return;
+
+        data.forEach((listing) => {
+          const borough = (listing.borough || "").trim();
+          const neighborhood = (listing.neighborhood || "").trim();
+
+          if (borough) {
+            upsertUniqueValue(filterMeta.boroughs, borough);
+            if (!filterMeta.neighborhoodsByBorough[borough]) {
+              filterMeta.neighborhoodsByBorough[borough] = [];
+            }
+            if (neighborhood) {
+              upsertUniqueValue(filterMeta.neighborhoodsByBorough[borough], neighborhood);
+            }
+          }
+
+          if (Array.isArray(listing.buildingFeatures)) {
+            listing.buildingFeatures.forEach((name) => {
+              const clean = normalizeAmenity(name);
+              if (!clean) return;
+              upsertUniqueValue(filterMeta.amenities, clean);
+            });
+          }
+
+          if (Array.isArray(listing.unitFeatures)) {
+            listing.unitFeatures.forEach((name) => {
+              const clean = normalizeUnitFeature(name);
+              if (!clean) return;
+              upsertUniqueValue(filterMeta.unitFeatures, clean);
+            });
+          }
+
+          if (borough && Array.isArray(listing.subwayLines)) {
+            if (!filterMeta.subwayLinesByBorough[borough]) {
+              filterMeta.subwayLinesByBorough[borough] = [];
+            }
+            listing.subwayLines.forEach((line) => {
+              const clean = String(line || "").trim().toUpperCase();
+              if (!clean) return;
+              upsertUniqueValue(filterMeta.subwayLinesByBorough[borough], clean);
+            });
+          }
+        });
+
+        filterMeta.boroughs = [...filterMeta.boroughs].sort((a, b) => a.localeCompare(b));
+        filterMeta.unitFeatures = [...filterMeta.unitFeatures].sort((a, b) => a.localeCompare(b));
+        filterMeta.amenities = [...filterMeta.amenities].sort((a, b) => a.localeCompare(b));
+        Object.keys(filterMeta.neighborhoodsByBorough).forEach((borough) => {
+          filterMeta.neighborhoodsByBorough[borough] = [...filterMeta.neighborhoodsByBorough[borough]].sort(
+            (a, b) => a.localeCompare(b)
+          );
+        });
+        Object.keys(filterMeta.subwayLinesByBorough).forEach((borough) => {
+          filterMeta.subwayLinesByBorough[borough] = sortLineCodes(filterMeta.subwayLinesByBorough[borough]);
+        });
+      }
+
+      function buildNeighborhoodPool() {
+        const pools = filterMeta.neighborhoodsByBorough || {};
+        const sourceBoroughs = filterState.boroughs.length
+          ? filterState.boroughs
+          : Object.keys(pools);
+        const out = [];
+        const seen = new Set();
+        sourceBoroughs.forEach((borough) => {
+          (pools[borough] || []).forEach((name) => {
+            const key = name.toLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push(name);
+          });
+        });
+        return out.sort((a, b) => a.localeCompare(b));
+      }
+
+      function buildTransitPool() {
+        const pools = filterMeta.subwayLinesByBorough || {};
+        const sourceBoroughs = filterState.boroughs.length
+          ? filterState.boroughs
+          : Object.keys(pools);
+        const out = [];
+        const seen = new Set();
+        sourceBoroughs.forEach((borough) => {
+          (pools[borough] || []).forEach((line) => {
+            const clean = String(line || "").trim().toUpperCase();
+            if (!clean || seen.has(clean)) return;
+            seen.add(clean);
+            out.push(clean);
+          });
+        });
+        return sortLineCodes(out);
+      }
+
+      function renderStaticChip(group, label, value = "") {
+        return `<button class="filter-chip" data-group="${escapeHtml(group)}" data-value="${escapeHtml(
+          value
+        )}" type="button">${escapeHtml(label)}</button>`;
+      }
+
+      function renderBoroughChips() {
+        const items = filterMeta.boroughs && filterMeta.boroughs.length ? filterMeta.boroughs : [];
+        boroughChips.innerHTML =
+          renderStaticChip("boroughs", "Any", "") +
+          items.map((name) => renderStaticChip("boroughs", name, name)).join("");
+      }
+
+      function renderAmenityChips() {
+        const items = filterMeta.amenities && filterMeta.amenities.length ? filterMeta.amenities : [];
+        amenityChips.innerHTML =
+          renderStaticChip("amenities", "Any", "") +
+          items.map((name) => renderStaticChip("amenities", name, name)).join("");
+      }
+
+      function renderFeatureChips() {
+        const items =
+          filterMeta.unitFeatures && filterMeta.unitFeatures.length ? filterMeta.unitFeatures : [];
+        featureChips.innerHTML =
+          renderStaticChip("features", "Any", "") +
+          items.map((name) => renderStaticChip("features", name, name)).join("");
+      }
+
+      function renderNeighborhoodChips() {
+        const pool = buildNeighborhoodPool();
+        const visible = showAllNeighborhoods ? pool : pool.slice(0, 10);
+
+        const chips =
+          renderStaticChip("neighborhoods", "Any", "") +
+          visible.map((name) => renderStaticChip("neighborhoods", name, name)).join("");
+
+        neighborhoodChips.innerHTML = chips;
+        neighborhoodEmpty.hidden = pool.length > 0;
+        neighborhoodMoreBtn.hidden = pool.length <= 10;
+        neighborhoodMoreBtn.textContent = showAllNeighborhoods
+          ? "Show fewer neighborhoods"
+          : "Show more neighborhoods";
+      }
+
+      function renderTransitChips() {
+        const pool = buildTransitPool();
+        transitChips.innerHTML =
+          renderStaticChip("subway", "Any", "") +
+          pool.map((line) => renderStaticChip("subway", line, line)).join("");
+        transitEmpty.hidden = pool.length > 0;
+      }
+
+      function pruneNeighborhoodSelection() {
+        const poolSet = asSet(buildNeighborhoodPool());
+        filterState.neighborhoods = filterState.neighborhoods.filter((name) =>
+          poolSet.has(String(name).toLowerCase())
+        );
+      }
+
+      function pruneTransitSelection() {
+        const poolSet = asSet(buildTransitPool());
+        filterState.subway = filterState.subway.filter((line) =>
+          poolSet.has(String(line).toLowerCase())
+        );
+      }
+
+      function selectedCount(values) {
+        let count = 0;
+        if (values.boroughs.length) count += 1;
+        if (values.minPrice || values.maxPrice) count += 1;
+        if (values.minBeds) count += 1;
+        if (values.minBaths) count += 1;
+        if (values.neighborhoods.length) count += 1;
+        if (values.features.length) count += 1;
+        if (values.amenities.length) count += 1;
+        if (values.subway.length) count += 1;
+        return count;
+      }
+
+      function updateFilterSummary() {
+        const count = selectedCount(filterState);
+        filterSummary.textContent = count
+          ? `${count} filter${count === 1 ? "" : "s"} selected`
+          : "No filters selected";
+      }
+
+      function sameValue(a, b) {
+        return String(a).toLowerCase() === String(b).toLowerCase();
+      }
+
+      function applyFilterStateToUi() {
+        const chips = [...filterPanel.querySelectorAll(".filter-chip")];
+
+        chips.forEach((chip) => {
+          const group = chip.dataset.group || "";
+          const value = chip.dataset.value || "";
+          let selected = false;
+
+          if (group === "boroughs") {
+            selected = value
+              ? filterState.boroughs.some((item) => sameValue(item, value))
+              : filterState.boroughs.length === 0;
+          } else if (group === "minBeds" || group === "minBaths") {
+            selected = value ? sameValue(filterState[group], value) : !filterState[group];
+          } else if (
+            group === "neighborhoods" ||
+            group === "features" ||
+            group === "amenities" ||
+            group === "subway"
+          ) {
+            selected = value
+              ? filterState[group].some((item) => sameValue(item, value))
+              : filterState[group].length === 0;
+          }
+
+          chip.classList.toggle("is-selected", selected);
+        });
+
+        updateFilterSummary();
+      }
+
+      function syncFilterStateFromUrl() {
+        const values = getFilterValuesFromUrl();
+        filterState = {
+          minPrice: values.minPrice,
+          maxPrice: values.maxPrice,
+          boroughs: [...values.boroughs].slice(0, 2),
+          minBeds: values.minBeds,
+          minBaths: values.minBaths,
+          neighborhoods: [...values.neighborhoods],
+          features: [...values.features],
+          amenities: [],
+          subway: [...values.subway],
+        };
+        const amenitySet = asSet(filterMeta.amenities || []);
+        filterState.amenities = filterState.features.filter((name) =>
+          amenitySet.has(String(name).toLowerCase())
+        );
+        filterState.features = filterState.features.filter(
+          (name) => !amenitySet.has(String(name).toLowerCase())
+        );
+        pruneNeighborhoodSelection();
+        pruneTransitSelection();
+        renderNeighborhoodChips();
+        renderTransitChips();
+        syncPriceSlidersFromState();
+        applyFilterStateToUi();
+      }
+
+      function buildFilterValuesFromState() {
+        return {
+          minPrice: filterState.minPrice,
+          maxPrice: filterState.maxPrice,
+          boroughs: [...filterState.boroughs],
+          minBeds: filterState.minBeds,
+          minBaths: filterState.minBaths,
+          neighborhoods: [...filterState.neighborhoods],
+          features: [...new Set([...filterState.features, ...filterState.amenities])],
+          subway: [...filterState.subway],
+        };
+      }
+
+      function listToCsv(values) {
+        return values
+          .map((value) => String(value).trim())
+          .filter(Boolean)
+          .join(",");
+      }
+
+      function clearFilterState() {
+        filterState = {
+          minPrice: "",
+          maxPrice: "",
+          boroughs: [],
+          minBeds: "",
+          minBaths: "",
+          neighborhoods: [],
+          features: [],
+          amenities: [],
+          subway: [],
+        };
+        showAllNeighborhoods = false;
+        renderNeighborhoodChips();
+        renderTransitChips();
+        syncPriceSlidersFromState();
+      }
+
+      function toggleFilterChip(chip) {
+        const group = chip.dataset.group || "";
+        const value = chip.dataset.value || "";
+
+        if (group === "boroughs") {
+          if (!value) {
+            filterState.boroughs = [];
+          } else {
+            const exists = filterState.boroughs.some((item) => sameValue(item, value));
+            if (exists) {
+              filterState.boroughs = filterState.boroughs.filter((item) => !sameValue(item, value));
+            } else if (filterState.boroughs.length < 2) {
+              filterState.boroughs = [...filterState.boroughs, value];
+            }
+          }
+          pruneNeighborhoodSelection();
+          pruneTransitSelection();
+          showAllNeighborhoods = false;
+          renderNeighborhoodChips();
+          renderTransitChips();
+          return;
+        }
+
+        if (group === "minBeds" || group === "minBaths") {
+          if (!value) filterState[group] = "";
+          else filterState[group] = sameValue(filterState[group], value) ? "" : value;
+          return;
+        }
+
+        if (
+          group === "neighborhoods" ||
+          group === "features" ||
+          group === "amenities" ||
+          group === "subway"
+        ) {
+          if (!value) {
+            filterState[group] = [];
+            return;
+          }
+          const exists = filterState[group].some((item) => sameValue(item, value));
+          if (exists) {
+            filterState[group] = filterState[group].filter((item) => !sameValue(item, value));
+          } else {
+            filterState[group] = [...filterState[group], value];
+          }
+        }
+      }
+
+      function writeFilterValuesToUrl(values, { replace = false } = {}) {
+        const url = new URL(window.location.href);
+        const scalarKeys = ["minPrice", "maxPrice", "minBeds", "minBaths"];
+        const listKeys = ["neighborhoods", "features", "subway"];
+
+        scalarKeys.forEach((key) => {
+          const value = String(values[key] || "").trim();
+          if (value) url.searchParams.set(key, value);
+          else url.searchParams.delete(key);
+        });
+
+        listKeys.forEach((key) => {
+          const csv = listToCsv(Array.isArray(values[key]) ? values[key] : []);
+          if (csv) url.searchParams.set(key, csv);
+          else url.searchParams.delete(key);
+        });
+
+        const boroughsCsv = listToCsv(Array.isArray(values.boroughs) ? values.boroughs : []);
+        if (boroughsCsv) url.searchParams.set("boroughs", boroughsCsv);
+        else url.searchParams.delete("boroughs");
+
+        const searchQuery = String(pageSearchInput.value || "").trim();
+        if (searchQuery) url.searchParams.set("q", searchQuery);
+        else url.searchParams.delete("q");
+        url.searchParams.delete("page");
+        url.searchParams.delete("petsPolicy");
+        url.searchParams.delete("borough");
+        url.searchParams.delete("listing");
+        const next = `${url.pathname}${url.search}${url.hash}`;
+        const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        if (next === current) return;
+        window.history[replace ? "replaceState" : "pushState"]({}, "", next);
+      }
+
+      function syncSearchStateFromUrl() {
+        const query = new URLSearchParams(window.location.search).get("q") || "";
+        pageSearchInput.value = query;
+        isSearchOpen = Boolean(query.trim());
+        pageSearchForm.classList.toggle("is-open", isSearchOpen);
+      }
+
+      function openSearch() {
+        if (isSearchOpen) return;
+        isSearchOpen = true;
+        pageSearchForm.classList.add("is-open");
+        requestAnimationFrame(() => {
+          pageSearchInput.focus();
+          pageSearchInput.select();
+        });
+      }
+
+      function closeSearch() {
+        if (!isSearchOpen) return;
+        isSearchOpen = false;
+        pageSearchForm.classList.remove("is-open");
+      }
+
+      function openFilterPanel() {
+        if (isFilterPanelOpen) return;
+        isFilterPanelOpen = true;
+        syncFilterStateFromUrl();
+        filterPanel.classList.add("is-open");
+        filterPanel.setAttribute("aria-hidden", "false");
+        pageFilterBtn.setAttribute("aria-expanded", "true");
+        filterScrim.hidden = false;
+        requestAnimationFrame(() => {
+          filterScrim.classList.add("is-visible");
+        });
+      }
+
+      function closeFilterPanel() {
+        if (!isFilterPanelOpen) return;
+        isFilterPanelOpen = false;
+        filterPanel.classList.remove("is-open");
+        filterPanel.setAttribute("aria-hidden", "true");
+        pageFilterBtn.setAttribute("aria-expanded", "false");
+        filterScrim.classList.remove("is-visible");
+        setTimeout(() => {
+          if (!isFilterPanelOpen) filterScrim.hidden = true;
+        }, 180);
+      }
+
       heroImage.addEventListener("load", () => {
         if (!heroHasImage || heroImage.naturalWidth <= 0 || heroImage.naturalHeight <= 0) return;
         const loadedRatio = heroImage.naturalWidth / heroImage.naturalHeight;
-        if (!floorPlanMode) {
+        const activeMedia = heroMediaItems[heroMediaIndex];
+        if (activeMedia && activeMedia.type === "main") {
           heroPrimaryAspectRatio = loadedRatio;
-          setHeroAspectRatio(loadedRatio);
-          return;
         }
-        if (!activeHeroMainImageUrl) {
-          setHeroAspectRatio(loadedRatio);
-          return;
-        }
-        setHeroAspectRatio(heroPrimaryAspectRatio);
+        setHeroAspectRatio(loadedRatio);
       });
 
-      function openHero(index, { syncUrl = true, replaceUrl = false } = {}) {
+      async function openHero(index, { syncUrl = true, replaceUrl = false, sourceRect = null } = {}) {
+        const requestId = ++heroOpenRequestId;
+        const listing = listings[index];
+        await preloadImage(getListingImage(listing));
+        if (requestId !== heroOpenRequestId) return;
         activeIndex = index;
         renderHero();
+        setHeroDetailsOpen(false);
+        if (heroCloseTimer) {
+          clearTimeout(heroCloseTimer);
+          heroCloseTimer = null;
+        }
+        heroOverlay.classList.remove("is-open");
         heroOverlay.hidden = false;
+        requestAnimationFrame(() => {
+          heroOverlay.classList.add("is-open");
+          animateHeroFromSourceRect(sourceRect);
+        });
         document.body.style.overflow = "hidden";
         if (syncUrl) {
           setListingParam(listingTokenForIndex(index), { replace: replaceUrl });
@@ -1334,36 +2622,58 @@
         if (zoomHintStartTimer) {
           clearTimeout(zoomHintStartTimer);
         }
+        if (detailsHintTimer) {
+          clearTimeout(detailsHintTimer);
+          detailsHintTimer = null;
+        }
         zoomHintStartTimer = setTimeout(() => {
           zoomHintStartTimer = null;
           if (heroOverlay.hidden) return;
           showZoomHint();
-        }, 1000);
+        }, 2850);
+        detailsHintTimer = setTimeout(() => {
+          detailsHintTimer = null;
+          if (heroOverlay.hidden || heroDetailsOpen) return;
+          triggerDetailsHint();
+        }, 800);
       }
 
       function closeHero({ syncUrl = true, replaceUrl = true } = {}) {
+        heroOpenRequestId += 1;
         clearZoomHint();
+        if (detailsHintTimer) {
+          clearTimeout(detailsHintTimer);
+          detailsHintTimer = null;
+        }
+        heroDetailsToggle.classList.remove("is-hinting");
+        setHeroDetailsOpen(false);
         resetImageTransform();
-        heroOverlay.hidden = true;
+        heroOverlay.classList.remove("is-open");
+        if (heroCloseTimer) clearTimeout(heroCloseTimer);
+        heroCloseTimer = setTimeout(() => {
+          heroOverlay.hidden = true;
+          heroCloseTimer = null;
+        }, 220);
         document.body.style.overflow = "";
         if (syncUrl) {
           setListingParam("", { replace: replaceUrl });
         }
       }
 
-      function navigateHero(step) {
-        if (!listings.length) return;
-        activeIndex = (activeIndex + step + listings.length) % listings.length;
-        renderHero();
-        if (!heroOverlay.hidden) {
-          setListingParam(listingTokenForIndex(activeIndex), { replace: true });
-        }
-      }
-
       async function loadListings() {
         const params = new URLSearchParams(window.location.search);
         const url = new URL(`${apiBaseUrl}/api/listings`);
-        const filterKeys = ["q", "minPrice", "maxPrice", "beds", "borough"];
+        const filterKeys = [
+          "q",
+          "minPrice",
+          "maxPrice",
+          "boroughs",
+          "minBeds",
+          "minBaths",
+          "neighborhoods",
+          "features",
+          "subway",
+        ];
 
         filterKeys.forEach((key) => {
           const value = params.get(key);
@@ -1380,6 +2690,22 @@
           listings = fallbackListings;
         }
 
+        const searchQuery = (params.get("q") || "").trim().toLowerCase();
+        if (searchQuery) {
+          listings = listings.filter((listing) => {
+            const haystack = `${listing.address || ""} ${listing.title || ""}`.toLowerCase();
+            return haystack.includes(searchQuery);
+          });
+        }
+
+        hydrateFilterMetaFromListings(listings);
+        renderBoroughChips();
+        renderFeatureChips();
+        renderAmenityChips();
+        renderNeighborhoodChips();
+        renderTransitChips();
+        applyFilterStateToUi();
+
         renderCards(listings);
 
         const selectedToken = new URLSearchParams(window.location.search).get("listing");
@@ -1389,22 +2715,88 @@
         }
       }
 
+      async function loadFilterMeta() {
+        // Start with local fallback-derived metadata so UI is never empty.
+        hydrateFilterMetaFromListings(fallbackListings);
+
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/listings/filters`);
+          if (!response.ok) throw new Error("Failed to fetch filters");
+          const payload = await response.json();
+          if (Array.isArray(payload.boroughs) && payload.boroughs.length) {
+            filterMeta.boroughs = [...new Set(payload.boroughs.map((x) => String(x).trim()).filter(Boolean))];
+          }
+          if (payload.neighborhoodsByBorough && typeof payload.neighborhoodsByBorough === "object") {
+            const normalized = {};
+            Object.entries(payload.neighborhoodsByBorough).forEach(([borough, neighborhoods]) => {
+              const boroughName = String(borough || "").trim();
+              if (!boroughName) return;
+              normalized[boroughName] = [...new Set((Array.isArray(neighborhoods) ? neighborhoods : [])
+                .map((x) => String(x).trim())
+                .filter(Boolean))];
+            });
+            if (Object.keys(normalized).length) filterMeta.neighborhoodsByBorough = normalized;
+          }
+          if (Array.isArray(payload.unitFeatures) && payload.unitFeatures.length) {
+            filterMeta.unitFeatures = [
+              ...new Set(
+                payload.unitFeatures
+                  .map((x) => normalizeUnitFeature(x))
+                  .filter((x) => x && !removedUnitFeatures.has(String(x).toLowerCase()))
+              ),
+            ];
+          }
+          if (Array.isArray(payload.amenities) && payload.amenities.length) {
+            filterMeta.amenities = [
+              ...new Set(payload.amenities.map((x) => normalizeAmenity(x)).filter(Boolean)),
+            ];
+          }
+          if (payload.subwayLinesByBorough && typeof payload.subwayLinesByBorough === "object") {
+            const normalized = {};
+            Object.entries(payload.subwayLinesByBorough).forEach(([borough, lines]) => {
+              const boroughName = String(borough || "").trim();
+              if (!boroughName) return;
+              normalized[boroughName] = [...new Set((Array.isArray(lines) ? lines : [])
+                .map((x) => String(x).trim().toUpperCase())
+                .filter(Boolean))];
+            });
+            if (Object.keys(normalized).length) filterMeta.subwayLinesByBorough = normalized;
+          }
+        } catch (_error) {
+          // Keep local fallback metadata if API metadata fetch fails.
+        }
+
+        filterMeta.boroughs = [...filterMeta.boroughs].sort((a, b) => a.localeCompare(b));
+        filterMeta.unitFeatures = [...filterMeta.unitFeatures].sort((a, b) => a.localeCompare(b));
+        filterMeta.amenities = [...filterMeta.amenities].sort((a, b) => a.localeCompare(b));
+        Object.keys(filterMeta.neighborhoodsByBorough).forEach((borough) => {
+          filterMeta.neighborhoodsByBorough[borough] = [...filterMeta.neighborhoodsByBorough[borough]].sort(
+            (a, b) => a.localeCompare(b)
+          );
+        });
+        Object.keys(filterMeta.subwayLinesByBorough).forEach((borough) => {
+          filterMeta.subwayLinesByBorough[borough] = sortLineCodes(filterMeta.subwayLinesByBorough[borough]);
+        });
+
+        renderBoroughChips();
+        renderFeatureChips();
+        renderAmenityChips();
+        renderNeighborhoodChips();
+        renderTransitChips();
+      }
+
       cardsGrid.addEventListener("click", (event) => {
         const card = event.target.closest(".apartment-card");
         if (!card) return;
-        openHero(Number(card.dataset.index));
+        openHero(Number(card.dataset.index), { sourceRect: card.getBoundingClientRect() });
       });
 
-      heroPrev.addEventListener("click", () => navigateHero(-1));
-      heroNext.addEventListener("click", () => navigateHero(1));
+      heroPrev.addEventListener("click", () => navigateHeroMedia(-1));
+      heroNext.addEventListener("click", () => navigateHeroMedia(1));
       heroClose.addEventListener("click", closeHero);
-      heroModeToggle.addEventListener("pointerdown", (event) => {
+      heroDetailsToggle.addEventListener("click", (event) => {
         event.stopPropagation();
-      });
-      heroModeToggle.addEventListener("click", (event) => {
-        event.stopPropagation();
-        if (!heroHasImage) return;
-        setFloorPlanMode(!floorPlanMode);
+        setHeroDetailsOpen(!heroDetailsOpen);
       });
 
       heroOverlay.addEventListener("click", (event) => {
@@ -1434,7 +2826,6 @@
 
       heroMedia.addEventListener("pointerdown", (event) => {
         if (!heroHasImage) return;
-        if (event.target.closest("#heroModeToggle")) return;
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         heroMedia.setPointerCapture(event.pointerId);
 
@@ -1498,6 +2889,8 @@
       heroMedia.addEventListener("pointercancel", handlePointerEnd);
 
       window.addEventListener("popstate", () => {
+        syncFilterStateFromUrl();
+        syncSearchStateFromUrl();
         const selectedToken = new URLSearchParams(window.location.search).get("listing");
         const selectedIndex = findListingIndexFromToken(selectedToken);
 
@@ -1518,18 +2911,95 @@
 
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
+          if (heroDetailsOpen && !heroOverlay.hidden) {
+            setHeroDetailsOpen(false);
+            return;
+          }
+          if (isFilterPanelOpen) {
+            closeFilterPanel();
+            return;
+          }
           if (!heroOverlay.hidden) closeHero();
         }
         if (heroOverlay.hidden) return;
-        if (event.key === "ArrowLeft") navigateHero(-1);
-        if (event.key === "ArrowRight") navigateHero(1);
+        if (event.key === "ArrowLeft") navigateHeroMedia(-1);
+        if (event.key === "ArrowRight") navigateHeroMedia(1);
       });
 
       pageFilterBtn.addEventListener("click", () => {
-        // Placeholder hook for future filters panel.
+        if (isFilterPanelOpen) {
+          closeFilterPanel();
+        } else {
+          openFilterPanel();
+        }
       });
-
-      loadListings();
+      pageSearchBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+        if (!isSearchOpen) {
+          openSearch();
+          return;
+        }
+        writeFilterValuesToUrl(buildFilterValuesFromState());
+        await loadListings();
+      });
+      pageSearchInput.addEventListener("keydown", async (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          if (!pageSearchInput.value.trim()) closeSearch();
+          return;
+        }
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        writeFilterValuesToUrl(buildFilterValuesFromState());
+        await loadListings();
+      });
+      document.addEventListener("pointerdown", (event) => {
+        if (!isSearchOpen) return;
+        if (event.target.closest("#pageSearchForm")) return;
+        if (pageSearchInput.value.trim()) return;
+        closeSearch();
+      });
+      filterPanel.addEventListener("click", (event) => {
+        const chip = event.target.closest(".filter-chip");
+        if (!chip) return;
+        toggleFilterChip(chip);
+        applyFilterStateToUi();
+      });
+      neighborhoodMoreBtn.addEventListener("click", () => {
+        showAllNeighborhoods = !showAllNeighborhoods;
+        renderNeighborhoodChips();
+        applyFilterStateToUi();
+      });
+      priceMinRange.addEventListener("input", () => {
+        handlePriceSliderChange("min");
+        applyFilterStateToUi();
+      });
+      priceMaxRange.addEventListener("input", () => {
+        handlePriceSliderChange("max");
+        applyFilterStateToUi();
+      });
+      filterCloseBtn.addEventListener("click", closeFilterPanel);
+      filterScrim.addEventListener("click", closeFilterPanel);
+      filterResetBtn.addEventListener("click", async () => {
+        clearFilterState();
+        applyFilterStateToUi();
+        if (!heroOverlay.hidden) closeHero();
+        writeFilterValuesToUrl(buildFilterValuesFromState());
+        closeFilterPanel();
+        await loadListings();
+      });
+      filterApplyBtn.addEventListener("click", async () => {
+        if (!heroOverlay.hidden) closeHero();
+        writeFilterValuesToUrl(buildFilterValuesFromState());
+        closeFilterPanel();
+        await loadListings();
+      });
+      (async () => {
+        await loadFilterMeta();
+        syncFilterStateFromUrl();
+        syncSearchStateFromUrl();
+        await loadListings();
+      })();
     </script>
   </body>
 </html>
