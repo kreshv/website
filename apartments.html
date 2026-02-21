@@ -618,6 +618,7 @@
         display: grid;
         place-items: center;
         padding: 10px;
+        overflow: auto;
         z-index: 40;
         opacity: 0;
         transition: opacity 220ms ease;
@@ -631,9 +632,16 @@
         display: none;
       }
 
-      .hero-card {
+      .hero-shell {
         --hero-aspect: 1.6;
         --hero-details-width: 340px;
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+        position: relative;
+      }
+
+      .hero-card {
         width: min(94vw, calc(min(84vh, 760px) * var(--hero-aspect)));
         height: min(min(84vh, 760px), calc(94vw / var(--hero-aspect)));
         border: none;
@@ -645,11 +653,6 @@
         transition:
           width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
           height 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
-      }
-
-      .hero-card.has-details {
-        width: min(94vw, calc(min(84vh, 760px) * var(--hero-aspect) + var(--hero-details-width)));
-        height: min(min(84vh, 760px), calc((94vw - var(--hero-details-width)) / var(--hero-aspect)));
       }
 
       .hero-card::before {
@@ -683,11 +686,6 @@
         touch-action: none;
         transition: width 260ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
         will-change: width, transform;
-      }
-
-      .hero-card.has-details .hero-media {
-        width: calc(100% - var(--hero-details-width));
-        transform: translateX(0);
       }
 
       .hero-media.is-floorplan {
@@ -755,10 +753,6 @@
         overflow: hidden;
       }
 
-      .hero-card.has-details .hero-details-toggle {
-        right: 10px;
-      }
-
       .hero-details-toggle:hover {
         background: rgba(31, 23, 17, 0.74);
       }
@@ -809,20 +803,29 @@
       }
 
       .hero-details-panel {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: min(var(--hero-details-width), 90vw);
+        width: 0;
+        min-width: 0;
+        max-height: min(min(84vh, 760px), calc(94vw / var(--hero-aspect)));
         background: #fffaf3;
-        border-left: 1px solid #ead9c1;
-        transform: translateX(100%);
-        transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
-        z-index: 8;
+        border: 1px solid #ead9c1;
+        border-radius: 22px;
+        box-shadow: 0 16px 38px rgba(34, 25, 16, 0.28);
+        transform: translateX(14px);
+        transition:
+          width 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 220ms ease,
+          transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 5;
       }
 
-      .hero-details-panel.is-open {
+      .hero-shell.has-details .hero-details-panel {
+        width: min(var(--hero-details-width), 90vw);
+        opacity: 1;
         transform: translateX(0);
+        pointer-events: auto;
       }
 
       .hero-floorplan {
@@ -953,7 +956,7 @@
         flex-direction: column;
         gap: 10px;
         font-family: "Avenir Next", "Segoe UI", sans-serif;
-        padding: 52px 16px 16px;
+        padding: 28px 16px 16px;
         overflow-y: auto;
         height: 100%;
       }
@@ -1016,6 +1019,7 @@
         height: 100%;
         display: block;
         object-fit: cover;
+        cursor: pointer;
       }
 
       .hero-chip-list {
@@ -1189,9 +1193,9 @@
           height: min(90vh, calc(96vw / var(--hero-aspect)));
         }
 
-        .hero-card.has-details {
-          width: min(96vw, calc(90vh * var(--hero-aspect) + var(--hero-details-width)));
-          height: min(90vh, calc((96vw - var(--hero-details-width)) / var(--hero-aspect)));
+        .hero-shell {
+          flex-direction: column;
+          align-items: center;
         }
 
         .hero-map {
@@ -1199,7 +1203,19 @@
         }
 
         .hero-details-panel {
-          width: min(360px, 94vw);
+          width: min(96vw, calc(90vh * var(--hero-aspect)));
+          max-height: 0;
+          transform: translateY(-8px);
+          transition:
+            max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+            opacity 220ms ease,
+            transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .hero-shell.has-details .hero-details-panel {
+          width: min(96vw, calc(90vh * var(--hero-aspect)));
+          max-height: min(44vh, 360px);
+          transform: translateY(0);
         }
 
       }
@@ -1331,22 +1347,24 @@
 
     <div class="hero-overlay" id="heroOverlay" hidden>
       <button class="hero-nav hero-prev" id="heroPrev" type="button" aria-label="Previous apartment">&#8249;</button>
-      <div class="hero-card" id="heroCard" role="dialog" aria-modal="true" aria-label="Apartment viewer">
-        <button class="hero-close" id="heroClose" type="button" aria-label="Close">&#10005;</button>
-        <div class="hero-media" id="heroMedia">
-          <img class="hero-image" id="heroImage" alt="Apartment preview" draggable="false" />
-          <div class="hero-floorplan" id="heroFloorplan" hidden>
-            <span class="hero-dim-line width"></span>
-            <span class="hero-dim-line depth"></span>
-            <span class="hero-dim-label width">22 ft</span>
-            <span class="hero-dim-label depth">18 ft</span>
+      <div class="hero-shell" id="heroShell" role="dialog" aria-modal="true" aria-label="Apartment viewer">
+        <div class="hero-card" id="heroCard">
+          <button class="hero-close" id="heroClose" type="button" aria-label="Close">&#10005;</button>
+          <div class="hero-media" id="heroMedia">
+            <img class="hero-image" id="heroImage" alt="Apartment preview" draggable="false" />
+            <div class="hero-floorplan" id="heroFloorplan" hidden>
+              <span class="hero-dim-line width"></span>
+              <span class="hero-dim-line depth"></span>
+              <span class="hero-dim-label width">22 ft</span>
+              <span class="hero-dim-label depth">18 ft</span>
+            </div>
+            <div class="hero-zoom-hint" id="heroZoomHint" hidden>
+              <span class="hero-zoom-hint-dot" aria-hidden="true"></span>
+              <span>Scroll or pinch to zoom</span>
+            </div>
           </div>
-          <div class="hero-zoom-hint" id="heroZoomHint" hidden>
-            <span class="hero-zoom-hint-dot" aria-hidden="true"></span>
-            <span>Scroll or pinch to zoom</span>
-          </div>
+          <button class="hero-details-toggle" id="heroDetailsToggle" type="button" aria-expanded="false" aria-label="Show details"></button>
         </div>
-        <button class="hero-details-toggle" id="heroDetailsToggle" type="button" aria-expanded="false" aria-label="Show details"></button>
         <div class="hero-details-panel" id="heroDetailsPanel">
           <div class="hero-details">
             <div class="hero-title" id="heroTitle"></div>
@@ -1407,6 +1425,7 @@
       const tones = ["photo-tone-1", "photo-tone-2", "photo-tone-3", "photo-tone-4", "photo-tone-5", "photo-tone-6"];
 
       const heroOverlay = document.getElementById("heroOverlay");
+      const heroShell = document.getElementById("heroShell");
       const heroCard = document.getElementById("heroCard");
       const heroMedia = document.getElementById("heroMedia");
       const heroImage = document.getElementById("heroImage");
@@ -1422,9 +1441,12 @@
       const heroNext = document.getElementById("heroNext");
       const heroClose = document.getElementById("heroClose");
       const heroDetailsToggle = document.getElementById("heroDetailsToggle");
-      const heroDetailsPanel = document.getElementById("heroDetailsPanel");
       const heroFloorplan = document.getElementById("heroFloorplan");
       const heroZoomHint = document.getElementById("heroZoomHint");
+
+      heroMapImage.tabIndex = 0;
+      heroMapImage.setAttribute("role", "button");
+      heroMapImage.setAttribute("aria-label", "Choose maps app for this listing");
 
       let listings = [];
       let listingsLoadError = "";
@@ -1721,7 +1743,7 @@
 
       function setHeroAspectRatio(ratio) {
         const safeRatio = clampNumber(Number(ratio) || 1.6, 0.55, 2.3);
-        heroCard.style.setProperty("--hero-aspect", String(safeRatio));
+        heroShell.style.setProperty("--hero-aspect", String(safeRatio));
       }
 
       function detailsToggleIcon(open) {
@@ -1732,8 +1754,7 @@
 
       function setHeroDetailsOpen(open) {
         heroDetailsOpen = Boolean(open);
-        heroCard.classList.toggle("has-details", heroDetailsOpen);
-        heroDetailsPanel.classList.toggle("is-open", heroDetailsOpen);
+        heroShell.classList.toggle("has-details", heroDetailsOpen);
         heroDetailsToggle.setAttribute("aria-expanded", heroDetailsOpen ? "true" : "false");
         heroDetailsToggle.setAttribute("aria-label", heroDetailsOpen ? "Hide details" : "Show details");
         heroDetailsToggle.innerHTML = detailsToggleIcon(heroDetailsOpen);
@@ -1741,13 +1762,13 @@
 
       function animateHeroFromSourceRect(sourceRect) {
         if (!sourceRect) return;
-        const finalRect = heroCard.getBoundingClientRect();
+        const finalRect = heroShell.getBoundingClientRect();
         if (finalRect.width <= 0 || finalRect.height <= 0) return;
         const scaleX = clampNumber(sourceRect.width / finalRect.width, 0.2, 2);
         const scaleY = clampNumber(sourceRect.height / finalRect.height, 0.2, 2);
         const translateX = sourceRect.left - finalRect.left;
         const translateY = sourceRect.top - finalRect.top;
-        heroCard.animate(
+        heroShell.animate(
           [
             {
               transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`,
@@ -1917,10 +1938,9 @@
         const requestId = ++heroMediaRenderRequestId;
         const activeMedia = heroMediaItems[heroMediaIndex] || null;
         const selectedImageUrl = activeMedia ? activeMedia.url : "";
-        heroMedia.classList.toggle("is-floorplan", Boolean(activeMedia && activeMedia.type === "floorplan"));
         heroFloorplan.hidden = true;
         syncHeroMediaArrows();
-        if (activeMedia && activeMedia.type !== "main") {
+        if (activeMedia) {
           setHeroAspectRatio(heroPrimaryAspectRatio);
         }
 
@@ -1954,6 +1974,7 @@
         }
         if (requestId !== heroMediaRenderRequestId) return;
 
+        heroMedia.classList.toggle("is-floorplan", Boolean(activeMedia && activeMedia.type === "floorplan"));
         if (currentSrc && currentSrc !== selectedImageUrl) {
           heroImage.animate([{ opacity: 0.78 }, { opacity: 1 }], {
             duration: 180,
@@ -2661,11 +2682,73 @@
         if (!heroHasImage || heroImage.naturalWidth <= 0 || heroImage.naturalHeight <= 0) return;
         const loadedRatio = heroImage.naturalWidth / heroImage.naturalHeight;
         const activeMedia = heroMediaItems[heroMediaIndex];
-        if (activeMedia && activeMedia.type === "main") {
+        if (activeMedia && activeMedia.type === "main" && Math.abs(loadedRatio - heroPrimaryAspectRatio) > 0.01) {
           heroPrimaryAspectRatio = loadedRatio;
           setHeroAspectRatio(loadedRatio);
         }
       });
+
+      function buildListingMapQuery(listing) {
+        if (!listing) return "";
+        const segments = [
+          listing.address || listing.title || "",
+          listing.neighborhood || "",
+          listing.borough || "",
+          "New York",
+        ]
+          .map((part) => String(part || "").trim())
+          .filter(Boolean);
+        return segments.join(", ");
+      }
+
+      function openListingInMaps(provider, listing) {
+        const query = buildListingMapQuery(listing);
+        if (!query) return;
+        const encoded = encodeURIComponent(query);
+        const url =
+          provider === "apple"
+            ? `https://maps.apple.com/?q=${encoded}`
+            : `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+        window.open(url, "_blank", "noopener");
+      }
+
+      function openListingMapWithSystemPrompt(listing) {
+        const query = buildListingMapQuery(listing);
+        if (!query) return;
+        const encoded = encodeURIComponent(query);
+        const ua = navigator.userAgent || "";
+        const isApple = /iPhone|iPad|iPod|Macintosh/i.test(ua);
+        const isAndroid = /Android/i.test(ua);
+
+        // URL schemes trigger OS/browser native "open app" dialogs when available.
+        if (isApple) {
+          const appUrl = `maps://?q=${encoded}`;
+          const fallbackUrl = `https://maps.apple.com/?q=${encoded}`;
+          const startedAt = Date.now();
+          window.location.href = appUrl;
+          setTimeout(() => {
+            if (Date.now() - startedAt < 1500) {
+              window.open(fallbackUrl, "_blank", "noopener");
+            }
+          }, 900);
+          return;
+        }
+
+        if (isAndroid) {
+          const appUrl = `geo:0,0?q=${encoded}`;
+          const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+          const startedAt = Date.now();
+          window.location.href = appUrl;
+          setTimeout(() => {
+            if (Date.now() - startedAt < 1500) {
+              window.open(fallbackUrl, "_blank", "noopener");
+            }
+          }, 900);
+          return;
+        }
+
+        openListingInMaps("google", listing);
+      }
 
       async function openHero(index, { syncUrl = true, replaceUrl = false, sourceRect = null } = {}) {
         const requestId = ++heroOpenRequestId;
@@ -2962,6 +3045,14 @@
 
       heroMedia.addEventListener("pointerup", handlePointerEnd);
       heroMedia.addEventListener("pointercancel", handlePointerEnd);
+      heroMapImage.addEventListener("click", () => {
+        openListingMapWithSystemPrompt(listings[activeIndex]);
+      });
+      heroMapImage.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        openListingMapWithSystemPrompt(listings[activeIndex]);
+      });
 
       window.addEventListener("popstate", () => {
         syncFilterStateFromUrl();
