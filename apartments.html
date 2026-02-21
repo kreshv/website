@@ -1960,6 +1960,19 @@
       }
 
       function renderCards(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+          cardsGrid.innerHTML = `
+            <article class="apartment-card" style="opacity:1; transform:none; cursor:default;">
+              <div class="photo photo-tone-2" aria-label="No listings available"></div>
+              <div class="card-body">
+                <div class="location">No listings found</div>
+                <div class="meta">Try adjusting filters or adding a new listing.</div>
+              </div>
+            </article>
+          `;
+          return;
+        }
+
         cardsGrid.innerHTML = data
           .map((listing, index) => {
             const toneClass = tones[index % tones.length];
@@ -2685,9 +2698,9 @@
           const response = await fetch(url.toString());
           if (!response.ok) throw new Error("Fetch failed");
           const payload = await response.json();
-          listings = Array.isArray(payload.data) && payload.data.length ? payload.data : fallbackListings;
+          listings = Array.isArray(payload.data) ? payload.data : [];
         } catch (_error) {
-          listings = fallbackListings;
+          listings = [];
         }
 
         const searchQuery = (params.get("q") || "").trim().toLowerCase();

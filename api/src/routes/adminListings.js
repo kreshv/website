@@ -88,12 +88,38 @@ function mapListingResponse(listing) {
   };
 }
 
-async function resolveImageUrl(inputUrl) {
+function extractCloudinaryPublicId(inputUrl) {
   if (!inputUrl) return null;
-  const trimmed = inputUrl.trim();
-  if (!trimmed) return null;
 
-  // If client sent a data URL, upload it to Cloudinary and store the hosted URL.
+  try {
+    const parsed = new URL(inputUrl);
+    if (!parsed.hostname.endsWith("cloudinary.com")) return null;
+
+    const pathParts = parsed.pathname.split("/").filter(Boolean);
+    const uploadIndex = pathParts.indexOf("upload");
+    if (uploadIndex === -1 || uploadIndex + 1 >= pathParts.length) return null;
+
+    const candidateParts = pathParts.slice(uploadIndex + 1);
+    // Strip transformation segments and optional version segment (v1234567).
+    const versionIndex = candidateParts.findIndex((segment) => /^v\d+$/.test(segment));
+    const publicIdParts = versionIndex >= 0 ? candidateParts.slice(versionIndex + 1) : candidateParts;
+    if (!publicIdParts.length) return null;
+
+    const last = publicIdParts[publicIdParts.length - 1];
+    publicIdParts[publicIdParts.length - 1] = last.replace(/\.[a-z0-9]+$/i, "");
+    const publicId = decodeURIComponent(publicIdParts.join("/")).trim();
+    return publicId || null;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveImageAsset(inputUrl) {
+  if (!inputUrl) return { url: null, publicId: null, uploaded: false };
+  const trimmed = inputUrl.trim();
+  if (!trimmed) return { url: null, publicId: null, uploaded: false };
+
+  // If client sent a data URL, upload it to Cloudinary and store the hosted URL + public id.
   if (trimmed.startsWith("data:")) {
     if (!hasCloudinaryConfig) {
       throw new Error("Cloudinary is not configured; cannot upload image data.");
@@ -102,10 +128,32 @@ async function resolveImageUrl(inputUrl) {
       folder: process.env.CLOUDINARY_FOLDER || "listings",
       resource_type: "image",
     });
-    return uploadResult.secure_url;
+    return {
+      url: uploadResult.secure_url,
+      publicId: uploadResult.public_id || extractCloudinaryPublicId(uploadResult.secure_url),
+      uploaded: true,
+    };
   }
 
-  return trimmed;
+  return {
+    url: trimmed,
+    publicId: extractCloudinaryPublicId(trimmed),
+    uploaded: false,
+  };
+}
+
+async function deleteCloudinaryAsset(publicId) {
+  if (!publicId || !hasCloudinaryConfig) return;
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+  } catch (error) {
+    console.error("Cloudinary asset delete failed", { publicId, error });
+  }
+}
+
+async function cleanupCloudinaryAssets(publicIds) {
+  const unique = [...new Set(publicIds.filter(Boolean))];
+  await Promise.all(unique.map((id) => deleteCloudinaryAsset(id)));
 }
 
 function requireAdmin(req, res) {
@@ -297,13 +345,13 @@ router.post("/", async (req, res) => {
   }
 
   const payload = parsed.data;
-  let resolvedImageUrl = null;
-  let resolvedFloorplanImageUrl = null;
-  let resolvedMapImageUrl = null;
+  let imageAsset = { url: null, publicId: null, uploaded: false };
+  let floorplanAsset = { url: null, publicId: null, uploaded: false };
+  let mapAsset = { url: null, publicId: null, uploaded: false };
   try {
-    resolvedImageUrl = await resolveImageUrl(payload.imageUrl);
-    resolvedFloorplanImageUrl = await resolveImageUrl(payload.floorplanImageUrl);
-    resolvedMapImageUrl = await resolveImageUrl(payload.mapImageUrl);
+    imageAsset = await resolveImageAsset(payload.imageUrl);
+    floorplanAsset = await resolveImageAsset(payload.floorplanImageUrl);
+    mapAsset = await resolveImageAsset(payload.mapImageUrl);
   } catch (error) {
     return res.status(400).json({ error: error.message || "Image upload failed." });
   }
@@ -323,9 +371,12 @@ router.post("/", async (req, res) => {
       data: {
         title: payload.title,
         address: payload.address ?? null,
-        imageUrl: resolvedImageUrl,
-        floorplanImageUrl: resolvedFloorplanImageUrl,
-        mapImageUrl: resolvedMapImageUrl,
+        imageUrl: imageAsset.url,
+        imagePublicId: imageAsset.publicId,
+        floorplanImageUrl: floorplanAsset.url,
+        floorplanImagePublicId: floorplanAsset.publicId,
+        mapImageUrl: mapAsset.url,
+        mapImagePublicId: mapAsset.publicId,
         price: payload.price,
         beds: payload.beds ?? null,
         baths: payload.baths ?? null,
@@ -355,6 +406,11 @@ router.post("/", async (req, res) => {
 
     return res.status(201).json({ data: mapListingResponse(createdListing) });
   } catch (error) {
+    await cleanupCloudinaryAssets([
+      imageAsset.uploaded ? imageAsset.publicId : null,
+      floorplanAsset.uploaded ? floorplanAsset.publicId : null,
+      mapAsset.uploaded ? mapAsset.publicId : null,
+    ]);
     console.error("POST /api/admin/listings failed", error);
     return res.status(500).json({ error: "Failed to create listing" });
   }
@@ -374,13 +430,13 @@ router.patch("/:id", async (req, res) => {
   }
 
   const payload = parsed.data;
-  let resolvedImageUrl = null;
-  let resolvedFloorplanImageUrl = null;
-  let resolvedMapImageUrl = null;
+  let imageAsset = { url: null, publicId: null, uploaded: false };
+  let floorplanAsset = { url: null, publicId: null, uploaded: false };
+  let mapAsset = { url: null, publicId: null, uploaded: false };
   try {
-    resolvedImageUrl = await resolveImageUrl(payload.imageUrl);
-    resolvedFloorplanImageUrl = await resolveImageUrl(payload.floorplanImageUrl);
-    resolvedMapImageUrl = await resolveImageUrl(payload.mapImageUrl);
+    imageAsset = await resolveImageAsset(payload.imageUrl);
+    floorplanAsset = await resolveImageAsset(payload.floorplanImageUrl);
+    mapAsset = await resolveImageAsset(payload.mapImageUrl);
   } catch (error) {
     return res.status(400).json({ error: error.message || "Image upload failed." });
   }
@@ -390,7 +446,18 @@ router.patch("/:id", async (req, res) => {
   const subwayLines = normalizeList(payload.subwayLines).map((line) => line.toUpperCase());
 
   try {
-    const existing = await prisma.listing.findUnique({ where: { id: listingId } });
+    const existing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      select: {
+        id: true,
+        imageUrl: true,
+        imagePublicId: true,
+        floorplanImageUrl: true,
+        floorplanImagePublicId: true,
+        mapImageUrl: true,
+        mapImagePublicId: true,
+      },
+    });
     if (!existing) return res.status(404).json({ error: "Not found" });
 
     const { borough, neighborhood } = await resolveBoroughAndNeighborhood(
@@ -404,9 +471,12 @@ router.patch("/:id", async (req, res) => {
       data: {
         title: payload.title,
         address: payload.address ?? null,
-        imageUrl: resolvedImageUrl,
-        floorplanImageUrl: resolvedFloorplanImageUrl,
-        mapImageUrl: resolvedMapImageUrl,
+        imageUrl: imageAsset.url,
+        imagePublicId: imageAsset.publicId,
+        floorplanImageUrl: floorplanAsset.url,
+        floorplanImagePublicId: floorplanAsset.publicId,
+        mapImageUrl: mapAsset.url,
+        mapImagePublicId: mapAsset.publicId,
         price: payload.price,
         beds: payload.beds ?? null,
         baths: payload.baths ?? null,
@@ -419,6 +489,19 @@ router.patch("/:id", async (req, res) => {
 
     await syncListingFeatures(prisma, listingId, unitFeatures, buildingFeatures);
     await syncListingSubwayLines(prisma, listingId, subwayLines);
+
+    const oldAssetIds = [
+      existing.imagePublicId || extractCloudinaryPublicId(existing.imageUrl),
+      existing.floorplanImagePublicId || extractCloudinaryPublicId(existing.floorplanImageUrl),
+      existing.mapImagePublicId || extractCloudinaryPublicId(existing.mapImageUrl),
+    ].filter(Boolean);
+    const newAssetIds = [
+      imageAsset.publicId || extractCloudinaryPublicId(imageAsset.url),
+      floorplanAsset.publicId || extractCloudinaryPublicId(floorplanAsset.url),
+      mapAsset.publicId || extractCloudinaryPublicId(mapAsset.url),
+    ].filter(Boolean);
+    const replacedAssetIds = oldAssetIds.filter((id) => !newAssetIds.includes(id));
+    await cleanupCloudinaryAssets(replacedAssetIds);
 
     const updatedListing = await prisma.listing.findUnique({
       where: { id: listingId },
@@ -433,6 +516,11 @@ router.patch("/:id", async (req, res) => {
 
     return res.json({ data: mapListingResponse(updatedListing) });
   } catch (error) {
+    await cleanupCloudinaryAssets([
+      imageAsset.uploaded ? imageAsset.publicId : null,
+      floorplanAsset.uploaded ? floorplanAsset.publicId : null,
+      mapAsset.uploaded ? mapAsset.publicId : null,
+    ]);
     console.error("PATCH /api/admin/listings/:id failed", error);
     return res.status(500).json({ error: "Failed to update listing" });
   }
@@ -447,12 +535,28 @@ router.delete("/:id", async (req, res) => {
   }
 
   try {
-    const existing = await prisma.listing.findUnique({ where: { id: listingId } });
+    const existing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      select: {
+        id: true,
+        imageUrl: true,
+        imagePublicId: true,
+        floorplanImageUrl: true,
+        floorplanImagePublicId: true,
+        mapImageUrl: true,
+        mapImagePublicId: true,
+      },
+    });
     if (!existing) {
       return res.status(404).json({ error: "Not found" });
     }
 
     await prisma.listing.delete({ where: { id: listingId } });
+    await cleanupCloudinaryAssets([
+      existing.imagePublicId || extractCloudinaryPublicId(existing.imageUrl),
+      existing.floorplanImagePublicId || extractCloudinaryPublicId(existing.floorplanImageUrl),
+      existing.mapImagePublicId || extractCloudinaryPublicId(existing.mapImageUrl),
+    ]);
     return res.json({ deleted: 1, id: listingId });
   } catch (error) {
     console.error("DELETE /api/admin/listings/:id failed", error);
