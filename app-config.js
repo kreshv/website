@@ -1,8 +1,6 @@
 const isLocalContext =
   typeof window !== "undefined" &&
-  (window.location.protocol === "file:" ||
-    window.location.hostname === "127.0.0.1" ||
-    window.location.hostname === "localhost");
+  (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost");
 
 window.APP_CONFIG = {
   API_BASE_URL: isLocalContext

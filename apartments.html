@@ -1421,6 +1421,7 @@
       const heroZoomHint = document.getElementById("heroZoomHint");
 
       let listings = [];
+      let listingsLoadError = "";
       let activeIndex = 0;
       let heroHasImage = false;
       let zoomScale = 1;
@@ -1961,12 +1962,17 @@
 
       function renderCards(data) {
         if (!Array.isArray(data) || data.length === 0) {
+          const isApiFailure = Boolean(listingsLoadError);
+          const emptyTitle = isApiFailure ? "Could not load listings" : "No listings found";
+          const emptyMeta = isApiFailure
+            ? `${listingsLoadError} If this page is opened via file://, CORS may be blocking the API request.`
+            : "Try adjusting filters or adding a new listing.";
           cardsGrid.innerHTML = `
             <article class="apartment-card" style="opacity:1; transform:none; cursor:default;">
               <div class="photo photo-tone-2" aria-label="No listings available"></div>
               <div class="card-body">
-                <div class="location">No listings found</div>
-                <div class="meta">Try adjusting filters or adding a new listing.</div>
+                <div class="location">${escapeHtml(emptyTitle)}</div>
+                <div class="meta">${escapeHtml(emptyMeta)}</div>
               </div>
             </article>
           `;
@@ -2693,14 +2699,19 @@
           if (value) url.searchParams.set(key, value);
         });
         url.searchParams.set("limit", "12");
+        listingsLoadError = "";
 
         try {
           const response = await fetch(url.toString());
-          if (!response.ok) throw new Error("Fetch failed");
+          if (!response.ok) throw new Error(`API returned ${response.status}`);
           const payload = await response.json();
           listings = Array.isArray(payload.data) ? payload.data : [];
-        } catch (_error) {
+        } catch (error) {
           listings = [];
+          listingsLoadError = "Listings API request failed.";
+          if (error && typeof error.message === "string" && error.message.trim()) {
+            listingsLoadError = error.message.trim();
+          }
         }
 
         const searchQuery = (params.get("q") || "").trim().toLowerCase();
