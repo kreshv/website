@@ -720,10 +720,16 @@
         cursor: grab;
         user-select: none;
         -webkit-user-drag: none;
+        opacity: 1;
+        transition: opacity 180ms ease;
       }
 
       .hero-media.has-image .hero-image {
         display: block;
+      }
+
+      .hero-image.is-switching {
+        opacity: 0.88;
       }
 
       .hero-media.is-dragging .hero-image {
@@ -1066,13 +1072,13 @@
         position: fixed;
         top: 50%;
         transform: translateY(-50%);
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
         border: 1px solid rgba(255, 236, 210, 0.55);
         border-radius: 999px;
         background: rgba(39, 29, 21, 0.56);
         color: #fff8ef;
-        font-size: 1.35rem;
+        font-size: 1.2rem;
         line-height: 1;
         cursor: pointer;
         z-index: 45;
@@ -1210,8 +1216,8 @@
         }
 
         .hero-nav {
-          width: 42px;
-          height: 42px;
+          width: 38px;
+          height: 38px;
         }
 
         .hero-zoom-hint {
@@ -1446,6 +1452,7 @@
       let heroMediaItems = [];
       let heroMediaIndex = 0;
       let heroPrimaryAspectRatio = 1.6;
+      let heroMediaRenderRequestId = 0;
       let isFilterPanelOpen = false;
       let isSearchOpen = false;
       let showAllNeighborhoods = false;
@@ -1906,20 +1913,64 @@
         heroNext.setAttribute("aria-label", "Next image");
       }
 
-      function renderActiveHeroMedia({ preserveZoom = false } = {}) {
+      async function renderActiveHeroMedia({ preserveZoom = false } = {}) {
+        const requestId = ++heroMediaRenderRequestId;
         const activeMedia = heroMediaItems[heroMediaIndex] || null;
         const selectedImageUrl = activeMedia ? activeMedia.url : "";
-        heroHasImage = Boolean(selectedImageUrl);
-        heroMedia.classList.toggle("has-image", heroHasImage);
         heroMedia.classList.toggle("is-floorplan", Boolean(activeMedia && activeMedia.type === "floorplan"));
         heroFloorplan.hidden = true;
-        heroImage.src = heroHasImage ? selectedImageUrl : "";
         syncHeroMediaArrows();
+        if (activeMedia && activeMedia.type !== "main") {
+          setHeroAspectRatio(heroPrimaryAspectRatio);
+        }
+
+        if (!selectedImageUrl) {
+          heroHasImage = false;
+          heroMedia.classList.remove("has-image");
+          heroImage.src = "";
+          if (!preserveZoom) {
+            resetImageTransform();
+          } else {
+            applyImageTransform();
+          }
+          return;
+        }
+
+        await preloadImage(selectedImageUrl);
+        if (requestId !== heroMediaRenderRequestId) return;
+
+        const currentSrc = heroImage.currentSrc || heroImage.src;
+        heroHasImage = true;
+        heroMedia.classList.add("has-image");
+        heroImage.classList.add("is-switching");
+        heroImage.src = selectedImageUrl;
+
+        if (heroImage.decode) {
+          try {
+            await heroImage.decode();
+          } catch (_error) {
+            // decode can reject for cross-origin or unsupported formats; load still proceeds.
+          }
+        }
+        if (requestId !== heroMediaRenderRequestId) return;
+
+        if (currentSrc && currentSrc !== selectedImageUrl) {
+          heroImage.animate([{ opacity: 0.78 }, { opacity: 1 }], {
+            duration: 180,
+            easing: "ease",
+            fill: "forwards",
+          });
+        }
+
         if (!preserveZoom) {
           resetImageTransform();
         } else {
           applyImageTransform();
         }
+        requestAnimationFrame(() => {
+          if (requestId !== heroMediaRenderRequestId) return;
+          heroImage.classList.remove("is-switching");
+        });
       }
 
       function preloadImage(url, timeoutMs = 4500) {
@@ -1944,7 +1995,7 @@
         if (!heroMediaItems.length) return;
         const count = heroMediaItems.length;
         heroMediaIndex = ((nextIndex % count) + count) % count;
-        renderActiveHeroMedia({ preserveZoom });
+        void renderActiveHeroMedia({ preserveZoom });
       }
 
       function navigateHeroMedia(step) {
@@ -2016,7 +2067,7 @@
 
         heroMedia.className = `hero-media ${toneClass}`;
         setHeroAspectRatio(1.6);
-        renderActiveHeroMedia();
+        void renderActiveHeroMedia();
         clearZoomHint();
         heroTitle.textContent = listing.address || listing.title || "Apartment Listing";
         heroLocation.textContent = `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`;
@@ -2612,8 +2663,8 @@
         const activeMedia = heroMediaItems[heroMediaIndex];
         if (activeMedia && activeMedia.type === "main") {
           heroPrimaryAspectRatio = loadedRatio;
+          setHeroAspectRatio(loadedRatio);
         }
-        setHeroAspectRatio(loadedRatio);
       });
 
       async function openHero(index, { syncUrl = true, replaceUrl = false, sourceRect = null } = {}) {
