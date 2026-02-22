@@ -209,7 +209,7 @@
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        padding: calc(12px + var(--safe-top)) 16px 8px;
+        padding: calc(6px + var(--safe-top)) 14px 3px;
         border-bottom: none;
       }
 
@@ -225,6 +225,8 @@
         color: #6b5d4b;
         font-size: 1.45rem;
         line-height: 1;
+        min-width: 34px;
+        min-height: 34px;
         padding: 0 4px;
         cursor: pointer;
       }
@@ -654,6 +656,7 @@
         --hero-details-width: 340px;
         --hero-mobile-card-center-y: 50%;
         --hero-mobile-details-top: calc(var(--safe-top) + 10px);
+        --hero-mobile-details-lift: 0px;
         display: flex;
         align-items: stretch;
         gap: 12px;
@@ -673,7 +676,23 @@
         position: relative;
         transition:
           width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
-          height 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+          height 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 200ms ease,
+          filter 220ms ease;
+      }
+
+      .hero-card.is-inactive {
+        opacity: 0.74;
+        filter: saturate(0.7) brightness(0.74);
+      }
+
+      .hero-card.is-inactive .hero-media,
+      .hero-card.is-inactive .hero-details-toggle {
+        pointer-events: none;
+      }
+
+      .hero-card.is-inactive .hero-details-toggle {
+        opacity: 0.42;
       }
 
       .hero-card::before {
@@ -984,6 +1003,10 @@
         padding: 28px 16px 16px;
         overflow: visible;
         height: auto;
+      }
+
+      .hero-details-drag-handle {
+        display: none;
       }
 
       .hero-title {
@@ -1355,12 +1378,21 @@
         .filter-panel {
           width: min(340px, calc(100vw - var(--safe-left)));
           border-radius: 0 14px 14px 0;
+          grid-template-rows: auto 1fr auto;
+        }
+
+        .filter-panel-head {
+          padding: calc(2px + var(--safe-top)) 12px 0;
+        }
+
+        .filter-panel-body {
+          padding: 6px 14px 14px;
         }
 
         .filter-close-btn {
-          min-width: 44px;
-          min-height: 44px;
-          font-size: 1.6rem;
+          min-width: 38px;
+          min-height: 38px;
+          font-size: 1.52rem;
         }
 
         .filter-action-btn {
@@ -1380,6 +1412,11 @@
 
         .hero-overlay.has-details-open {
           place-items: start center;
+        }
+
+        .hero-overlay.has-details-open .hero-card {
+          height: min(calc(96vw / var(--hero-aspect)), 46vh);
+          min-height: 190px;
         }
 
         .hero-shell {
@@ -1409,7 +1446,7 @@
           position: fixed;
           left: calc(8px + var(--safe-left));
           right: calc(8px + var(--safe-right));
-          top: var(--hero-mobile-details-top);
+          top: calc(var(--hero-mobile-details-top) - var(--hero-mobile-details-lift));
           bottom: calc(8px + var(--safe-bottom));
           width: auto;
           height: auto;
@@ -1426,25 +1463,48 @@
           z-index: 42;
         }
 
-        .hero-shell.has-details .hero-details-panel::before {
-          content: "";
+        .hero-shell.has-details .hero-details-drag-handle {
           position: sticky;
-          top: 8px;
-          left: 50%;
-          transform: translateX(-50%);
+          top: 0;
+          z-index: 4;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          margin: 0;
+          padding-top: 8px;
+          height: 22px;
+          background: linear-gradient(
+            to bottom,
+            rgba(255, 250, 243, 1) 0%,
+            rgba(255, 250, 243, 0.94) 68%,
+            rgba(255, 250, 243, 0) 100%
+          );
+          touch-action: none;
+          cursor: ns-resize;
+        }
+
+        .hero-shell.has-details .hero-details-drag-handle::before {
+          content: "";
           display: block;
           width: 42px;
-          height: 4px;
+          height: 5px;
           border-radius: 999px;
-          background: rgba(132, 114, 89, 0.35);
-          margin: 0 auto 8px;
-          z-index: 1;
+          background: rgba(132, 114, 89, 0.36);
+        }
+
+        .hero-shell.has-details .hero-details {
+          padding-top: 14px;
         }
 
         .hero-nav {
           position: absolute;
           top: var(--hero-mobile-card-center-y);
           transform: translateY(-50%);
+        }
+
+        .hero-overlay.has-details-open .hero-nav {
+          opacity: 0;
+          pointer-events: none;
         }
 
         .hero-zoom-hint {
@@ -1457,6 +1517,10 @@
 
       @supports (height: 100dvh) {
         @media (max-width: 680px) {
+          .hero-overlay.has-details-open .hero-card {
+            height: min(calc(96vw / var(--hero-aspect)), 46dvh);
+          }
+
           .hero-shell.has-details .hero-details-panel {
             max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px);
             overflow-x: hidden;
@@ -1590,6 +1654,7 @@
           <button class="hero-details-toggle" id="heroDetailsToggle" type="button" aria-expanded="false" aria-label="Show details"></button>
         </div>
         <div class="hero-details-panel" id="heroDetailsPanel">
+          <div class="hero-details-drag-handle" id="heroDetailsDragHandle" aria-hidden="true"></div>
           <div class="hero-details">
             <div class="hero-title" id="heroTitle"></div>
             <div class="hero-location" id="heroLocation"></div>
@@ -1665,6 +1730,8 @@
       const heroNext = document.getElementById("heroNext");
       const heroClose = document.getElementById("heroClose");
       const heroDetailsToggle = document.getElementById("heroDetailsToggle");
+      const heroDetailsPanel = document.getElementById("heroDetailsPanel");
+      const heroDetailsDragHandle = document.getElementById("heroDetailsDragHandle");
       const heroFloorplan = document.getElementById("heroFloorplan");
       const heroZoomHint = document.getElementById("heroZoomHint");
 
@@ -1701,6 +1768,14 @@
       let heroMediaRenderRequestId = 0;
       let heroMobileLayoutTimer = null;
       let heroMobileLayoutRafId = 0;
+      let heroMobileDetailsBaseTop = 0;
+      let heroMobileDetailsMinTop = 0;
+      let heroMobileDetailsLift = 0;
+      let heroMainInactive = false;
+      let heroDetailsDragPointerId = null;
+      let heroDetailsDragStartY = 0;
+      let heroDetailsDragStartLift = 0;
+      let heroDetailsDragDidMove = false;
       const preloadedImageCache = new Map();
       const preloadedImageRatioCache = new Map();
       let isFilterPanelOpen = false;
@@ -2011,6 +2086,81 @@
         }, trailingDelay);
       }
 
+      function isHeroMobileViewport() {
+        return window.matchMedia("(max-width: 680px)").matches;
+      }
+
+      function getHeroDetailsMaxLift() {
+        return Math.max(0, Number(heroMobileDetailsBaseTop) - Number(heroMobileDetailsMinTop));
+      }
+
+      function cancelHeroDetailsDrag() {
+        const pointerId = heroDetailsDragPointerId;
+        heroDetailsDragPointerId = null;
+        heroDetailsDragStartY = 0;
+        heroDetailsDragStartLift = 0;
+        heroDetailsDragDidMove = false;
+        if (pointerId !== null) {
+          try {
+            heroDetailsDragHandle.releasePointerCapture(pointerId);
+          } catch (_error) {
+            // Pointer capture can already be released by the browser.
+          }
+        }
+      }
+
+      function toggleHeroDetailsLiftSnap() {
+        if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
+        const maxLift = getHeroDetailsMaxLift();
+        if (maxLift <= 0) return;
+
+        const atTop = heroMobileDetailsLift >= maxLift - 2;
+        heroMobileDetailsLift = atTop ? 0 : maxLift;
+        applyHeroDetailsLift();
+        heroDetailsPanel.scrollTop = 0;
+      }
+
+      function syncHeroMainInactiveState() {
+        let nextInactive = false;
+        if (
+          !heroOverlay.hidden &&
+          heroDetailsOpen &&
+          isHeroMobileViewport() &&
+          Number(heroMobileDetailsBaseTop) > 0
+        ) {
+          const cardRect = heroCard.getBoundingClientRect();
+          if (cardRect.width > 0 && cardRect.height > 0) {
+            const panelTop = Number(heroMobileDetailsBaseTop) - Number(heroMobileDetailsLift);
+            const enterThreshold = cardRect.bottom - 8;
+            const exitThreshold = cardRect.bottom + 2;
+            nextInactive = heroMainInactive
+              ? panelTop <= exitThreshold
+              : panelTop <= enterThreshold;
+          }
+        }
+
+        heroMainInactive = nextInactive;
+        heroCard.classList.toggle("is-inactive", heroMainInactive);
+      }
+
+      function applyHeroDetailsLift() {
+        const nextLift = clampNumber(Number(heroMobileDetailsLift) || 0, 0, getHeroDetailsMaxLift());
+        heroMobileDetailsLift = nextLift;
+        heroShell.style.setProperty("--hero-mobile-details-lift", `${nextLift}px`);
+        syncHeroMainInactiveState();
+      }
+
+      function resetHeroDetailsLift({ resetScroll = false } = {}) {
+        cancelHeroDetailsDrag();
+        heroMobileDetailsLift = 0;
+        heroMobileDetailsBaseTop = 0;
+        heroMobileDetailsMinTop = 0;
+        applyHeroDetailsLift();
+        if (resetScroll) {
+          heroDetailsPanel.scrollTop = 0;
+        }
+      }
+
       function updateHeroMobileLayout() {
         if (heroOverlay.hidden) return;
         const cardRect = heroCard.getBoundingClientRect();
@@ -2025,10 +2175,18 @@
           window.innerHeight ||
           document.documentElement.clientHeight ||
           0;
-        const minPanelHeight = Math.min(420, Math.max(260, viewportHeight * 0.42));
-        const preferredTop = cardRect.bottom + 10;
-        const maxTop = Math.max(safeTop + 10, viewportHeight - safeBottom - 8 - minPanelHeight);
-        const nextTop = Math.max(safeTop + 10, Math.min(preferredTop, maxTop));
+        const minVisiblePanelHeight = 140;
+        const cardBottom = cardRect.bottom;
+        const minTop = safeTop + 8;
+        const preferredTop = Math.max(minTop, cardBottom + 8);
+        const maxTop = Math.max(minTop, viewportHeight - safeBottom - minVisiblePanelHeight);
+        const nextTop = clampNumber(preferredTop, minTop, maxTop);
+        heroMobileDetailsBaseTop = nextTop;
+        heroMobileDetailsMinTop = minTop;
+        const maxLift = getHeroDetailsMaxLift();
+        if (heroMobileDetailsLift > maxLift) {
+          heroMobileDetailsLift = maxLift;
+        }
 
         const cardCenterY = cardRect.top + cardRect.height / 2;
         heroOverlay.style.setProperty("--hero-card-left", `${cardRect.left}px`);
@@ -2036,12 +2194,18 @@
         heroOverlay.style.setProperty("--hero-mobile-card-center-y", `${cardCenterY}px`);
         heroShell.style.setProperty("--hero-mobile-card-center-y", `${cardCenterY}px`);
         heroShell.style.setProperty("--hero-mobile-details-top", `${nextTop}px`);
+        applyHeroDetailsLift();
       }
 
       function setHeroDetailsOpen(open) {
         heroDetailsOpen = Boolean(open);
         heroOverlay.classList.toggle("has-details-open", heroDetailsOpen);
         heroShell.classList.toggle("has-details", heroDetailsOpen);
+        if (heroDetailsOpen) {
+          resetHeroDetailsLift({ resetScroll: true });
+        } else {
+          resetHeroDetailsLift();
+        }
         scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 220 });
         heroDetailsToggle.setAttribute("aria-expanded", heroDetailsOpen ? "true" : "false");
         heroDetailsToggle.setAttribute("aria-label", heroDetailsOpen ? "Hide details" : "Show details");
@@ -3172,6 +3336,67 @@
         }
       }
 
+      function handleHeroDetailsPanelScroll() {
+        if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
+        const maxLift = getHeroDetailsMaxLift();
+        if (maxLift <= 0 || heroMobileDetailsLift >= maxLift) return;
+        const scrollTop = heroDetailsPanel.scrollTop;
+        if (scrollTop <= 0) return;
+
+        const liftRemaining = maxLift - heroMobileDetailsLift;
+        const liftDelta = Math.min(scrollTop, liftRemaining);
+        if (liftDelta <= 0) return;
+
+        heroMobileDetailsLift += liftDelta;
+        applyHeroDetailsLift();
+        heroDetailsPanel.scrollTop = scrollTop - liftDelta;
+      }
+
+      function startHeroDetailsHandleDrag(event) {
+        if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+
+        heroDetailsDragPointerId = event.pointerId;
+        heroDetailsDragStartY = event.clientY;
+        heroDetailsDragStartLift = heroMobileDetailsLift;
+        heroDetailsDragDidMove = false;
+        try {
+          heroDetailsDragHandle.setPointerCapture(event.pointerId);
+        } catch (_error) {
+          // Ignore capture failures on unsupported browsers.
+        }
+        event.preventDefault();
+      }
+
+      function moveHeroDetailsHandleDrag(event) {
+        if (event.pointerId !== heroDetailsDragPointerId) return;
+        const maxLift = getHeroDetailsMaxLift();
+        if (maxLift <= 0) return;
+
+        const dragDeltaY = event.clientY - heroDetailsDragStartY;
+        if (!heroDetailsDragDidMove && Math.abs(dragDeltaY) > 5) {
+          heroDetailsDragDidMove = true;
+        }
+        const nextLift = clampNumber(heroDetailsDragStartLift - dragDeltaY, 0, maxLift);
+        if (nextLift !== heroMobileDetailsLift) {
+          heroMobileDetailsLift = nextLift;
+          applyHeroDetailsLift();
+          if (dragDeltaY < 0 && heroDetailsPanel.scrollTop > 0) {
+            heroDetailsPanel.scrollTop = 0;
+          }
+        }
+        event.preventDefault();
+      }
+
+      function endHeroDetailsHandleDrag(event) {
+        if (event.pointerId !== heroDetailsDragPointerId) return;
+        const shouldToggleSnap = event.type === "pointerup" && !heroDetailsDragDidMove;
+        cancelHeroDetailsDrag();
+        if (shouldToggleSnap) {
+          toggleHeroDetailsLiftSnap();
+        }
+      }
+
       async function loadListings() {
         const params = new URLSearchParams(window.location.search);
         const url = new URL(`${apiBaseUrl}/api/listings`);
@@ -3418,6 +3643,12 @@
         event.preventDefault();
         openListingMapWithSystemPrompt(listings[activeIndex]);
       });
+      heroDetailsPanel.addEventListener("scroll", handleHeroDetailsPanelScroll, { passive: true });
+      heroDetailsDragHandle.addEventListener("pointerdown", startHeroDetailsHandleDrag);
+      heroDetailsDragHandle.addEventListener("pointermove", moveHeroDetailsHandleDrag);
+      heroDetailsDragHandle.addEventListener("pointerup", endHeroDetailsHandleDrag);
+      heroDetailsDragHandle.addEventListener("pointercancel", endHeroDetailsHandleDrag);
+      heroDetailsDragHandle.addEventListener("lostpointercapture", endHeroDetailsHandleDrag);
 
       window.addEventListener("popstate", () => {
         syncFilterStateFromUrl();
