@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Apartments</title>
     <style>
       :root {
@@ -11,6 +11,10 @@
         --line: #eadcc8;
         --ink: #28231d;
         --muted: #6e655a;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
       }
 
       * {
@@ -30,18 +34,19 @@
           radial-gradient(circle at 15% 10%, #fff7ea 0%, transparent 36%),
           radial-gradient(circle at 87% 88%, #fff3df 0%, transparent 40%),
           var(--page-bg);
+        overflow-x: hidden;
       }
 
       .results-wrap {
         width: min(1120px, 94vw);
         margin: 0 auto;
-        padding: 72px 0 56px;
+        padding: calc(88px + var(--safe-top)) 0 calc(56px + var(--safe-bottom));
       }
 
       .page-filter-btn {
         position: fixed;
-        top: 18px;
-        left: 18px;
+        top: calc(18px + var(--safe-top));
+        left: calc(18px + var(--safe-left));
         width: 42px;
         height: 34px;
         border: none;
@@ -79,8 +84,8 @@
 
       .page-search {
         position: fixed;
-        top: 18px;
-        right: 18px;
+        top: calc(18px + var(--safe-top));
+        right: calc(18px + var(--safe-right));
         width: 42px;
         height: 34px;
         border-radius: 9px;
@@ -100,7 +105,7 @@
       }
 
       .page-search.is-open {
-        width: min(320px, calc(100vw - 36px));
+        width: min(320px, calc(100vw - 36px - var(--safe-left) - var(--safe-right)));
         background: rgba(246, 239, 228, 0.94);
         box-shadow: inset 0 0 0 1px rgba(214, 196, 169, 0.18);
       }
@@ -204,7 +209,7 @@
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        padding: 12px 16px 8px;
+        padding: calc(12px + var(--safe-top)) 16px 8px;
         border-bottom: none;
       }
 
@@ -385,7 +390,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
-        padding: 12px 16px 16px;
+        padding: 12px 16px calc(16px + var(--safe-bottom));
         border-top: 1px solid #e2ceb0;
       }
 
@@ -611,14 +616,26 @@
       }
 
       .hero-overlay {
+        --hero-aspect: 1.6;
+        --hero-nav-size: 44px;
+        --hero-card-left: 0px;
+        --hero-card-right: 100vw;
+        --hero-mobile-card-center-y: 50%;
         position: fixed;
         inset: 0;
         background: rgba(24, 18, 13, 0.7);
         backdrop-filter: blur(3px);
         display: grid;
         place-items: center;
-        padding: 10px;
-        overflow: auto;
+        padding:
+          calc(10px + var(--safe-top))
+          calc(10px + var(--safe-right))
+          calc(10px + var(--safe-bottom))
+          calc(10px + var(--safe-left));
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
         z-index: 40;
         opacity: 0;
         transition: opacity 220ms ease;
@@ -635,10 +652,14 @@
       .hero-shell {
         --hero-aspect: 1.6;
         --hero-details-width: 340px;
+        --hero-mobile-card-center-y: 50%;
+        --hero-mobile-details-top: calc(var(--safe-top) + 10px);
         display: flex;
         align-items: stretch;
         gap: 12px;
         position: relative;
+        max-width: 100%;
+        min-height: 0;
       }
 
       .hero-card {
@@ -816,7 +837,11 @@
           opacity 220ms ease,
           transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
         opacity: 0;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
         pointer-events: none;
         z-index: 5;
       }
@@ -957,8 +982,8 @@
         gap: 10px;
         font-family: "Avenir Next", "Segoe UI", sans-serif;
         padding: 28px 16px 16px;
-        overflow-y: auto;
-        height: 100%;
+        overflow: visible;
+        height: auto;
       }
 
       .hero-title {
@@ -1006,12 +1031,36 @@
       }
 
       .hero-map {
-        margin-top: auto;
-        border: 1px solid #e1d1bb;
-        border-radius: 12px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        margin-top: 12px;
+        border: 1px solid #dcc8ab;
+        border-radius: 14px;
         overflow: hidden;
-        background: #f2e9dd;
-        min-height: 190px;
+        background: #efe4d3;
+        aspect-ratio: 1.92 / 1;
+        min-height: 162px;
+        max-height: 238px;
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 252, 245, 0.35),
+          0 10px 20px rgba(39, 28, 16, 0.12);
+      }
+
+      .hero-map::after {
+        content: "Open in Maps";
+        position: absolute;
+        right: 9px;
+        bottom: 9px;
+        z-index: 2;
+        pointer-events: none;
+        font-size: 0.68rem;
+        letter-spacing: 0.01em;
+        color: #fff6e9;
+        background: rgba(22, 16, 10, 0.62);
+        border: 1px solid rgba(255, 236, 209, 0.22);
+        border-radius: 999px;
+        padding: 4px 8px;
       }
 
       .hero-map img {
@@ -1019,7 +1068,14 @@
         height: 100%;
         display: block;
         object-fit: cover;
+        object-position: center;
         cursor: pointer;
+        filter: saturate(0.92) contrast(0.98);
+        transition: filter 160ms ease;
+      }
+
+      .hero-map:hover img {
+        filter: saturate(1) contrast(1.02);
       }
 
       .hero-chip-list {
@@ -1074,31 +1130,46 @@
 
       .hero-nav {
         position: fixed;
-        top: 50%;
+        top: var(--hero-mobile-card-center-y);
         transform: translateY(-50%);
-        width: 44px;
-        height: 44px;
-        border: 1px solid rgba(255, 236, 210, 0.55);
-        border-radius: 999px;
-        background: rgba(39, 29, 21, 0.56);
-        color: #fff8ef;
-        font-size: 1.2rem;
+        width: auto;
+        height: auto;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: rgba(68, 68, 68, 0.72);
+        font-size: clamp(1.45rem, 2.6vw, 1.85rem);
+        font-weight: 600;
         line-height: 1;
+        padding: 4px 6px;
         cursor: pointer;
+        transition:
+          color 160ms ease,
+          transform 140ms ease,
+          opacity 140ms ease;
         z-index: 45;
       }
 
+      .hero-nav:hover {
+        color: rgba(54, 54, 54, 0.9);
+      }
+
+      .hero-nav:active {
+        transform: translateY(-50%) scale(0.96);
+      }
+
       .hero-nav:disabled {
-        opacity: 0.38;
+        opacity: 0.32;
         cursor: default;
       }
 
       .hero-prev {
-        left: max(14px, 2vw);
+        left: calc(var(--hero-card-left) + 12px);
       }
 
       .hero-next {
-        right: max(14px, 2vw);
+        right: calc(100vw - var(--hero-card-right) + 12px);
+        left: auto;
       }
 
       .hero-close {
@@ -1181,6 +1252,17 @@
         }
       }
 
+      @supports (height: 100dvh) {
+        .hero-card {
+          width: min(94vw, calc(min(84dvh, 760px) * var(--hero-aspect)));
+          height: min(min(84dvh, 760px), calc(94vw / var(--hero-aspect)));
+        }
+
+        .hero-details-panel {
+          max-height: min(min(84dvh, 760px), calc(94vw / var(--hero-aspect)));
+        }
+      }
+
       @media (max-width: 1000px) {
         .cards-grid {
           grid-template-columns: repeat(2, minmax(0, 300px));
@@ -1199,7 +1281,10 @@
         }
 
         .hero-map {
-          min-height: 150px;
+          width: 100%;
+          aspect-ratio: 1.88 / 1;
+          min-height: 164px;
+          max-height: 240px;
         }
 
         .hero-details-panel {
@@ -1220,9 +1305,66 @@
 
       }
 
+      @supports (height: 100dvh) {
+        @media (max-width: 1000px) {
+          .hero-card {
+            width: min(96vw, calc(90dvh * var(--hero-aspect)));
+            height: min(90dvh, calc(96vw / var(--hero-aspect)));
+          }
+
+          .hero-details-panel {
+            width: min(96vw, calc(90dvh * var(--hero-aspect)));
+          }
+
+          .hero-shell.has-details .hero-details-panel {
+            width: min(96vw, calc(90dvh * var(--hero-aspect)));
+            max-height: min(44dvh, 360px);
+          }
+        }
+      }
+
       @media (max-width: 680px) {
         .results-wrap {
-          padding-top: 20px;
+          width: min(1120px, 96vw);
+          padding-top: calc(78px + var(--safe-top));
+          padding-bottom: calc(28px + var(--safe-bottom));
+        }
+
+        .page-filter-btn,
+        .page-search,
+        .page-search-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+        }
+
+        .page-filter-btn {
+          top: calc(10px + var(--safe-top));
+          left: calc(10px + var(--safe-left));
+        }
+
+        .page-search {
+          top: calc(10px + var(--safe-top));
+          right: calc(10px + var(--safe-right));
+        }
+
+        .page-search.is-open {
+          width: min(300px, calc(100vw - 20px - var(--safe-left) - var(--safe-right)));
+        }
+
+        .filter-panel {
+          width: min(340px, calc(100vw - var(--safe-left)));
+          border-radius: 0 14px 14px 0;
+        }
+
+        .filter-close-btn {
+          min-width: 44px;
+          min-height: 44px;
+          font-size: 1.6rem;
+        }
+
+        .filter-action-btn {
+          min-height: 44px;
         }
 
         .cards-grid {
@@ -1231,9 +1373,78 @@
           gap: 22px;
         }
 
+        .hero-overlay {
+          --hero-nav-size: 40px;
+          place-items: center;
+        }
+
+        .hero-overlay.has-details-open {
+          place-items: start center;
+        }
+
+        .hero-shell {
+          gap: 10px;
+          margin-bottom: var(--safe-bottom);
+        }
+
+        .hero-map {
+          width: 100%;
+          aspect-ratio: 1.82 / 1;
+          min-height: 168px;
+          max-height: 246px;
+        }
+
+        .hero-details-panel {
+          width: min(96vw, 430px);
+          opacity: 0;
+          transform: translateY(14px);
+          pointer-events: none;
+          transition:
+            max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+            opacity 220ms ease,
+            transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .hero-shell.has-details .hero-details-panel {
+          position: fixed;
+          left: calc(8px + var(--safe-left));
+          right: calc(8px + var(--safe-right));
+          top: var(--hero-mobile-details-top);
+          bottom: calc(8px + var(--safe-bottom));
+          width: auto;
+          height: auto;
+          min-height: 220px;
+          max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 16px);
+          overflow-x: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          touch-action: pan-y;
+          overscroll-behavior: contain;
+          opacity: 1;
+          transform: translateY(0);
+          pointer-events: auto;
+          z-index: 42;
+        }
+
+        .hero-shell.has-details .hero-details-panel::before {
+          content: "";
+          position: sticky;
+          top: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: block;
+          width: 42px;
+          height: 4px;
+          border-radius: 999px;
+          background: rgba(132, 114, 89, 0.35);
+          margin: 0 auto 8px;
+          z-index: 1;
+        }
+
         .hero-nav {
-          width: 38px;
-          height: 38px;
+          position: absolute;
+          top: var(--hero-mobile-card-center-y);
+          transform: translateY(-50%);
         }
 
         .hero-zoom-hint {
@@ -1242,6 +1453,19 @@
           padding: 7px 10px;
         }
 
+      }
+
+      @supports (height: 100dvh) {
+        @media (max-width: 680px) {
+          .hero-shell.has-details .hero-details-panel {
+            max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px);
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            transform: translateY(0);
+          }
+        }
       }
     </style>
   </head>
@@ -1475,6 +1699,10 @@
       let heroMediaIndex = 0;
       let heroPrimaryAspectRatio = 1.6;
       let heroMediaRenderRequestId = 0;
+      let heroMobileLayoutTimer = null;
+      let heroMobileLayoutRafId = 0;
+      const preloadedImageCache = new Map();
+      const preloadedImageRatioCache = new Map();
       let isFilterPanelOpen = false;
       let isSearchOpen = false;
       let showAllNeighborhoods = false;
@@ -1687,6 +1915,15 @@
         },
       ];
 
+      function cloneFallbackListings() {
+        return fallbackListings.map((listing) => ({
+          ...listing,
+          unitFeatures: Array.isArray(listing.unitFeatures) ? [...listing.unitFeatures] : [],
+          buildingFeatures: Array.isArray(listing.buildingFeatures) ? [...listing.buildingFeatures] : [],
+          subwayLines: Array.isArray(listing.subwayLines) ? [...listing.subwayLines] : [],
+        }));
+      }
+
       function formatNumber(n) {
         return new Intl.NumberFormat("en-US").format(n);
       }
@@ -1744,6 +1981,7 @@
       function setHeroAspectRatio(ratio) {
         const safeRatio = clampNumber(Number(ratio) || 1.6, 0.55, 2.3);
         heroShell.style.setProperty("--hero-aspect", String(safeRatio));
+        heroOverlay.style.setProperty("--hero-aspect", String(safeRatio));
       }
 
       function detailsToggleIcon(open) {
@@ -1752,9 +1990,59 @@
           : `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2.5" /><path d="M10 5v14" /><path d="M13.5 9h4" /><path d="M13.5 12h4" /><path d="M13.5 15h3" /></svg>`;
       }
 
+      function scheduleHeroMobileLayoutSync({ immediate = false, trailingDelay = 120 } = {}) {
+        if (heroOverlay.hidden) return;
+        if (immediate) {
+          updateHeroMobileLayout();
+        }
+        if (!heroMobileLayoutRafId) {
+          heroMobileLayoutRafId = requestAnimationFrame(() => {
+            heroMobileLayoutRafId = 0;
+            updateHeroMobileLayout();
+          });
+        }
+        if (heroMobileLayoutTimer) {
+          clearTimeout(heroMobileLayoutTimer);
+        }
+        heroMobileLayoutTimer = setTimeout(() => {
+          heroMobileLayoutTimer = null;
+          if (heroOverlay.hidden) return;
+          updateHeroMobileLayout();
+        }, trailingDelay);
+      }
+
+      function updateHeroMobileLayout() {
+        if (heroOverlay.hidden) return;
+        const cardRect = heroCard.getBoundingClientRect();
+        if (!cardRect.width || !cardRect.height) return;
+
+        const overlayRect = heroOverlay.getBoundingClientRect();
+        const safeTop = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--safe-top")) || 0;
+        const safeBottom = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--safe-bottom")) || 0;
+        const viewportHeight =
+          (window.visualViewport && window.visualViewport.height) ||
+          overlayRect.height ||
+          window.innerHeight ||
+          document.documentElement.clientHeight ||
+          0;
+        const minPanelHeight = Math.min(420, Math.max(260, viewportHeight * 0.42));
+        const preferredTop = cardRect.bottom + 10;
+        const maxTop = Math.max(safeTop + 10, viewportHeight - safeBottom - 8 - minPanelHeight);
+        const nextTop = Math.max(safeTop + 10, Math.min(preferredTop, maxTop));
+
+        const cardCenterY = cardRect.top + cardRect.height / 2;
+        heroOverlay.style.setProperty("--hero-card-left", `${cardRect.left}px`);
+        heroOverlay.style.setProperty("--hero-card-right", `${cardRect.right}px`);
+        heroOverlay.style.setProperty("--hero-mobile-card-center-y", `${cardCenterY}px`);
+        heroShell.style.setProperty("--hero-mobile-card-center-y", `${cardCenterY}px`);
+        heroShell.style.setProperty("--hero-mobile-details-top", `${nextTop}px`);
+      }
+
       function setHeroDetailsOpen(open) {
         heroDetailsOpen = Boolean(open);
+        heroOverlay.classList.toggle("has-details-open", heroDetailsOpen);
         heroShell.classList.toggle("has-details", heroDetailsOpen);
+        scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 220 });
         heroDetailsToggle.setAttribute("aria-expanded", heroDetailsOpen ? "true" : "false");
         heroDetailsToggle.setAttribute("aria-label", heroDetailsOpen ? "Hide details" : "Show details");
         heroDetailsToggle.innerHTML = detailsToggleIcon(heroDetailsOpen);
@@ -1762,13 +2050,14 @@
 
       function animateHeroFromSourceRect(sourceRect) {
         if (!sourceRect) return;
+        heroShell.getAnimations().forEach((animation) => animation.cancel());
         const finalRect = heroShell.getBoundingClientRect();
         if (finalRect.width <= 0 || finalRect.height <= 0) return;
         const scaleX = clampNumber(sourceRect.width / finalRect.width, 0.2, 2);
         const scaleY = clampNumber(sourceRect.height / finalRect.height, 0.2, 2);
         const translateX = sourceRect.left - finalRect.left;
         const translateY = sourceRect.top - finalRect.top;
-        heroShell.animate(
+        const animation = heroShell.animate(
           [
             {
               transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`,
@@ -1779,9 +2068,10 @@
           {
             duration: 280,
             easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-            fill: "both",
+            fill: "none",
           }
         );
+        animation.onfinish = () => animation.cancel();
       }
 
       function clampPan() {
@@ -1934,12 +2224,18 @@
         heroNext.setAttribute("aria-label", "Next image");
       }
 
-      async function renderActiveHeroMedia({ preserveZoom = false } = {}) {
+      function renderActiveHeroMedia({ preserveZoom = false } = {}) {
         const requestId = ++heroMediaRenderRequestId;
         const activeMedia = heroMediaItems[heroMediaIndex] || null;
         const selectedImageUrl = activeMedia ? activeMedia.url : "";
         heroFloorplan.hidden = true;
         syncHeroMediaArrows();
+        if (activeMedia && activeMedia.type === "main") {
+          const cachedRatio = preloadedImageRatioCache.get(selectedImageUrl);
+          if (Number.isFinite(cachedRatio) && cachedRatio > 0) {
+            heroPrimaryAspectRatio = cachedRatio;
+          }
+        }
         if (activeMedia) {
           setHeroAspectRatio(heroPrimaryAspectRatio);
         }
@@ -1956,60 +2252,101 @@
           return;
         }
 
-        await preloadImage(selectedImageUrl);
-        if (requestId !== heroMediaRenderRequestId) return;
-
         const currentSrc = heroImage.currentSrc || heroImage.src;
+        const switchedSrc = currentSrc !== selectedImageUrl;
         heroHasImage = true;
         heroMedia.classList.add("has-image");
-        heroImage.classList.add("is-switching");
+        if (switchedSrc) {
+          heroImage.classList.add("is-switching");
+        }
+        if ("fetchPriority" in heroImage) {
+          heroImage.fetchPriority = "high";
+        }
         heroImage.src = selectedImageUrl;
+        void preloadImage(selectedImageUrl);
 
         if (heroImage.decode) {
-          try {
-            await heroImage.decode();
-          } catch (_error) {
+          heroImage.decode().catch(() => {
             // decode can reject for cross-origin or unsupported formats; load still proceeds.
-          }
-        }
-        if (requestId !== heroMediaRenderRequestId) return;
-
-        heroMedia.classList.toggle("is-floorplan", Boolean(activeMedia && activeMedia.type === "floorplan"));
-        if (currentSrc && currentSrc !== selectedImageUrl) {
-          heroImage.animate([{ opacity: 0.78 }, { opacity: 1 }], {
-            duration: 180,
-            easing: "ease",
-            fill: "forwards",
           });
         }
 
+        heroMedia.classList.toggle("is-floorplan", Boolean(activeMedia && activeMedia.type === "floorplan"));
         if (!preserveZoom) {
           resetImageTransform();
         } else {
           applyImageTransform();
         }
-        requestAnimationFrame(() => {
+
+        const finishSwitch = () => {
           if (requestId !== heroMediaRenderRequestId) return;
+          if (currentSrc && switchedSrc) {
+            heroImage.animate([{ opacity: 0.78 }, { opacity: 1 }], {
+              duration: 150,
+              easing: "ease-out",
+              fill: "forwards",
+            });
+          }
           heroImage.classList.remove("is-switching");
-        });
+          scheduleHeroMobileLayoutSync({ trailingDelay: 80 });
+        };
+
+        if (!switchedSrc) {
+          requestAnimationFrame(finishSwitch);
+          return;
+        }
+
+        if (heroImage.complete && heroImage.naturalWidth > 0) {
+          requestAnimationFrame(finishSwitch);
+          return;
+        }
+
+        let settled = false;
+        const finalizeWhenReady = () => {
+          if (settled) return;
+          settled = true;
+          finishSwitch();
+        };
+        heroImage.addEventListener("load", finalizeWhenReady, { once: true });
+        heroImage.addEventListener("error", finalizeWhenReady, { once: true });
+        setTimeout(finalizeWhenReady, 1200);
       }
 
-      function preloadImage(url, timeoutMs = 4500) {
+      function preloadImage(url, timeoutMs = 2800) {
         const src = String(url || "").trim();
         if (!src) return Promise.resolve();
-        return new Promise((resolve) => {
+        const cached = preloadedImageCache.get(src);
+        if (cached) return cached;
+
+        const preloadPromise = new Promise((resolve) => {
           const img = new Image();
           let settled = false;
-          const done = () => {
+          let timeoutId = null;
+
+          const done = (keepCached = true) => {
             if (settled) return;
             settled = true;
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
+            if (!keepCached) {
+              preloadedImageCache.delete(src);
+            }
             resolve();
           };
-          img.onload = done;
-          img.onerror = done;
+
+          img.onload = () => {
+            if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+              preloadedImageRatioCache.set(src, img.naturalWidth / img.naturalHeight);
+            }
+            done(true);
+          };
+          img.onerror = () => done(false);
           img.src = src;
-          setTimeout(done, timeoutMs);
+          timeoutId = setTimeout(() => done(false), timeoutMs);
         });
+        preloadedImageCache.set(src, preloadPromise);
+        return preloadPromise;
       }
 
       function setHeroMediaIndex(nextIndex, { preserveZoom = false } = {}) {
@@ -2089,6 +2426,12 @@
         heroMedia.className = `hero-media ${toneClass}`;
         setHeroAspectRatio(1.6);
         void renderActiveHeroMedia();
+        if (heroMediaItems.length > 1) {
+          heroMediaItems.forEach((item, itemIndex) => {
+            if (!item || !item.url || itemIndex === 0) return;
+            void preloadImage(item.url);
+          });
+        }
         clearZoomHint();
         heroTitle.textContent = listing.address || listing.title || "Apartment Listing";
         heroLocation.textContent = `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`;
@@ -2097,7 +2440,10 @@
         heroUnitFeatures.innerHTML = renderChipList(listing.unitFeatures, "No unit features listed");
         heroBuildingFeatures.innerHTML = renderChipList(listing.buildingFeatures, "No amenities listed");
         heroTransit.textContent = joinedOrFallback(listing.subwayLines, "No transit lines listed");
-        heroMapImage.src = listing.mapImageUrl || "./image.png";
+        const mapImageUrl = listing.mapImageUrl || "./image.png";
+        heroMapImage.src = mapImageUrl;
+        void preloadImage(mapImageUrl, 2400);
+        scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 100 });
       }
 
       function listingTokenForIndex(index) {
@@ -2681,11 +3027,16 @@
       heroImage.addEventListener("load", () => {
         if (!heroHasImage || heroImage.naturalWidth <= 0 || heroImage.naturalHeight <= 0) return;
         const loadedRatio = heroImage.naturalWidth / heroImage.naturalHeight;
+        const activeMediaUrl = heroMediaItems[heroMediaIndex] && heroMediaItems[heroMediaIndex].url;
+        if (activeMediaUrl) {
+          preloadedImageRatioCache.set(activeMediaUrl, loadedRatio);
+        }
         const activeMedia = heroMediaItems[heroMediaIndex];
         if (activeMedia && activeMedia.type === "main" && Math.abs(loadedRatio - heroPrimaryAspectRatio) > 0.01) {
           heroPrimaryAspectRatio = loadedRatio;
           setHeroAspectRatio(loadedRatio);
         }
+        scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 100 });
       });
 
       function buildListingMapQuery(listing) {
@@ -2750,11 +3101,10 @@
         openListingInMaps("google", listing);
       }
 
-      async function openHero(index, { syncUrl = true, replaceUrl = false, sourceRect = null } = {}) {
-        const requestId = ++heroOpenRequestId;
+      function openHero(index, { syncUrl = true, replaceUrl = false, sourceRect = null } = {}) {
+        heroOpenRequestId += 1;
         const listing = listings[index];
-        await preloadImage(getListingImage(listing));
-        if (requestId !== heroOpenRequestId) return;
+        if (!listing) return;
         activeIndex = index;
         renderHero();
         setHeroDetailsOpen(false);
@@ -2767,8 +3117,9 @@
         requestAnimationFrame(() => {
           heroOverlay.classList.add("is-open");
           animateHeroFromSourceRect(sourceRect);
+          scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 120 });
         });
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = "";
         if (syncUrl) {
           setListingParam(listingTokenForIndex(index), { replace: replaceUrl });
         }
@@ -2794,6 +3145,14 @@
       function closeHero({ syncUrl = true, replaceUrl = true } = {}) {
         heroOpenRequestId += 1;
         clearZoomHint();
+        if (heroMobileLayoutRafId) {
+          cancelAnimationFrame(heroMobileLayoutRafId);
+          heroMobileLayoutRafId = 0;
+        }
+        if (heroMobileLayoutTimer) {
+          clearTimeout(heroMobileLayoutTimer);
+          heroMobileLayoutTimer = null;
+        }
         if (detailsHintTimer) {
           clearTimeout(detailsHintTimer);
           detailsHintTimer = null;
@@ -2816,6 +3175,7 @@
       async function loadListings() {
         const params = new URLSearchParams(window.location.search);
         const url = new URL(`${apiBaseUrl}/api/listings`);
+        let usingFallbackListings = false;
         const filterKeys = [
           "q",
           "minPrice",
@@ -2840,16 +3200,21 @@
           if (!response.ok) throw new Error(`API returned ${response.status}`);
           const payload = await response.json();
           listings = Array.isArray(payload.data) ? payload.data : [];
+          listingsLoadError = "";
         } catch (error) {
-          listings = [];
-          listingsLoadError = "Listings API request failed.";
+          listings = cloneFallbackListings();
+          usingFallbackListings = true;
+          listingsLoadError = "";
+          const defaultMessage = "Listings API request failed. Showing fallback listings.";
           if (error && typeof error.message === "string" && error.message.trim()) {
-            listingsLoadError = error.message.trim();
+            console.warn(`${defaultMessage} (${error.message.trim()})`);
+          } else {
+            console.warn(defaultMessage);
           }
         }
 
         const searchQuery = (params.get("q") || "").trim().toLowerCase();
-        if (searchQuery) {
+        if (!usingFallbackListings && searchQuery) {
           listings = listings.filter((listing) => {
             const haystack = `${listing.address || ""} ${listing.title || ""}`.toLowerCase();
             return haystack.includes(searchQuery);
@@ -3074,6 +3439,33 @@
           closeHero({ syncUrl: false });
         }
       });
+
+      window.addEventListener("resize", () => {
+        if (!heroOverlay.hidden) scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 120 });
+      });
+
+      window.addEventListener("orientationchange", () => {
+        if (heroOverlay.hidden) return;
+        setTimeout(() => {
+          scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 180 });
+        }, 30);
+      });
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", () => {
+          if (!heroOverlay.hidden) scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 120 });
+        });
+      }
+
+      if (window.ResizeObserver) {
+        const heroLayoutObserver = new ResizeObserver(() => {
+          if (!heroOverlay.hidden) {
+            scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 90 });
+          }
+        });
+        heroLayoutObserver.observe(heroCard);
+        heroLayoutObserver.observe(heroDetailsPanel);
+      }
 
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
