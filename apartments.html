@@ -659,7 +659,7 @@
         --hero-mobile-details-lift: 0px;
         display: flex;
         align-items: stretch;
-        gap: 12px;
+        gap: 8px;
         position: relative;
         max-width: 100%;
         min-height: 0;
@@ -1415,6 +1415,7 @@
 
         .hero-overlay {
           --hero-nav-size: 40px;
+          --hero-mobile-content-width: calc(100vw - var(--safe-left) - var(--safe-right) - 20px);
           place-items: center;
         }
 
@@ -1422,12 +1423,19 @@
           place-items: start center;
         }
 
+        .hero-card {
+          width: min(var(--hero-mobile-content-width), calc(90vh * var(--hero-aspect)));
+          height: min(90vh, calc(var(--hero-mobile-content-width) / var(--hero-aspect)));
+        }
+
         .hero-overlay.has-details-open .hero-card {
-          height: min(calc(96vw / var(--hero-aspect)), 46vh);
+          height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), 46vh);
           min-height: 190px;
         }
 
         .hero-shell {
+          width: var(--hero-mobile-content-width);
+          max-width: 100%;
           gap: 10px;
           margin-bottom: var(--safe-bottom);
         }
@@ -1525,8 +1533,13 @@
 
       @supports (height: 100dvh) {
         @media (max-width: 680px) {
+          .hero-card {
+            width: min(var(--hero-mobile-content-width), calc(90dvh * var(--hero-aspect)));
+            height: min(90dvh, calc(var(--hero-mobile-content-width) / var(--hero-aspect)));
+          }
+
           .hero-overlay.has-details-open .hero-card {
-            height: min(calc(96vw / var(--hero-aspect)), 46dvh);
+            height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), 46dvh);
           }
 
           .hero-shell.has-details .hero-details-panel {
@@ -1785,6 +1798,12 @@
       let heroDetailsDragStartLift = 0;
       let heroDetailsDragDidMove = false;
       let heroDetailsPanelTouchY = null;
+      let heroDetailsPanelTouchTimestamp = 0;
+      let heroDetailsPanelTouchVelocity = 0;
+      let heroDetailsPanelTouchMoved = false;
+      let heroDetailsLiftAnimationFrame = 0;
+      const HERO_DETAILS_HINT_OPEN_DELAY_MS = 800;
+      const HERO_ZOOM_HINT_AFTER_OPEN_MS = 5000;
       const preloadedImageCache = new Map();
       const preloadedImageRatioCache = new Map();
       let isFilterPanelOpen = false;
@@ -2118,21 +2137,60 @@
         }
       }
 
+      function cancelHeroDetailsLiftAnimation() {
+        if (!heroDetailsLiftAnimationFrame) return;
+        cancelAnimationFrame(heroDetailsLiftAnimationFrame);
+        heroDetailsLiftAnimationFrame = 0;
+      }
+
+      function animateHeroDetailsLiftTo(targetLift, { duration = 180 } = {}) {
+        cancelHeroDetailsLiftAnimation();
+        const startLift = heroMobileDetailsLift;
+        const clampedTarget = clampNumber(targetLift, 0, getHeroDetailsMaxLift());
+        if (Math.abs(clampedTarget - startLift) < 0.6) {
+          heroMobileDetailsLift = clampedTarget;
+          applyHeroDetailsLift();
+          return;
+        }
+
+        const startTime = performance.now();
+        const step = (now) => {
+          if (!heroDetailsOpen || heroOverlay.hidden) {
+            heroDetailsLiftAnimationFrame = 0;
+            return;
+          }
+          const progress = clampNumber((now - startTime) / duration, 0, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          heroMobileDetailsLift = startLift + (clampedTarget - startLift) * eased;
+          applyHeroDetailsLift();
+          if (progress < 1) {
+            heroDetailsLiftAnimationFrame = requestAnimationFrame(step);
+            return;
+          }
+          heroDetailsLiftAnimationFrame = 0;
+        };
+
+        heroDetailsLiftAnimationFrame = requestAnimationFrame(step);
+      }
+
       function toggleHeroDetailsLiftSnap() {
         if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
         const maxLift = getHeroDetailsMaxLift();
         if (maxLift <= 0) return;
 
         const atTop = heroMobileDetailsLift >= maxLift - 2;
-        heroMobileDetailsLift = atTop ? 0 : maxLift;
-        applyHeroDetailsLift();
+        animateHeroDetailsLiftTo(atTop ? 0 : maxLift, { duration: 190 });
         heroDetailsPanel.scrollTop = 0;
       }
 
       function handleHeroDetailsPanelTouchStart(event) {
         if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
         if (!event.touches || event.touches.length !== 1) return;
+        cancelHeroDetailsLiftAnimation();
         heroDetailsPanelTouchY = event.touches[0].clientY;
+        heroDetailsPanelTouchTimestamp = performance.now();
+        heroDetailsPanelTouchVelocity = 0;
+        heroDetailsPanelTouchMoved = false;
       }
 
       function handleHeroDetailsPanelTouchMove(event) {
@@ -2146,22 +2204,64 @@
         heroDetailsPanelTouchY = currentY;
         if (!Number.isFinite(previousY)) return;
 
+        const now = performance.now();
+        const deltaTime = Math.max(8, now - (heroDetailsPanelTouchTimestamp || now));
+        heroDetailsPanelTouchTimestamp = now;
         const deltaY = currentY - previousY;
-        if (Math.abs(deltaY) < 0.8) return;
+        const instantVelocity = deltaY / deltaTime;
+        heroDetailsPanelTouchVelocity = heroDetailsPanelTouchVelocity * 0.75 + instantVelocity * 0.25;
+        if (Math.abs(deltaY) < 0.5) return;
 
-        const atPanelTop = heroDetailsPanel.scrollTop <= 0.5;
-        if (!atPanelTop) return;
+        const atPanelTop = heroDetailsPanel.scrollTop <= 1.2;
+        const canMoveSheetUp = deltaY < 0 && atPanelTop && heroMobileDetailsLift < maxLift - 0.2;
+        const canMoveSheetDown = deltaY > 0 && atPanelTop && heroMobileDetailsLift > 0.2;
+        if (!canMoveSheetUp && !canMoveSheetDown) return;
 
-        const nextLift = clampNumber(heroMobileDetailsLift - deltaY, 0, maxLift);
+        heroDetailsPanelTouchMoved = true;
+        let deltaLift = -deltaY;
+        if (canMoveSheetUp) {
+          const distanceToTop = maxLift - heroMobileDetailsLift;
+          if (distanceToTop < 26) deltaLift *= 0.55;
+          else if (distanceToTop < 64) deltaLift *= 0.78;
+        } else if (canMoveSheetDown) {
+          if (heroMobileDetailsLift < 26) deltaLift *= 0.55;
+          else if (heroMobileDetailsLift < 64) deltaLift *= 0.78;
+        }
+
+        const nextLift = clampNumber(heroMobileDetailsLift + deltaLift, 0, maxLift);
         if (nextLift === heroMobileDetailsLift) return;
 
         heroMobileDetailsLift = nextLift;
         applyHeroDetailsLift();
+        if (canMoveSheetUp && heroDetailsPanel.scrollTop > 0) {
+          heroDetailsPanel.scrollTop = 0;
+        }
         event.preventDefault();
       }
 
       function handleHeroDetailsPanelTouchEnd() {
+        const shouldSnap =
+          heroDetailsPanelTouchMoved &&
+          heroDetailsOpen &&
+          !heroOverlay.hidden &&
+          isHeroMobileViewport() &&
+          heroDetailsPanel.scrollTop <= 1.2;
+        const velocity = heroDetailsPanelTouchVelocity;
         heroDetailsPanelTouchY = null;
+        heroDetailsPanelTouchTimestamp = 0;
+        heroDetailsPanelTouchVelocity = 0;
+        heroDetailsPanelTouchMoved = false;
+        if (!shouldSnap) return;
+
+        const maxLift = getHeroDetailsMaxLift();
+        if (maxLift <= 0) return;
+        const currentLift = heroMobileDetailsLift;
+        if (currentLift <= 1.5 || currentLift >= maxLift - 1.5) return;
+
+        let targetLift = currentLift >= maxLift * 0.45 ? maxLift : 0;
+        if (velocity <= -0.24) targetLift = maxLift;
+        if (velocity >= 0.24) targetLift = 0;
+        animateHeroDetailsLiftTo(targetLift, { duration: 170 });
       }
 
       function handleHeroDetailsPanelWheel(event) {
@@ -2211,7 +2311,11 @@
 
       function resetHeroDetailsLift({ resetScroll = false } = {}) {
         cancelHeroDetailsDrag();
+        cancelHeroDetailsLiftAnimation();
         heroDetailsPanelTouchY = null;
+        heroDetailsPanelTouchTimestamp = 0;
+        heroDetailsPanelTouchVelocity = 0;
+        heroDetailsPanelTouchMoved = false;
         heroMobileDetailsLift = 0;
         heroMobileDetailsBaseTop = 0;
         heroMobileDetailsMinTop = 0;
@@ -3350,20 +3454,20 @@
         if (zoomHintStartTimer) {
           clearTimeout(zoomHintStartTimer);
         }
-        if (detailsHintTimer) {
-          clearTimeout(detailsHintTimer);
-          detailsHintTimer = null;
-        }
         zoomHintStartTimer = setTimeout(() => {
           zoomHintStartTimer = null;
           if (heroOverlay.hidden) return;
           showZoomHint();
-        }, 2850);
+        }, HERO_ZOOM_HINT_AFTER_OPEN_MS);
+        if (detailsHintTimer) {
+          clearTimeout(detailsHintTimer);
+          detailsHintTimer = null;
+        }
         detailsHintTimer = setTimeout(() => {
           detailsHintTimer = null;
           if (heroOverlay.hidden || heroDetailsOpen) return;
           triggerDetailsHint();
-        }, 800);
+        }, HERO_DETAILS_HINT_OPEN_DELAY_MS);
       }
 
       function closeHero({ syncUrl = true, replaceUrl = true } = {}) {
@@ -3415,6 +3519,7 @@
       function startHeroDetailsHandleDrag(event) {
         if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
         if (event.pointerType === "mouse" && event.button !== 0) return;
+        cancelHeroDetailsLiftAnimation();
 
         heroDetailsDragPointerId = event.pointerId;
         heroDetailsDragStartY = event.clientY;
