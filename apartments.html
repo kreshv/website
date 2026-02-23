@@ -1429,6 +1429,7 @@
         }
 
         .hero-overlay.has-details-open .hero-card {
+          width: min(var(--hero-mobile-content-width), calc(46vh * var(--hero-aspect)));
           height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), 46vh);
           min-height: 190px;
         }
@@ -1539,6 +1540,7 @@
           }
 
           .hero-overlay.has-details-open .hero-card {
+            width: min(var(--hero-mobile-content-width), calc(46dvh * var(--hero-aspect)));
             height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), 46dvh);
           }
 
@@ -1833,7 +1835,6 @@
         "Terrace",
       ];
       const defaultBuildingAmenities = [
-        "Doorman",
         "Elevator",
         "Gym",
         "Roof Deck",
@@ -1843,7 +1844,6 @@
         "Garage Parking",
         "Laundry Room",
         "Laundry",
-        "Concierge",
         "Resident Lounge",
         "Children's Playroom",
         "Kids Room",
@@ -1879,6 +1879,8 @@
         "pet spa": "Pet Wash",
         "co-working space": "Working Space",
         "bike storage": "Bike Room",
+        doorman: "Virtual Doorman",
+        concierge: "Virtual Doorman",
       };
       let filterMeta = {
         boroughs: ["Brooklyn", "Manhattan", "Queens", "Bronx", "Staten Island"],
