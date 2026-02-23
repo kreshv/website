@@ -3402,33 +3402,32 @@
         const isAndroid = /Android/i.test(ua);
 
         // URL schemes trigger OS/browser native "open app" dialogs when available.
+        // Do not auto-fallback so the user fully controls whether to open the app.
         if (isApple) {
           const appUrl = `maps://?q=${encoded}`;
-          const fallbackUrl = `https://maps.apple.com/?q=${encoded}`;
-          const startedAt = Date.now();
           window.location.href = appUrl;
-          setTimeout(() => {
-            if (Date.now() - startedAt < 1500) {
-              window.open(fallbackUrl, "_blank", "noopener");
-            }
-          }, 900);
           return;
         }
 
         if (isAndroid) {
           const appUrl = `geo:0,0?q=${encoded}`;
-          const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
-          const startedAt = Date.now();
           window.location.href = appUrl;
-          setTimeout(() => {
-            if (Date.now() - startedAt < 1500) {
-              window.open(fallbackUrl, "_blank", "noopener");
-            }
-          }, 900);
           return;
         }
 
         openListingInMaps("google", listing);
+      }
+
+      function openHeroInNewTab(index) {
+        if (!Number.isInteger(index) || index < 0 || index >= listings.length) return;
+        const token = listingTokenForIndex(index);
+        const url = new URL(window.location.href);
+        if (token) {
+          url.searchParams.set("listing", token);
+        } else {
+          url.searchParams.delete("listing");
+        }
+        window.open(url.toString(), "_blank", "noopener");
       }
 
       function openHero(index, { syncUrl = true, replaceUrl = false, sourceRect = null } = {}) {
@@ -3703,7 +3702,13 @@
       cardsGrid.addEventListener("click", (event) => {
         const card = event.target.closest(".apartment-card");
         if (!card) return;
-        openHero(Number(card.dataset.index), { sourceRect: card.getBoundingClientRect() });
+        const index = Number(card.dataset.index);
+        if (event.metaKey || event.ctrlKey) {
+          event.preventDefault();
+          openHeroInNewTab(index);
+          return;
+        }
+        openHero(index, { sourceRect: card.getBoundingClientRect() });
       });
 
       heroPrev.addEventListener("click", () => navigateHeroMedia(-1));
