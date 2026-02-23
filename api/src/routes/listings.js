@@ -19,6 +19,8 @@ const subwayLinesByBorough = {
 const querySchema = z.object({
   minPrice: z.coerce.number().int().min(0).optional(),
   maxPrice: z.coerce.number().int().min(0).optional(),
+  beds: z.string().trim().min(1).optional(),
+  baths: z.string().trim().min(1).optional(),
   minBeds: z.coerce.number().int().min(0).optional(),
   minBaths: z.coerce.number().int().min(0).optional(),
   borough: z.string().trim().min(1).optional(),
@@ -37,6 +39,17 @@ function csvToList(value) {
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
+}
+
+function csvToNonNegativeIntegers(value) {
+  const out = [];
+  csvToList(value).forEach((part) => {
+    const numeric = Number(part);
+    if (!Number.isFinite(numeric) || numeric < 0) return;
+    const normalized = Math.floor(numeric);
+    if (!out.includes(normalized)) out.push(normalized);
+  });
+  return out;
 }
 
 function sortLineCodes(values) {
@@ -59,7 +72,16 @@ router.get("/filters", async (_req, res) => {
         orderBy: [{ borough: { name: "asc" } }, { name: "asc" }],
       }),
       prisma.feature.findMany({
-        where: { featureType: "BUILDING" },
+        where: {
+          featureType: "BUILDING",
+          listingLinks: {
+            some: {
+              listing: {
+                isActive: true,
+              },
+            },
+          },
+        },
         select: { name: true },
         orderBy: { name: "asc" },
       }),
@@ -111,6 +133,8 @@ router.get("/", async (req, res) => {
   const {
     minPrice,
     maxPrice,
+    beds,
+    baths,
     minBeds,
     minBaths,
     borough,
@@ -128,6 +152,8 @@ router.get("/", async (req, res) => {
   const neighborhoodList = csvToList(neighborhoods);
   const featureList = csvToList(features);
   const subwayList = csvToList(subway);
+  const bedList = csvToNonNegativeIntegers(beds);
+  const bathList = csvToNonNegativeIntegers(baths);
 
   const where = {
     isActive: true,
@@ -139,20 +165,32 @@ router.get("/", async (req, res) => {
           },
         }
       : {}),
-    ...(typeof minBeds === "number"
+    ...(bedList.length
       ? {
           beds: {
-            gte: minBeds,
+            in: bedList,
           },
         }
-      : {}),
-    ...(typeof minBaths === "number"
+      : typeof minBeds === "number"
+        ? {
+            beds: {
+              gte: minBeds,
+            },
+          }
+        : {}),
+    ...(bathList.length
       ? {
           baths: {
-            gte: minBaths,
+            in: bathList,
           },
         }
-      : {}),
+      : typeof minBaths === "number"
+        ? {
+            baths: {
+              gte: minBaths,
+            },
+          }
+        : {}),
     ...((borough || boroughList.length)
       ? {
           borough: {

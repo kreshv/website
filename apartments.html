@@ -1620,16 +1620,16 @@
         <section class="filter-section">
           <div class="filter-section-title">Bed/Bath</div>
           <div class="filter-chip-row">
-            <button class="filter-chip" data-group="minBeds" data-value="0" type="button">Studio+</button>
-            <button class="filter-chip" data-group="minBeds" data-value="1" type="button">1+ Bed</button>
-            <button class="filter-chip" data-group="minBeds" data-value="2" type="button">2+ Beds</button>
-            <button class="filter-chip" data-group="minBeds" data-value="3" type="button">3+ Beds</button>
-            <button class="filter-chip" data-group="minBeds" data-value="4" type="button">4 Bedroom</button>
+            <button class="filter-chip" data-group="beds" data-value="0" type="button">Studio</button>
+            <button class="filter-chip" data-group="beds" data-value="1" type="button">1 Bedroom</button>
+            <button class="filter-chip" data-group="beds" data-value="2" type="button">2 Bedrooms</button>
+            <button class="filter-chip" data-group="beds" data-value="3" type="button">3 Bedrooms</button>
+            <button class="filter-chip" data-group="beds" data-value="4" type="button">4 Bedrooms</button>
           </div>
           <div class="filter-chip-row">
-            <button class="filter-chip" data-group="minBaths" data-value="1" type="button">1+ Bath</button>
-            <button class="filter-chip" data-group="minBaths" data-value="2" type="button">2+ Baths</button>
-            <button class="filter-chip" data-group="minBaths" data-value="3" type="button">3+ Baths</button>
+            <button class="filter-chip" data-group="baths" data-value="1" type="button">1 Bath</button>
+            <button class="filter-chip" data-group="baths" data-value="2" type="button">2 Baths</button>
+            <button class="filter-chip" data-group="baths" data-value="3" type="button">3 Baths</button>
           </div>
         </section>
         <section class="filter-section">
@@ -1733,6 +1733,7 @@
       const priceFromLabel = document.getElementById("priceFromLabel");
       const priceToLabel = document.getElementById("priceToLabel");
       const priceTrackFill = document.getElementById("priceTrackFill");
+      const priceTracks = filterPanel.querySelector(".price-tracks");
       const cardsGrid = document.getElementById("cardsGrid");
       const tones = ["photo-tone-1", "photo-tone-2", "photo-tone-3", "photo-tone-4", "photo-tone-5", "photo-tone-6"];
 
@@ -1894,8 +1895,8 @@
         minPrice: "",
         maxPrice: "",
         boroughs: [],
-        minBeds: "",
-        minBaths: "",
+        beds: [],
+        baths: [],
         neighborhoods: [],
         features: [],
         amenities: [],
@@ -2830,6 +2831,23 @@
           return String(Math.floor(value));
         }
 
+        function parseNonNegativeNumberCsv(key) {
+          const values = parseCsv(key);
+          const out = [];
+          values.forEach((raw) => {
+            const numeric = Number(raw);
+            if (!Number.isFinite(numeric) || numeric < 0) return;
+            const normalized = String(Math.floor(numeric));
+            if (!out.includes(normalized)) out.push(normalized);
+          });
+          return out;
+        }
+
+        const beds = parseNonNegativeNumberCsv("beds");
+        const baths = parseNonNegativeNumberCsv("baths");
+        const legacyBeds = parsePositiveNumberString("minBeds");
+        const legacyBaths = parsePositiveNumberString("minBaths");
+
         return {
           minPrice: parsePositiveNumberString("minPrice"),
           maxPrice: parsePositiveNumberString("maxPrice"),
@@ -2839,8 +2857,8 @@
             const single = (params.get("borough") || "").trim();
             return single ? [single] : [];
           })(),
-          minBeds: parsePositiveNumberString("minBeds"),
-          minBaths: parsePositiveNumberString("minBaths"),
+          beds: beds.length ? beds : legacyBeds ? [legacyBeds] : [],
+          baths: baths.length ? baths : legacyBaths ? [legacyBaths] : [],
           neighborhoods: parseCsv("neighborhoods"),
           features: parseCsv("features"),
           subway: parseCsv("subway"),
@@ -2902,6 +2920,42 @@
         filterState.minPrice = defaultMin ? "" : String(minVal);
         filterState.maxPrice = defaultMax ? "" : String(maxVal);
         syncPriceTrackUi();
+      }
+
+      function moveNearestPriceHandleToClientX(clientX) {
+        if (!priceTracks) return;
+        const rect = priceTracks.getBoundingClientRect();
+        if (!rect.width) return;
+
+        const ratio = clampNumber((clientX - rect.left) / rect.width, 0, 1);
+        const rawValue = priceBounds.min + ratio * (priceBounds.max - priceBounds.min);
+        const step = Number(priceBounds.step) || 1;
+        const snappedValue = clampNumber(
+          Math.round(rawValue / step) * step,
+          priceBounds.min,
+          priceBounds.max
+        );
+
+        const minVal = Number(priceMinRange.value);
+        const maxVal = Number(priceMaxRange.value);
+        const minDistance = Math.abs(snappedValue - minVal);
+        const maxDistance = Math.abs(snappedValue - maxVal);
+        let target = "min";
+
+        if (maxDistance < minDistance) {
+          target = "max";
+        } else if (maxDistance === minDistance) {
+          target = snappedValue > (minVal + maxVal) / 2 ? "max" : "min";
+        }
+
+        if (target === "min") {
+          priceMinRange.value = String(snappedValue);
+        } else {
+          priceMaxRange.value = String(snappedValue);
+        }
+
+        handlePriceSliderChange(target);
+        applyFilterStateToUi();
       }
 
       function asSet(values) {
@@ -3107,8 +3161,8 @@
         let count = 0;
         if (values.boroughs.length) count += 1;
         if (values.minPrice || values.maxPrice) count += 1;
-        if (values.minBeds) count += 1;
-        if (values.minBaths) count += 1;
+        if (values.beds.length) count += 1;
+        if (values.baths.length) count += 1;
         if (values.neighborhoods.length) count += 1;
         if (values.features.length) count += 1;
         if (values.amenities.length) count += 1;
@@ -3139,8 +3193,10 @@
             selected = value
               ? filterState.boroughs.some((item) => sameValue(item, value))
               : filterState.boroughs.length === 0;
-          } else if (group === "minBeds" || group === "minBaths") {
-            selected = value ? sameValue(filterState[group], value) : !filterState[group];
+          } else if (group === "beds" || group === "baths") {
+            selected = value
+              ? filterState[group].some((item) => sameValue(item, value))
+              : filterState[group].length === 0;
           } else if (
             group === "neighborhoods" ||
             group === "features" ||
@@ -3164,8 +3220,8 @@
           minPrice: values.minPrice,
           maxPrice: values.maxPrice,
           boroughs: [...values.boroughs].slice(0, 2),
-          minBeds: values.minBeds,
-          minBaths: values.minBaths,
+          beds: [...values.beds].slice(0, 2),
+          baths: [...values.baths].slice(0, 2),
           neighborhoods: [...values.neighborhoods],
           features: [...values.features],
           amenities: [],
@@ -3191,8 +3247,8 @@
           minPrice: filterState.minPrice,
           maxPrice: filterState.maxPrice,
           boroughs: [...filterState.boroughs],
-          minBeds: filterState.minBeds,
-          minBaths: filterState.minBaths,
+          beds: [...filterState.beds],
+          baths: [...filterState.baths],
           neighborhoods: [...filterState.neighborhoods],
           features: [...new Set([...filterState.features, ...filterState.amenities])],
           subway: [...filterState.subway],
@@ -3211,8 +3267,8 @@
           minPrice: "",
           maxPrice: "",
           boroughs: [],
-          minBeds: "",
-          minBaths: "",
+          beds: [],
+          baths: [],
           neighborhoods: [],
           features: [],
           amenities: [],
@@ -3247,9 +3303,17 @@
           return;
         }
 
-        if (group === "minBeds" || group === "minBaths") {
-          if (!value) filterState[group] = "";
-          else filterState[group] = sameValue(filterState[group], value) ? "" : value;
+        if (group === "beds" || group === "baths") {
+          if (!value) {
+            filterState[group] = [];
+            return;
+          }
+          const exists = filterState[group].some((item) => sameValue(item, value));
+          if (exists) {
+            filterState[group] = filterState[group].filter((item) => !sameValue(item, value));
+          } else if (filterState[group].length < 2) {
+            filterState[group] = [...filterState[group], value];
+          }
           return;
         }
 
@@ -3274,8 +3338,8 @@
 
       function writeFilterValuesToUrl(values, { replace = false } = {}) {
         const url = new URL(window.location.href);
-        const scalarKeys = ["minPrice", "maxPrice", "minBeds", "minBaths"];
-        const listKeys = ["neighborhoods", "features", "subway"];
+        const scalarKeys = ["minPrice", "maxPrice"];
+        const listKeys = ["beds", "baths", "neighborhoods", "features", "subway"];
 
         scalarKeys.forEach((key) => {
           const value = String(values[key] || "").trim();
@@ -3299,6 +3363,8 @@
         url.searchParams.delete("page");
         url.searchParams.delete("petsPolicy");
         url.searchParams.delete("borough");
+        url.searchParams.delete("minBeds");
+        url.searchParams.delete("minBaths");
         url.searchParams.delete("listing");
         const next = `${url.pathname}${url.search}${url.hash}`;
         const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -3567,11 +3633,29 @@
         const params = new URLSearchParams(window.location.search);
         const url = new URL(`${apiBaseUrl}/api/listings`);
         let usingFallbackListings = false;
+
+        function parseExactNumberCsv(rawValue) {
+          return String(rawValue || "")
+            .split(",")
+            .map((part) => part.trim())
+            .filter((part) => part !== "")
+            .map((part) => Number(part))
+            .filter((value) => Number.isFinite(value) && value >= 0)
+            .map((value) => Math.floor(value))
+            .filter((value, index, array) => array.indexOf(value) === index);
+        }
+
+        const exactBedsValues = parseExactNumberCsv(params.get("beds"));
+        const exactBathsValues = parseExactNumberCsv(params.get("baths"));
+        const hasExactBedsFilter = exactBedsValues.length > 0;
+        const hasExactBathsFilter = exactBathsValues.length > 0;
         const filterKeys = [
           "q",
           "minPrice",
           "maxPrice",
           "boroughs",
+          "beds",
+          "baths",
           "minBeds",
           "minBaths",
           "neighborhoods",
@@ -3602,6 +3686,30 @@
           } else {
             console.warn(defaultMessage);
           }
+        }
+
+        if (hasExactBedsFilter) {
+          const bedsSet = new Set(exactBedsValues);
+          listings = listings.filter((listing) => {
+            const rawBeds = listing && listing.beds;
+            const normalizedBeds =
+              rawBeds === null || rawBeds === undefined || rawBeds === ""
+                ? 0
+                : Number(rawBeds);
+            if (!Number.isFinite(normalizedBeds)) return false;
+            return bedsSet.has(Math.floor(normalizedBeds));
+          });
+        }
+
+        if (hasExactBathsFilter) {
+          const bathsSet = new Set(exactBathsValues);
+          listings = listings.filter((listing) => {
+            const rawBaths = listing && listing.baths;
+            if (rawBaths === null || rawBaths === undefined || rawBaths === "") return false;
+            const normalizedBaths = Number(rawBaths);
+            if (!Number.isFinite(normalizedBaths)) return false;
+            return bathsSet.has(Math.floor(normalizedBaths));
+          });
         }
 
         const searchQuery = (params.get("q") || "").trim().toLowerCase();
@@ -3944,15 +4052,18 @@
         handlePriceSliderChange("max");
         applyFilterStateToUi();
       });
+      if (priceTracks) {
+        priceTracks.addEventListener("click", (event) => {
+          if (event.target === priceMinRange || event.target === priceMaxRange) return;
+          if (!Number.isFinite(event.clientX)) return;
+          moveNearestPriceHandleToClientX(event.clientX);
+        });
+      }
       filterCloseBtn.addEventListener("click", closeFilterPanel);
       filterScrim.addEventListener("click", closeFilterPanel);
-      filterResetBtn.addEventListener("click", async () => {
+      filterResetBtn.addEventListener("click", () => {
         clearFilterState();
         applyFilterStateToUi();
-        if (!heroOverlay.hidden) closeHero();
-        writeFilterValuesToUrl(buildFilterValuesFromState());
-        closeFilterPanel();
-        await loadListings();
       });
       filterApplyBtn.addEventListener("click", async () => {
         if (!heroOverlay.hidden) closeHero();
