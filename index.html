@@ -33,6 +33,11 @@
 
       .search-form {
         display: grid;
+        position: relative;
+      }
+
+      .criteria-wrap {
+        position: relative;
       }
 
       .criteria-input {
@@ -41,7 +46,7 @@
         max-height: 180px;
         border: 1px solid transparent;
         border-radius: 14px;
-        padding: 14px 16px;
+        padding: 14px 54px 18px 16px;
         font-size: 0.92rem;
         line-height: 1.5;
         color: #2d2a26;
@@ -50,7 +55,7 @@
           linear-gradient(90deg, #e8dcc8, #ccb089, #e8dcc8) border-box;
         background-size: 100% 100%, 220% 100%;
         animation: thinking-border 1.3s ease-in-out infinite alternate;
-        resize: vertical;
+        resize: none;
         outline: none;
         box-shadow: 0 10px 30px rgba(130, 108, 78, 0.08);
         transition: border-color 140ms ease, box-shadow 140ms ease;
@@ -58,6 +63,54 @@
 
       .criteria-input:focus {
         box-shadow: 0 14px 34px rgba(130, 108, 78, 0.14);
+      }
+
+      .criteria-submit {
+        position: absolute;
+        right: 5px;
+        bottom: 8px;
+        width: 28px;
+        height: 28px;
+        border: none;
+        border-radius: 999px;
+        background: #0a0a0a;
+        color: #ffffff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.16);
+        transition: transform 120ms ease, background-color 140ms ease;
+      }
+
+      .criteria-submit:hover {
+        background: #1b1b1b;
+      }
+
+      .criteria-submit:active {
+        transform: scale(0.96);
+      }
+
+      .criteria-submit:disabled {
+        background: #c8c8c8;
+        color: #f4f4f4;
+        cursor: not-allowed;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        transform: none;
+      }
+
+      .criteria-submit:focus-visible {
+        outline: 2px solid #6e655a;
+        outline-offset: 2px;
+      }
+
+      .criteria-submit svg {
+        width: 13px;
+        height: 13px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       @keyframes thinking-border {
@@ -73,25 +126,47 @@
   <body>
     <main class="search-shell">
       <form class="search-form" action="apartments.html" method="get">
-        <textarea
-          class="criteria-input"
-          name="q"
-          placeholder="What type of apartment are you looking for, which boroughs and neighborhoods, and what's your budget? Please include any additional details."
-          aria-label="Apartment search criteria"
-        ></textarea>
+        <div class="criteria-wrap">
+          <textarea
+            class="criteria-input"
+            name="q"
+            placeholder="What type of apartment are you looking for, which boroughs and neighborhoods, and what's your budget? Please include any additional details."
+            aria-label="Apartment search criteria"
+          ></textarea>
+          <button class="criteria-submit" type="submit" aria-label="Search apartments" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 19V5"></path>
+              <path d="M6.5 10.5 12 5l5.5 5.5"></path>
+            </svg>
+          </button>
+        </div>
       </form>
     </main>
     <script>
       const form = document.querySelector(".search-form");
       const textarea = document.querySelector(".criteria-input");
+      const submitButton = document.querySelector(".criteria-submit");
+
+      function syncSubmitButtonState() {
+        const hasText = textarea.value.trim().length > 0;
+        submitButton.disabled = !hasText;
+      }
 
       // Press Enter to submit; use Shift+Enter for a new line.
       textarea.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
+          if (!textarea.value.trim()) return;
           event.preventDefault();
           form.requestSubmit();
         }
       });
+
+      textarea.addEventListener("input", syncSubmitButtonState);
+      form.addEventListener("submit", (event) => {
+        if (!textarea.value.trim()) event.preventDefault();
+      });
+
+      syncSubmitButtonState();
     </script>
   </body>
 </html>

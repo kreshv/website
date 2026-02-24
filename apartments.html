@@ -1805,7 +1805,6 @@
       let heroDetailsPanelTouchVelocity = 0;
       let heroDetailsPanelTouchMoved = false;
       let heroDetailsLiftAnimationFrame = 0;
-      const HERO_DETAILS_HINT_OPEN_DELAY_MS = 800;
       const HERO_ZOOM_HINT_AFTER_OPEN_MS = 5000;
       const preloadedImageCache = new Map();
       const preloadedImageRatioCache = new Map();
@@ -3502,7 +3501,7 @@
         if (!listing) return;
         activeIndex = index;
         renderHero();
-        setHeroDetailsOpen(false);
+        setHeroDetailsOpen(true);
         if (heroCloseTimer) {
           clearTimeout(heroCloseTimer);
           heroCloseTimer = null;
@@ -3530,11 +3529,6 @@
           clearTimeout(detailsHintTimer);
           detailsHintTimer = null;
         }
-        detailsHintTimer = setTimeout(() => {
-          detailsHintTimer = null;
-          if (heroOverlay.hidden || heroDetailsOpen) return;
-          triggerDetailsHint();
-        }, HERO_DETAILS_HINT_OPEN_DELAY_MS);
       }
 
       function closeHero({ syncUrl = true, replaceUrl = true } = {}) {
