@@ -21,6 +21,12 @@ enum PetsPolicy {
   CASE_BY_CASE
 }
 
+enum TourRequestStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
 model Borough {
   id            Int            @id @default(autoincrement())
   name          String         @unique
@@ -63,11 +69,36 @@ model Listing {
   neighborhood   Neighborhood        @relation(fields: [neighborhoodId], references: [id], onDelete: Restrict)
   featureLinks   ListingFeature[]
   subwayLinks    ListingSubwayLine[]
+  tourRequests   TourRequest[]
 
   @@index([price])
   @@index([boroughId])
   @@index([neighborhoodId])
   @@index([petsPolicy])
+}
+
+model TourRequest {
+  id             Int               @id @default(autoincrement())
+  listingId      Int?
+  listingTitle   String
+  listingAddress String
+  clientName     String
+  clientEmail    String?
+  clientPhone    String?
+  startAt        DateTime
+  endAt          DateTime
+  timezone       String?
+  notes          String?
+  source         String?
+  status         TourRequestStatus @default(PENDING)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  listing Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@index([startAt])
+  @@index([status])
+  @@index([listingId])
 }
 
 model Feature {

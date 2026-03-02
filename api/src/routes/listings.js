@@ -17,6 +17,7 @@ const subwayLinesByBorough = {
 };
 
 const querySchema = z.object({
+  ids: z.string().trim().min(1).optional(),
   minPrice: z.coerce.number().int().min(0).optional(),
   maxPrice: z.coerce.number().int().min(0).optional(),
   beds: z.string().trim().min(1).optional(),
@@ -131,6 +132,7 @@ router.get("/", async (req, res) => {
   }
 
   const {
+    ids,
     minPrice,
     maxPrice,
     beds,
@@ -152,11 +154,20 @@ router.get("/", async (req, res) => {
   const neighborhoodList = csvToList(neighborhoods);
   const featureList = csvToList(features);
   const subwayList = csvToList(subway);
+  const idList = csvToNonNegativeIntegers(ids).filter((value) => value > 0);
   const bedList = csvToNonNegativeIntegers(beds);
   const bathList = csvToNonNegativeIntegers(baths);
 
   const where = {
-    isActive: true,
+    ...(idList.length
+      ? {
+          id: {
+            in: idList,
+          },
+        }
+      : {
+          isActive: true,
+        }),
     ...(typeof minPrice === "number" || typeof maxPrice === "number"
       ? {
           price: {

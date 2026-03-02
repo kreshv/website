@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tour Calendar</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top right, #f5ead7 0%, #f1ebdf 35%, #ece4d6 100%);
+        color: #3f3224;
+        font-family:
+          "Avenir Next",
+          "Nunito Sans",
+          "Segoe UI",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      .layout {
+        width: min(1180px, 96vw);
+        margin: 22px auto;
+        display: grid;
+        gap: 14px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        border: 1px solid #decbaf;
+        border-radius: 16px;
+        background: rgba(255, 250, 242, 0.92);
+        box-shadow: 0 12px 24px rgba(44, 29, 16, 0.12);
+      }
+
+      .title-wrap {
+        display: grid;
+        gap: 3px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.28rem;
+        letter-spacing: 0.01em;
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: 0.84rem;
+        color: #6c5a46;
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn {
+        border: 1px solid #d7c2a4;
+        background: #fff6e8;
+        color: #503f2f;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font: inherit;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn.primary {
+        border-color: #3f3224;
+        background: #3f3224;
+        color: #fff6ea;
+      }
+
+      .btn[aria-disabled="true"] {
+        opacity: 0.58;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(300px, 1fr) minmax(320px, 1.15fr);
+        gap: 14px;
+      }
+
+      .panel {
+        border: 1px solid #decbaf;
+        border-radius: 18px;
+        background: rgba(255, 250, 242, 0.95);
+        box-shadow: 0 14px 28px rgba(44, 29, 16, 0.14);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #eadbc3;
+      }
+
+      .month-title {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .month-nav {
+        display: flex;
+        gap: 6px;
+      }
+
+      .month-nav button {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid #d6c2a5;
+        background: #fff6e8;
+        color: #5d4b39;
+        cursor: pointer;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 7px;
+        padding: 10px 12px 12px;
+      }
+
+      .weekday {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #786653;
+        text-align: center;
+      }
+
+      .day-cell {
+        min-height: 88px;
+        border: 1px solid #e5d4bb;
+        border-radius: 12px;
+        background: #fff8ec;
+        padding: 6px;
+        display: grid;
+        align-content: start;
+        gap: 5px;
+      }
+
+      .day-cell.is-outside {
+        opacity: 0.42;
+      }
+
+      .day-cell.is-today {
+        border-color: #8f7555;
+      }
+
+      .day-number {
+        font-size: 0.74rem;
+        color: #6b5a48;
+      }
+
+      .day-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #7a5a39;
+      }
+
+      .day-count {
+        font-size: 0.7rem;
+        color: #5e4d3b;
+      }
+
+      .list-body {
+        max-height: min(74vh, 780px);
+        overflow: auto;
+        padding: 10px 12px 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .tour-card {
+        border: 1px solid #ddcaad;
+        border-radius: 14px;
+        background: #fff9ef;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .tour-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: flex-start;
+      }
+
+      .tour-address {
+        margin: 0;
+        font-size: 0.92rem;
+      }
+
+      .tour-time {
+        margin: 2px 0 0;
+        font-size: 0.76rem;
+        color: #6d5c4a;
+      }
+
+      .status {
+        border: 1px solid #d9c4a5;
+        border-radius: 999px;
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 4px 8px;
+        white-space: nowrap;
+      }
+
+      .status.pending {
+        background: #fff3df;
+      }
+
+      .status.confirmed {
+        background: #ebf7ed;
+        border-color: #93c09d;
+      }
+
+      .status.cancelled {
+        background: #f9ebe8;
+        border-color: #c9a39c;
+      }
+
+      .tour-meta {
+        margin: 0;
+        font-size: 0.79rem;
+        color: #564536;
+      }
+
+      .tour-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .mini-btn {
+        border: 1px solid #d5c1a1;
+        border-radius: 999px;
+        background: #fff6e8;
+        color: #594937;
+        font: inherit;
+        font-size: 0.72rem;
+        padding: 6px 9px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .mini-btn.primary {
+        border-color: #3f3224;
+        background: #3f3224;
+        color: #fff5e8;
+      }
+
+      .empty {
+        margin: 0;
+        border: 1px dashed #d9c4a7;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 0.84rem;
+        color: #6c5a46;
+        background: rgba(255, 250, 243, 0.68);
+      }
+
+      @media (max-width: 980px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .list-body {
+          max-height: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="layout">
+      <section class="topbar">
+        <div class="title-wrap">
+          <h1>Tour Calendar</h1>
+          <p class="subtitle" id="tourSummary">Loading tour requests...</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn" id="setAccessBtn" type="button">Set Access Code</button>
+          <button class="btn" id="lockAccessBtn" type="button">Lock</button>
+          <a class="btn" href="./apartments.html">Apartments</a>
+          <a class="btn primary" id="calendarFeedLink" href="#" target="_blank" rel="noopener">Calendar Feed (.ics)</a>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <article class="panel">
+          <header class="panel-head">
+            <h2 class="month-title" id="monthTitle">Month</h2>
+            <div class="month-nav">
+              <button id="monthPrevBtn" type="button" aria-label="Previous month">&#8249;</button>
+              <button id="monthNextBtn" type="button" aria-label="Next month">&#8250;</button>
+            </div>
+          </header>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head">
+            <h2 class="month-title">Upcoming Tours</h2>
+          </header>
+          <div class="list-body" id="tourList"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="app-config.js"></script>
+    <script>
+      const apiBaseUrl =
+        (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || "http://127.0.0.1:5050";
+
+      const setAccessBtn = document.getElementById("setAccessBtn");
+      const lockAccessBtn = document.getElementById("lockAccessBtn");
+      const calendarFeedLink = document.getElementById("calendarFeedLink");
+      const tourSummary = document.getElementById("tourSummary");
+      const monthTitle = document.getElementById("monthTitle");
+      const monthPrevBtn = document.getElementById("monthPrevBtn");
+      const monthNextBtn = document.getElementById("monthNextBtn");
+      const calendarGrid = document.getElementById("calendarGrid");
+      const tourList = document.getElementById("tourList");
+      const ACCESS_TOKEN_STORAGE_KEY = "yokeair_agent_calendar_token_v1";
+      let agentAccessToken = String(localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "").trim();
+
+      const state = {
+        tours: [],
+        currentMonth: new Date(),
+      };
+
+      state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
+
+      function updateCalendarFeedHref() {
+        if (!agentAccessToken) {
+          calendarFeedLink.href = "#";
+          calendarFeedLink.setAttribute("aria-disabled", "true");
+          return;
+        }
+        calendarFeedLink.href = `${apiBaseUrl}/api/tours/calendar.ics?token=${encodeURIComponent(agentAccessToken)}`;
+        calendarFeedLink.removeAttribute("aria-disabled");
+      }
+
+      function clearAccessToken() {
+        agentAccessToken = "";
+        localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+        updateCalendarFeedHref();
+      }
+
+      function requestAccessToken({ force = false } = {}) {
+        if (!force && agentAccessToken) return true;
+        const entered = window.prompt("Enter agent access code for tour calendar:", "");
+        const clean = String(entered || "").trim();
+        if (!clean) return false;
+        agentAccessToken = clean;
+        localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, clean);
+        updateCalendarFeedHref();
+        return true;
+      }
+
+      function authHeaders(base = {}) {
+        const headers = { ...(base || {}) };
+        if (agentAccessToken) headers["x-agent-token"] = agentAccessToken;
+        return headers;
+      }
+
+      updateCalendarFeedHref();
+
+      function formatDateTime(iso, timeZone) {
+        const date = new Date(iso);
+        if (!Number.isFinite(date.getTime())) return "Invalid date";
+        try {
+          return new Intl.DateTimeFormat("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            timeZone: timeZone || "America/New_York",
+            timeZoneName: "short",
+          }).format(date);
+        } catch (_error) {
+          return date.toLocaleString();
+        }
+      }
+
+      function sameDay(a, b) {
+        return (
+          a.getFullYear() === b.getFullYear() &&
+          a.getMonth() === b.getMonth() &&
+          a.getDate() === b.getDate()
+        );
+      }
+
+      function getToursByDayMap() {
+        const map = new Map();
+        state.tours.forEach((tour) => {
+          const start = new Date(tour.startAt);
+          if (!Number.isFinite(start.getTime())) return;
+          const key = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(
+            start.getDate()
+          ).padStart(2, "0")}`;
+          if (!map.has(key)) map.set(key, []);
+          map.get(key).push(tour);
+        });
+        return map;
+      }
+
+      function renderCalendar() {
+        const monthStart = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
+        const monthEnd = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 0);
+        const start = new Date(monthStart);
+        start.setDate(monthStart.getDate() - monthStart.getDay());
+        const end = new Date(monthEnd);
+        end.setDate(monthEnd.getDate() + (6 - monthEnd.getDay()));
+
+        monthTitle.textContent = new Intl.DateTimeFormat("en-US", {
+          month: "long",
+          year: "numeric",
+        }).format(monthStart);
+
+        const days = [];
+        const toursByDay = getToursByDayMap();
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const day = new Date(d);
+          const key = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(
+            day.getDate()
+          ).padStart(2, "0")}`;
+          const rows = toursByDay.get(key) || [];
+          days.push({ day, rows, key });
+        }
+
+        const weekdayHtml = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+          .map((label) => `<div class="weekday">${label}</div>`)
+          .join("");
+
+        const dayHtml = days
+          .map(({ day, rows }) => {
+            const classes = ["day-cell"];
+            if (day.getMonth() !== monthStart.getMonth()) classes.push("is-outside");
+            if (sameDay(day, new Date())) classes.push("is-today");
+            return `
+              <article class="${classes.join(" ")}">
+                <div class="day-number">${day.getDate()}</div>
+                ${rows.length ? '<span class="day-dot" aria-hidden="true"></span>' : ""}
+                ${rows.length ? `<div class="day-count">${rows.length} tour${rows.length === 1 ? "" : "s"}</div>` : ""}
+              </article>
+            `;
+          })
+          .join("");
+
+        calendarGrid.innerHTML = `${weekdayHtml}${dayHtml}`;
+      }
+
+      function renderTourList() {
+        if (!state.tours.length) {
+          tourList.innerHTML = '<p class="empty">No tours scheduled yet. New copilot bookings will appear here.</p>';
+          return;
+        }
+
+        const now = Date.now();
+        const upcoming = state.tours
+          .filter((tour) => {
+            const date = new Date(tour.endAt || tour.startAt);
+            return Number.isFinite(date.getTime()) && date.getTime() >= now - 24 * 60 * 60 * 1000;
+          })
+          .slice(0, 200);
+
+        tourList.innerHTML = upcoming
+          .map((tour) => {
+            const address = String(tour.listingAddress || tour.listingTitle || "Apartment listing");
+            const status = String(tour.status || "PENDING").toUpperCase();
+            const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+            const emailHref = tour.clientEmail ? `mailto:${encodeURIComponent(tour.clientEmail)}` : "";
+            const telHref = tour.clientPhone ? `tel:${encodeURIComponent(tour.clientPhone)}` : "";
+            return `
+              <article class="tour-card" data-tour-id="${tour.id}">
+                <div class="tour-head">
+                  <div>
+                    <h3 class="tour-address">${address}</h3>
+                    <p class="tour-time">${formatDateTime(tour.startAt, tour.timezone)}</p>
+                  </div>
+                  <span class="status ${status.toLowerCase()}">${status}</span>
+                </div>
+                <p class="tour-meta">${tour.clientName}${tour.clientEmail ? ` · ${tour.clientEmail}` : ""}${tour.clientPhone ? ` · ${tour.clientPhone}` : ""}</p>
+                ${tour.notes ? `<p class="tour-meta">${tour.notes}</p>` : ""}
+                <div class="tour-actions">
+                  <a class="mini-btn" href="${mapsHref}" target="_blank" rel="noopener">Open Maps</a>
+                  ${emailHref ? `<a class="mini-btn" href="${emailHref}">Email</a>` : ""}
+                  ${telHref ? `<a class="mini-btn" href="${telHref}">Call</a>` : ""}
+                  <button class="mini-btn primary" type="button" data-action="confirm">Confirm</button>
+                  <button class="mini-btn" type="button" data-action="cancel">Cancel</button>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      async function loadTours() {
+        if (!agentAccessToken && !requestAccessToken()) {
+          tourSummary.textContent = "Access code required.";
+          tourList.innerHTML =
+            '<p class="empty">This calendar is agent-only. Enter your access code to view scheduled tours.</p>';
+          state.tours = [];
+          renderCalendar();
+          return;
+        }
+
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/tours?limit=500`, {
+            headers: authHeaders(),
+          });
+          if (response.status === 401) {
+            clearAccessToken();
+            if (requestAccessToken({ force: true })) {
+              await loadTours();
+              return;
+            }
+            throw new Error("Unauthorized. Access code is required.");
+          }
+          if (!response.ok) throw new Error(`Tours API failed (${response.status})`);
+          const payload = await response.json();
+          const tours = Array.isArray(payload.tours) ? payload.tours : [];
+          state.tours = tours
+            .filter((tour) => tour && tour.startAt)
+            .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+          const activeCount = state.tours.filter((tour) => String(tour.status).toUpperCase() !== "CANCELLED").length;
+          tourSummary.textContent = `${activeCount} active tour${activeCount === 1 ? "" : "s"} · ${state.tours.length} total`;
+        } catch (error) {
+          tourSummary.textContent = "Failed to load tours.";
+          tourList.innerHTML = `<p class="empty">${String(error && error.message ? error.message : error)}</p>`;
+          state.tours = [];
+        }
+
+        renderCalendar();
+        renderTourList();
+      }
+
+      async function updateTourStatus(tourId, status) {
+        const id = Number(tourId);
+        if (!Number.isFinite(id) || id <= 0) return;
+        if (!agentAccessToken) return;
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/tours/${id}/status`, {
+            method: "PATCH",
+            headers: authHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({ status }),
+          });
+          if (response.status === 401) {
+            clearAccessToken();
+            tourSummary.textContent = "Session locked. Re-enter access code.";
+            return;
+          }
+          if (!response.ok) throw new Error(`Update failed (${response.status})`);
+          const payload = await response.json().catch(() => ({}));
+          const updated = payload && payload.tour ? payload.tour : null;
+          if (!updated) return;
+          state.tours = state.tours.map((tour) => (tour.id === updated.id ? updated : tour));
+          renderCalendar();
+          renderTourList();
+        } catch (_error) {
+          // Keep UI stable if update fails.
+        }
+      }
+
+      monthPrevBtn.addEventListener("click", () => {
+        state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() - 1, 1);
+        renderCalendar();
+      });
+
+      monthNextBtn.addEventListener("click", () => {
+        state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 1);
+        renderCalendar();
+      });
+
+      setAccessBtn.addEventListener("click", () => {
+        if (requestAccessToken({ force: true })) {
+          void loadTours();
+        }
+      });
+
+      lockAccessBtn.addEventListener("click", () => {
+        clearAccessToken();
+        state.tours = [];
+        renderCalendar();
+        tourSummary.textContent = "Calendar locked.";
+        tourList.innerHTML =
+          '<p class="empty">This calendar is locked. Enter your access code to load scheduled tours.</p>';
+      });
+
+      calendarFeedLink.addEventListener("click", (event) => {
+        if (agentAccessToken) return;
+        event.preventDefault();
+        requestAccessToken({ force: true });
+        updateCalendarFeedHref();
+      });
+
+      tourList.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const card = button.closest("[data-tour-id]");
+        if (!card) return;
+        const action = String(button.dataset.action || "").trim();
+        const tourId = Number(card.dataset.tourId);
+        if (!Number.isFinite(tourId)) return;
+        if (action === "confirm") {
+          void updateTourStatus(tourId, "CONFIRMED");
+        } else if (action === "cancel") {
+          void updateTourStatus(tourId, "CANCELLED");
+        }
+      });
+
+      void loadTours();
+    </script>
+  </body>
+</html>

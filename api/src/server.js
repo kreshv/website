@@ -5,6 +5,9 @@ const path = require("path");
 
 const listingsRouter = require("./routes/listings");
 const adminListingsRouter = require("./routes/adminListings");
+const eventsRouter = require("./routes/events");
+const aiRouter = require("./routes/ai");
+const toursRouter = require("./routes/tours");
 
 const envFile = process.env.USE_LOCAL_ENV === "1" ? ".env.local" : ".env";
 dotenv.config({ path: path.resolve(__dirname, "..", envFile) });
@@ -43,6 +46,9 @@ app.get("/api/health", (_req, res) => {
 
 app.use("/api/listings", listingsRouter);
 app.use("/api/admin/listings", adminListingsRouter);
+app.use("/api/events", eventsRouter);
+app.use("/api/ai", aiRouter);
+app.use("/api/tours", toursRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Not found" });

@@ -43,6 +43,10 @@
         padding: calc(88px + var(--safe-top)) 0 calc(56px + var(--safe-bottom));
       }
 
+      body.saved-workspace .results-wrap {
+        padding-top: calc(88px + var(--safe-top));
+      }
+
       .page-filter-btn {
         position: fixed;
         top: calc(18px + var(--safe-top));
@@ -163,6 +167,208 @@
         width: 100%;
         opacity: 1;
         padding-right: 10px;
+      }
+
+      .page-ai-btn {
+        width: 32px;
+        height: 32px;
+        margin-right: 4px;
+        border: 1px solid rgba(163, 140, 109, 0.35);
+        border-radius: 9px;
+        background: rgba(255, 249, 239, 0.9);
+        color: #5b4a36;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(6px);
+        transition: opacity 180ms ease, transform 180ms ease, background-color 140ms ease;
+      }
+
+      .page-search.is-open .page-ai-btn {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+      }
+
+      .page-ai-btn:hover {
+        background: rgba(247, 236, 219, 0.95);
+      }
+
+      .page-ai-btn svg {
+        width: 16px;
+        height: 16px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .saved-dock-btn {
+        position: fixed;
+        right: calc(18px + var(--safe-right));
+        bottom: calc(22px + var(--safe-bottom));
+        border: 1px solid rgba(236, 216, 188, 0.44);
+        border-radius: 999px;
+        background: rgba(36, 29, 22, 0.72);
+        color: #fff6ea;
+        padding: 7px 11px 7px 9px;
+        min-height: 38px;
+        min-width: 38px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        z-index: 26;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        box-shadow: 0 10px 24px rgba(22, 16, 10, 0.18);
+        transition:
+          transform 160ms ease,
+          background-color 160ms ease,
+          border-color 160ms ease;
+      }
+
+      .saved-dock-btn:hover {
+        transform: translateY(-1px);
+        background: rgba(36, 29, 22, 0.82);
+        border-color: rgba(236, 216, 188, 0.62);
+      }
+
+      .saved-dock-btn:active {
+        transform: translateY(0);
+      }
+
+      .saved-dock-icon {
+        width: 14px;
+        height: 14px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
+      }
+
+      .saved-dock-label {
+        line-height: 1;
+      }
+
+      .saved-dock-count {
+        min-width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #f4dcc0;
+        color: #3e2f22;
+        font-size: 0.68rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 5px;
+      }
+
+      .saved-dock-btn.is-empty {
+        width: 38px;
+        padding: 0;
+        justify-content: center;
+        opacity: 0.84;
+      }
+
+      .saved-dock-btn.is-empty:hover {
+        opacity: 1;
+      }
+
+      .saved-dock-btn.is-empty .saved-dock-label,
+      .saved-dock-btn.is-empty .saved-dock-count {
+        display: none;
+      }
+
+      .saved-workspace-head {
+        position: fixed;
+        top: calc(14px + var(--safe-top));
+        left: calc(14px + var(--safe-left));
+        right: calc(14px + var(--safe-right));
+        z-index: 27;
+        display: none !important;
+      }
+
+      .saved-workspace-main {
+        border: 1px solid rgba(220, 200, 173, 0.82);
+        border-radius: 16px;
+        background: rgba(250, 241, 228, 0.94);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        box-shadow: 0 10px 30px rgba(40, 29, 17, 0.12);
+        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .saved-workspace-title-wrap {
+        min-width: 0;
+      }
+
+      .saved-workspace-title {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.2;
+        color: #3a2d20;
+      }
+
+      .saved-workspace-meta {
+        margin: 3px 0 0;
+        font-size: 0.74rem;
+        color: #6e5f4d;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .saved-workspace-actions {
+        display: inline-flex;
+        gap: 8px;
+      }
+
+      .saved-workspace-btn {
+        border: 1px solid #d3bf9f;
+        border-radius: 999px;
+        background: #fff8ec;
+        color: #5f4f3b;
+        font: inherit;
+        font-size: 0.74rem;
+        font-weight: 500;
+        line-height: 1;
+        padding: 8px 11px;
+        min-height: 32px;
+        cursor: pointer;
+      }
+
+      .saved-workspace-btn.primary {
+        border-color: #3f3224;
+        background: #3f3224;
+        color: #fff5e8;
+      }
+
+      .saved-workspace-btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      body.saved-workspace .page-filter-btn,
+      body.saved-workspace .page-search,
+      body.saved-workspace .saved-dock-btn {
+        display: none;
       }
 
       .filter-scrim {
@@ -458,48 +664,110 @@
         background-color: #f3eee4;
       }
 
-      .card-top-meta {
+      .card-save-btn {
         position: absolute;
         top: 8px;
-        left: 8px;
         right: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 5px 8px;
-        border-radius: 10px;
-        background: rgba(90, 95, 104, 0.72);
-        color: #fff8ef;
-        opacity: 0;
-        transform: translateY(-4px);
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        border: 1px solid rgba(202, 177, 147, 0.46);
+        background: rgba(252, 245, 236, 0.72);
+        color: rgba(96, 77, 58, 0.82);
+        display: grid;
+        place-items: center;
+        z-index: 4;
+        cursor: pointer;
+        opacity: 0.78;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
         transition:
-          opacity 180ms ease,
-          transform 180ms ease;
-        transition-delay: 0ms;
-        pointer-events: none;
+          transform 160ms ease,
+          background-color 160ms ease,
+          border-color 160ms ease,
+          color 160ms ease,
+          opacity 140ms ease;
+      }
+
+      .apartment-card:hover .card-save-btn:not(.is-saved),
+      .card-save-btn:not(.is-saved):focus-visible {
+        transform: translateY(-1px);
+        background: rgba(252, 245, 236, 0.92);
+        color: #473526;
+        border-color: rgba(177, 147, 112, 0.62);
+        opacity: 1;
+      }
+
+      .card-save-btn:active {
+        transform: translateY(0);
+      }
+
+      .card-save-btn svg {
+        width: 13px;
+        height: 13px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+      }
+
+      .card-save-btn.is-saved {
+        background: rgba(109, 41, 30, 0.86);
+        border-color: rgba(255, 223, 200, 0.72);
+        color: #fff;
+        opacity: 1;
+      }
+
+      .card-title-row {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        display: inline-flex;
+        align-items: flex-end;
+        max-width: calc(100% - 12px);
+        padding: 0 4px 5px 8px;
+        border-left: 1px solid rgba(96, 75, 54, 0.5);
+        border-bottom: 1px solid rgba(96, 75, 54, 0.56);
+        border-bottom-left-radius: 16px;
         z-index: 3;
       }
 
-      .apartment-card:hover .card-top-meta {
-        opacity: 1;
-        transform: translateY(0);
-        transition-delay: 90ms;
+      .card-title-row::before {
+        content: "";
+        position: absolute;
+        left: -1px;
+        top: 0;
+        width: 1px;
+        height: 13px;
+        background: linear-gradient(180deg, rgba(248, 241, 230, 0.9), rgba(248, 241, 230, 0));
+        pointer-events: none;
       }
 
-      .card-top-address {
-        font-size: 0.72rem;
-        font-weight: 500;
+      .card-title-row::after {
+        content: "";
+        position: absolute;
+        right: -1px;
+        bottom: -1px;
+        width: 22px;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(248, 241, 230, 0), rgba(248, 241, 230, 0.78));
+        pointer-events: none;
+      }
+
+      .card-title-chip {
+        display: block;
+        max-width: min(86vw, 304px);
+        color: #3f3124;
+        padding: 0;
+        font-size: 0.82rem;
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: 0.006em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-
-      .card-top-price {
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        flex-shrink: 0;
+        text-shadow:
+          0 1px 0 rgba(255, 250, 242, 0.95),
+          0 0 10px rgba(255, 250, 242, 0.82);
       }
 
       .photo.has-image {
@@ -659,7 +927,7 @@
         --hero-mobile-details-lift: 0px;
         display: flex;
         align-items: stretch;
-        gap: 8px;
+        gap: 0;
         position: relative;
         max-width: 100%;
         min-height: 0;
@@ -786,12 +1054,12 @@
         position: absolute;
         top: 10px;
         right: 10px;
-        border: 1px solid rgba(255, 236, 210, 0.75);
+        border: 1px solid rgba(201, 175, 143, 0.66);
         width: 34px;
         height: 34px;
         border-radius: 999px;
-        background: rgba(31, 23, 17, 0.6);
-        color: #fff6eb;
+        background: rgba(252, 245, 236, 0.72);
+        color: #6a5743;
         cursor: pointer;
         z-index: 10;
         padding: 0;
@@ -802,7 +1070,7 @@
       }
 
       .hero-details-toggle:hover {
-        background: rgba(31, 23, 17, 0.74);
+        background: rgba(252, 245, 236, 0.9);
       }
 
       .hero-details-toggle svg {
@@ -878,6 +1146,18 @@
         opacity: 1;
         transform: translateX(0);
         pointer-events: auto;
+      }
+
+      @media (min-width: 1001px) {
+        .hero-shell.has-details .hero-card {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+
+        .hero-shell.has-details .hero-details-panel {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
       }
 
       .hero-floorplan {
@@ -1143,6 +1423,609 @@
         color: #6a5a49;
       }
 
+      .hero-save-btn {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        border: 1px solid rgba(201, 175, 143, 0.66);
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: rgba(252, 245, 236, 0.72);
+        color: #6a5743;
+        cursor: pointer;
+        z-index: 10;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        opacity: 0.9;
+        transition:
+          background-color 160ms ease,
+          border-color 160ms ease,
+          color 160ms ease,
+          opacity 140ms ease;
+      }
+
+      .hero-save-btn:hover {
+        background: rgba(252, 245, 236, 0.9);
+        opacity: 1;
+      }
+
+      .hero-save-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+      }
+
+      .hero-save-btn.is-saved {
+        background: rgba(109, 41, 30, 0.86);
+        border-color: rgba(255, 223, 200, 0.72);
+        color: #fff;
+        opacity: 1;
+      }
+
+      .hero-actions {
+        display: grid;
+        gap: 8px;
+        margin: 6px 0 2px;
+      }
+
+      .hero-contact-cta {
+        border: 1px solid #3f3224;
+        background: #3f3224;
+        color: #fff5e8;
+        border-radius: 999px;
+        font: inherit;
+        font-size: 0.8rem;
+        padding: 9px 12px;
+        cursor: pointer;
+        text-align: center;
+        transition:
+          transform 120ms ease,
+          background-color 140ms ease,
+          border-color 140ms ease,
+          color 140ms ease;
+        width: 100%;
+      }
+
+      .hero-contact-cta:hover {
+        transform: translateY(-1px);
+      }
+
+      .hero-contact-cta:active {
+        transform: translateY(0);
+      }
+
+      .saved-scrim,
+      .compare-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(27, 21, 15, 0.44);
+        backdrop-filter: blur(2px);
+        z-index: 32;
+      }
+
+      .saved-scrim[hidden],
+      .compare-overlay[hidden] {
+        display: none;
+      }
+
+      .saved-panel {
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: min(460px, 96vw);
+        background: #f8efe2;
+        border-left: 1px solid #e2ceb0;
+        box-shadow: -18px 0 36px rgba(33, 24, 16, 0.18);
+        transform: translateX(102%);
+        transition: transform 220ms ease;
+        z-index: 33;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .saved-panel.is-open {
+        transform: translateX(0);
+      }
+
+      .saved-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: calc(10px + var(--safe-top)) 14px 8px;
+        border-bottom: 1px solid #e4d3bb;
+      }
+
+      .saved-panel-title {
+        margin: 0;
+        font-size: 1rem;
+        color: #3a2d20;
+      }
+
+      .saved-panel-close {
+        border: none;
+        background: transparent;
+        color: #6b5d4b;
+        font-size: 1.4rem;
+        line-height: 1;
+        width: 34px;
+        height: 34px;
+        cursor: pointer;
+      }
+
+      .saved-panel-body {
+        overflow: auto;
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+
+      .saved-empty {
+        margin: 0;
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px dashed #d9c4a6;
+        color: #715f4c;
+        font-size: 0.86rem;
+      }
+
+      .saved-item {
+        border: 1px solid #dfccb0;
+        border-radius: 14px;
+        background: #fff9ef;
+        overflow: hidden;
+      }
+
+      .saved-item-media {
+        aspect-ratio: 2.2 / 1;
+        background: #ece1cf;
+      }
+
+      .saved-item-media img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .saved-item-body {
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .saved-item-title {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #3e2f22;
+      }
+
+      .saved-item-meta {
+        margin: 0;
+        color: #6c5b49;
+        font-size: 0.8rem;
+      }
+
+      .saved-item-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .saved-mini-btn {
+        border: 1px solid #d7c1a0;
+        border-radius: 999px;
+        background: #fff5e7;
+        color: #584a3b;
+        font: inherit;
+        font-size: 0.76rem;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+
+      .saved-panel-actions {
+        padding: 10px 12px calc(12px + var(--safe-bottom));
+        border-top: 1px solid #e2ceb0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .saved-panel-btn {
+        border: 1px solid #3f3224;
+        border-radius: 999px;
+        background: #3f3224;
+        color: #fff5e8;
+        font: inherit;
+        font-size: 0.84rem;
+        padding: 9px 12px;
+        cursor: pointer;
+      }
+
+      .saved-panel-btn.secondary {
+        border-color: #d7c1a0;
+        background: #fff8ed;
+        color: #5d5040;
+      }
+
+      .saved-panel-btn:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+
+      .compare-overlay {
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: calc(14px + var(--safe-top)) calc(14px + var(--safe-right))
+          calc(14px + var(--safe-bottom)) calc(14px + var(--safe-left));
+      }
+
+      .compare-modal {
+        width: min(1120px, 98vw);
+        max-height: min(90vh, 900px);
+        background: #f8efe1;
+        border: 1px solid #e4d2b8;
+        border-radius: 18px;
+        box-shadow: 0 24px 44px rgba(29, 21, 14, 0.35);
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+      }
+
+      .compare-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid #e5d4bc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .compare-title {
+        margin: 0;
+        font-size: 1rem;
+        color: #3c2f22;
+      }
+
+      .compare-close {
+        border: none;
+        background: transparent;
+        color: #6f5e4b;
+        font-size: 1.4rem;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .compare-controls {
+        padding: 8px 14px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border-bottom: 1px solid #e5d4bc;
+      }
+
+      .compare-grid {
+        padding: 12px;
+        overflow: auto;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(250px, 1fr);
+        gap: 10px;
+      }
+
+      .compare-card {
+        border: 1px solid #decbaf;
+        border-radius: 14px;
+        background: #fff9ef;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+      }
+
+      .compare-card-media {
+        aspect-ratio: 1.6 / 1;
+        background: #ece1cf;
+      }
+
+      .compare-card-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .compare-card-body {
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .compare-thumb-row {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .compare-thumb {
+        width: 56px;
+        height: 42px;
+        border-radius: 8px;
+        border: 1px solid #dfccb0;
+        object-fit: cover;
+        flex: 0 0 auto;
+        background: #ece1cf;
+      }
+
+      .compare-kv {
+        display: grid;
+        gap: 4px;
+        font-size: 0.78rem;
+      }
+
+      .compare-kv div {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .compare-kv dt {
+        color: #7d6b57;
+      }
+
+      .compare-kv dd {
+        margin: 0;
+        color: #433528;
+        font-weight: 500;
+        text-align: right;
+      }
+
+      .copilot-launcher {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(-2px + var(--safe-bottom));
+        z-index: 63;
+        border: 1px solid rgba(187, 104, 63, 0.16);
+        background: linear-gradient(135deg, rgba(255, 247, 236, 0.98), rgba(253, 238, 220, 0.94));
+        color: #503f2f;
+        border-radius: 30px 30px 14px 14px;
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        min-width: min(232px, calc(100vw - 180px));
+        padding: 8px 18px 10px;
+        cursor: pointer;
+        box-shadow:
+          0 9px 18px rgba(36, 24, 14, 0.17),
+          inset 0 1px 0 rgba(255, 255, 255, 0.75);
+        text-align: center;
+        transition:
+          transform 200ms ease,
+          box-shadow 200ms ease,
+          background-color 160ms ease;
+        overflow: hidden;
+      }
+
+      .copilot-launcher:hover {
+        transform: translateX(-50%) translateY(-1px);
+        box-shadow:
+          0 18px 30px rgba(36, 24, 14, 0.28),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+
+      .copilot-launcher::before,
+      .copilot-launcher::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: 20px;
+        height: 12px;
+        background: linear-gradient(180deg, rgba(255, 246, 233, 0.95), rgba(250, 233, 211, 0.95));
+        border: 1px solid rgba(187, 104, 63, 0.16);
+        border-top: 0;
+        pointer-events: none;
+      }
+
+      .copilot-launcher::before {
+        left: -12px;
+        border-right: 0;
+        border-radius: 0 0 0 12px;
+      }
+
+      .copilot-launcher::after {
+        right: -12px;
+        border-left: 0;
+        border-radius: 0 0 12px 0;
+      }
+
+      .copilot-launcher[hidden] {
+        display: none;
+      }
+
+      .copilot-overlay {
+        z-index: 62;
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: end center;
+        padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right))
+          calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+        background: rgba(29, 21, 14, 0);
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        pointer-events: auto;
+        transition:
+          background-color 240ms ease,
+          backdrop-filter 240ms ease,
+          -webkit-backdrop-filter 240ms ease;
+      }
+
+      .copilot-overlay[hidden] {
+        display: none;
+      }
+
+      .copilot-overlay.is-open {
+        background: rgba(29, 21, 14, 0.44);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+
+      .copilot-modal {
+        width: min(760px, 100%);
+        max-height: min(56vh, 560px);
+        background: rgba(255, 249, 239, 0.98);
+        border: 1px solid #e4d2b8;
+        border-radius: 18px;
+        box-shadow: 0 24px 44px rgba(29, 21, 14, 0.35);
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        overflow: hidden;
+        pointer-events: auto;
+        transform: translateY(22px);
+        opacity: 0;
+        padding: 12px;
+        gap: 8px;
+        transition:
+          transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 200ms ease;
+      }
+
+      .copilot-overlay.is-open .copilot-modal {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .copilot-head {
+        padding: 0 0 2px;
+        border: 0;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0;
+      }
+
+      .copilot-title {
+        display: none;
+      }
+
+      .copilot-close {
+        border: 1px solid rgba(193, 169, 137, 0.64);
+        background: rgba(255, 247, 236, 0.92);
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        color: #705f4c;
+        font-size: 1.2rem;
+        line-height: 1;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+
+      .copilot-body {
+        padding: 2px 2px 0;
+        overflow: auto;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+        background: transparent;
+      }
+
+      .copilot-body:empty {
+        display: none;
+      }
+
+      .copilot-msg {
+        border: 1px solid #e4d1b4;
+        border-radius: 14px;
+        padding: 9px 11px;
+        max-width: min(88%, 560px);
+        font-size: 0.84rem;
+        line-height: 1.5;
+        color: #4d3e30;
+        background: #fff7ea;
+        white-space: pre-wrap;
+        justify-self: start;
+      }
+
+      .copilot-msg.user {
+        background: #54412f;
+        border-color: #4a3829;
+        color: #fff6ea;
+        justify-self: end;
+      }
+
+      .copilot-msg.system {
+        background: rgba(228, 247, 238, 0.72);
+        border-color: rgba(120, 171, 140, 0.42);
+      }
+
+      .copilot-form {
+        border-top: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+      }
+
+      .copilot-input {
+        flex: 1 1 auto;
+        border: 1px solid #d9c4a5;
+        border-radius: 14px;
+        padding: 12px 14px;
+        min-height: 50px;
+        max-height: 120px;
+        resize: none;
+        font: inherit;
+        font-size: 0.84rem;
+        background: #fffdf8;
+        color: #35291f;
+      }
+
+      .copilot-submit {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 999px;
+        background: #0a0a0a;
+        color: #ffffff;
+        cursor: pointer;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.16);
+        transition: transform 120ms ease, background-color 140ms ease;
+      }
+
+      .copilot-submit:hover {
+        background: #1b1b1b;
+      }
+
+      .copilot-submit:active {
+        transform: scale(0.96);
+      }
+
+      .copilot-submit svg {
+        width: 13px;
+        height: 13px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
       .hero-icons {
         display: flex;
         flex-wrap: wrap;
@@ -1361,6 +2244,10 @@
           padding-bottom: calc(28px + var(--safe-bottom));
         }
 
+        body.saved-workspace .results-wrap {
+          padding-top: calc(78px + var(--safe-top));
+        }
+
         .page-filter-btn,
         .page-search,
         .page-search-btn {
@@ -1381,6 +2268,41 @@
 
         .page-search.is-open {
           width: min(300px, calc(100vw - 20px - var(--safe-left) - var(--safe-right)));
+        }
+
+        .saved-dock-btn {
+          right: calc(10px + var(--safe-right));
+          bottom: calc(12px + var(--safe-bottom));
+          min-height: 36px;
+          min-width: 36px;
+          padding: 7px 10px 7px 8px;
+        }
+
+        .saved-dock-btn.is-empty {
+          width: 36px;
+        }
+
+        .saved-workspace-head {
+          top: calc(8px + var(--safe-top));
+          left: calc(8px + var(--safe-left));
+          right: calc(8px + var(--safe-right));
+        }
+
+        .saved-workspace-main {
+          grid-template-columns: 1fr;
+          gap: 8px;
+          padding: 10px;
+        }
+
+        .saved-workspace-actions {
+          width: 100%;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .saved-workspace-btn {
+          min-height: 34px;
+          padding: 8px 9px;
         }
 
         .filter-panel {
@@ -1419,6 +2341,50 @@
           place-items: center;
         }
 
+        .compare-overlay {
+          padding: calc(8px + var(--safe-top)) calc(8px + var(--safe-right))
+            calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left));
+        }
+
+        .compare-modal {
+          max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 16px);
+        }
+
+        .copilot-launcher {
+          left: 50%;
+          transform: translateX(-50%);
+          bottom: calc(-2px + var(--safe-bottom));
+          min-width: min(204px, calc(100vw - 112px));
+          padding: 7px 14px 9px;
+          font-size: 0.84rem;
+        }
+
+        .copilot-launcher::before,
+        .copilot-launcher::after {
+          width: 16px;
+          height: 10px;
+        }
+
+        .copilot-launcher::before {
+          left: -10px;
+        }
+
+        .copilot-launcher::after {
+          right: -10px;
+        }
+
+        .copilot-overlay {
+          place-items: end stretch;
+          padding: calc(8px + var(--safe-top)) calc(8px + var(--safe-right))
+            calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left));
+        }
+
+        .copilot-modal {
+          width: 100%;
+          max-height: min(calc(100vh - var(--safe-top) - var(--safe-bottom) - 16px), 68vh);
+          border-radius: 16px;
+        }
+
         .hero-overlay.has-details-open {
           place-items: start center;
         }
@@ -1437,7 +2403,7 @@
         .hero-shell {
           width: var(--hero-mobile-content-width);
           max-width: 100%;
-          gap: 10px;
+          gap: 4px;
           margin-bottom: var(--safe-bottom);
         }
 
@@ -1580,10 +2546,95 @@
         type="search"
         inputmode="search"
         autocomplete="off"
-        placeholder="Search by address"
-        aria-label="Search by address"
+        placeholder="Try: studio in Brooklyn under $3500 near A/C"
+        aria-label="Search listings"
       />
+      <button class="page-ai-btn" id="pageAiBtn" type="button" aria-label="AI match from this search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.3L12 15l-1.8-4.7L5.5 9l4.7-1.3z" />
+          <path d="M18.5 15.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z" />
+        </svg>
+      </button>
     </form>
+    <button class="saved-dock-btn" id="savedDockBtn" type="button" aria-label="Open saved page">
+      <svg class="saved-dock-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 20.6l-1-.9C6.2 15.4 3 12.5 3 8.9 3 6 5.3 3.8 8.2 3.8c1.7 0 3.4.8 4.5 2.1 1.1-1.3 2.8-2.1 4.5-2.1C20.1 3.8 22.4 6 22.4 8.9c0 3.6-3.2 6.5-8 10.8l-1 .9z" />
+      </svg>
+      <span class="saved-dock-label">Saved</span>
+      <span class="saved-dock-count" id="savedDockCount">0</span>
+    </button>
+
+    <section class="saved-workspace-head" id="savedWorkspaceHead" hidden>
+      <div class="saved-workspace-main">
+        <button class="saved-workspace-btn" id="savedWorkspaceBackBtn" type="button">Browse</button>
+        <div class="saved-workspace-title-wrap">
+          <h2 class="saved-workspace-title">Saved Listings</h2>
+          <p class="saved-workspace-meta" id="savedWorkspaceMeta">No saved listings yet.</p>
+        </div>
+        <div class="saved-workspace-actions">
+          <button class="saved-workspace-btn" id="savedWorkspaceCopyBtn" type="button">Copy Link</button>
+          <button class="saved-workspace-btn primary" id="savedWorkspaceCopilotBtn" type="button">Ask Copilot</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="saved-scrim" id="savedScrim" hidden></div>
+    <aside class="saved-panel" id="savedPanel" aria-hidden="true">
+      <div class="saved-panel-head">
+        <h3 class="saved-panel-title">Saved Shortlist</h3>
+        <button class="saved-panel-close" id="savedPanelClose" type="button" aria-label="Close saved panel">&times;</button>
+      </div>
+      <div class="saved-panel-body" id="savedPanelBody"></div>
+      <div class="saved-panel-actions">
+        <button class="saved-panel-btn secondary" id="savedCopilotBtn" type="button">Ask Copilot</button>
+        <button class="saved-panel-btn" id="savedCompareBtn" type="button" disabled>Compare 2-5</button>
+      </div>
+    </aside>
+
+    <div class="compare-overlay" id="compareOverlay" hidden>
+      <div class="compare-modal" role="dialog" aria-modal="true" aria-label="Compare saved listings">
+        <div class="compare-head">
+          <h3 class="compare-title">Compare Listings</h3>
+          <button class="compare-close" id="compareCloseBtn" type="button" aria-label="Close compare">&times;</button>
+        </div>
+        <div class="compare-controls">
+          <label>
+            <input id="compareDifferencesOnly" type="checkbox" />
+            Differences only
+          </label>
+          <button class="saved-panel-btn secondary" id="compareCopilotBtn" type="button">Ask Copilot</button>
+        </div>
+        <div class="compare-grid" id="compareGrid"></div>
+      </div>
+    </div>
+
+    <button class="copilot-launcher" id="copilotLauncherBtn" type="button" aria-label="Open copilot">
+      Ask Kreshnik
+    </button>
+
+    <div class="copilot-overlay" id="copilotOverlay" hidden>
+      <div class="copilot-modal" role="dialog" aria-modal="true" aria-label="Decision Copilot">
+        <div class="copilot-head">
+          <button class="copilot-close" id="copilotCloseBtn" type="button" aria-label="Close copilot">&times;</button>
+        </div>
+        <div class="copilot-body" id="copilotBody"></div>
+        <form class="copilot-form" id="copilotForm">
+          <textarea
+            class="copilot-input"
+            id="copilotInput"
+            placeholder="Ask Kreshnik anything about listings, tradeoffs, or scheduling a tour."
+            aria-label="Ask copilot"
+          ></textarea>
+          <button class="copilot-submit" id="copilotSubmitBtn" type="submit" aria-label="Send message">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 19V5"></path>
+              <path d="M6.5 10.5 12 5l5.5 5.5"></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+
     <div class="filter-scrim" id="filterScrim" hidden></div>
     <aside class="filter-panel" id="filterPanel" aria-hidden="true">
       <div class="filter-panel-head">
@@ -1661,6 +2712,11 @@
       <div class="hero-shell" id="heroShell" role="dialog" aria-modal="true" aria-label="Apartment viewer">
         <div class="hero-card" id="heroCard">
           <button class="hero-close" id="heroClose" type="button" aria-label="Close">&#10005;</button>
+          <button class="hero-save-btn" id="heroSaveBtn" type="button" aria-label="Save listing">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 20.6l-1-.9C6.2 15.4 3 12.5 3 8.9 3 6 5.3 3.8 8.2 3.8c1.7 0 3.4.8 4.5 2.1 1.1-1.3 2.8-2.1 4.5-2.1C20.1 3.8 22.4 6 22.4 8.9c0 3.6-3.2 6.5-8 10.8l-1 .9z" />
+            </svg>
+          </button>
           <div class="hero-media" id="heroMedia">
             <img class="hero-image" id="heroImage" alt="Apartment preview" draggable="false" />
             <div class="hero-floorplan" id="heroFloorplan" hidden>
@@ -1683,6 +2739,11 @@
             <div class="hero-location" id="heroLocation"></div>
             <div>
               <div class="hero-price" id="heroPrice"></div>
+            </div>
+            <div class="hero-actions">
+              <button class="hero-contact-cta primary" id="heroScheduleBtn" type="button">
+                Schedule a Tour
+              </button>
             </div>
             <div class="hero-meta-list" id="heroMetaList"></div>
             <div class="hero-section">
@@ -1714,6 +2775,32 @@
       const pageSearchForm = document.getElementById("pageSearchForm");
       const pageSearchBtn = document.getElementById("pageSearchBtn");
       const pageSearchInput = document.getElementById("pageSearchInput");
+      const pageAiBtn = document.getElementById("pageAiBtn");
+      const savedDockBtn = document.getElementById("savedDockBtn");
+      const savedDockCount = document.getElementById("savedDockCount");
+      const savedWorkspaceHead = document.getElementById("savedWorkspaceHead");
+      const savedWorkspaceMeta = document.getElementById("savedWorkspaceMeta");
+      const savedWorkspaceBackBtn = document.getElementById("savedWorkspaceBackBtn");
+      const savedWorkspaceCopyBtn = document.getElementById("savedWorkspaceCopyBtn");
+      const savedWorkspaceCopilotBtn = document.getElementById("savedWorkspaceCopilotBtn");
+      const savedScrim = document.getElementById("savedScrim");
+      const savedPanel = document.getElementById("savedPanel");
+      const savedPanelBody = document.getElementById("savedPanelBody");
+      const savedPanelClose = document.getElementById("savedPanelClose");
+      const savedCompareBtn = document.getElementById("savedCompareBtn");
+      const savedCopilotBtn = document.getElementById("savedCopilotBtn");
+      const compareOverlay = document.getElementById("compareOverlay");
+      const compareGrid = document.getElementById("compareGrid");
+      const compareCloseBtn = document.getElementById("compareCloseBtn");
+      const compareDifferencesOnly = document.getElementById("compareDifferencesOnly");
+      const compareCopilotBtn = document.getElementById("compareCopilotBtn");
+      const copilotLauncherBtn = document.getElementById("copilotLauncherBtn");
+      const copilotOverlay = document.getElementById("copilotOverlay");
+      const copilotBody = document.getElementById("copilotBody");
+      const copilotCloseBtn = document.getElementById("copilotCloseBtn");
+      const copilotForm = document.getElementById("copilotForm");
+      const copilotInput = document.getElementById("copilotInput");
+      const copilotSubmitBtn = document.getElementById("copilotSubmitBtn");
       const filterPanel = document.getElementById("filterPanel");
       const filterScrim = document.getElementById("filterScrim");
       const filterCloseBtn = document.getElementById("filterCloseBtn");
@@ -1754,10 +2841,12 @@
       const heroNext = document.getElementById("heroNext");
       const heroClose = document.getElementById("heroClose");
       const heroDetailsToggle = document.getElementById("heroDetailsToggle");
+      const heroSaveBtn = document.getElementById("heroSaveBtn");
       const heroDetailsPanel = document.getElementById("heroDetailsPanel");
       const heroDetailsDragHandle = document.getElementById("heroDetailsDragHandle");
       const heroFloorplan = document.getElementById("heroFloorplan");
       const heroZoomHint = document.getElementById("heroZoomHint");
+      const heroScheduleBtn = document.getElementById("heroScheduleBtn");
 
       heroMapImage.tabIndex = 0;
       heroMapImage.setAttribute("role", "button");
@@ -1811,6 +2900,35 @@
       let isFilterPanelOpen = false;
       let isSearchOpen = false;
       let showAllNeighborhoods = false;
+      let isSavedWorkspace = false;
+      let isSavedPanelOpen = false;
+      let isCompareOpen = false;
+      let isCopilotOpen = false;
+      let copilotContext = { mode: "saved_compare", listings: [], title: "Decision Copilot" };
+      let copilotContextSignature = "";
+      const copilotMessages = [];
+      const listingCacheByKey = new Map();
+      const savedListingKeys = new Set();
+      const compareListingKeys = new Set();
+      const shown3dListingKeys = new Set();
+      const STORAGE_SAVED_KEY = "apt_saved_listing_keys_v1";
+      const STORAGE_ANALYTICS_SESSION_KEY = "apt_analytics_session_v1";
+      const STORAGE_COPILOT_PROMPTED_KEY = "apt_copilot_prompted_v1";
+      const analyticsSessionId =
+        localStorage.getItem(STORAGE_ANALYTICS_SESSION_KEY) ||
+        `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      localStorage.setItem(STORAGE_ANALYTICS_SESSION_KEY, analyticsSessionId);
+      const funnelProgress = {
+        hasSearchSubmitted: false,
+        hasListingOpened: false,
+        searchToListingTracked: false,
+        listingTo3dTracked: false,
+        listingToActionTracked: false,
+      };
+      const COPILOT_MAX_LISTINGS = 24;
+      const scheduledTourSignatures = new Set();
+      let copilotCloseTimer = null;
+      let filterTrackThrottleTimer = null;
       const defaultSubwayByBorough = {
         Manhattan: ["1", "2", "3", "4", "5", "6", "7", "A", "B", "C", "D", "E", "F", "G", "J", "L", "M", "N", "Q", "R", "S", "W", "Z"],
         Brooklyn: ["2", "3", "4", "5", "A", "B", "C", "D", "F", "G", "J", "L", "M", "N", "Q", "R", "S", "Z"],
@@ -2060,6 +3178,1014 @@
         return `<div class="hero-chip-list">${values
           .map((value) => `<span class="hero-chip">${escapeHtml(value)}</span>`)
           .join("")}</div>`;
+      }
+
+      function listingKeyFromListing(listing, fallbackIndex = -1) {
+        if (listing && listing.id !== undefined && listing.id !== null && String(listing.id).trim()) {
+          return `id:${String(listing.id).trim()}`;
+        }
+        const signature = [
+          listing && listing.address ? listing.address : "",
+          listing && listing.title ? listing.title : "",
+          listing && Number.isFinite(Number(listing.price)) ? String(Math.floor(Number(listing.price))) : "",
+          listing && listing.neighborhood ? listing.neighborhood : "",
+          fallbackIndex >= 0 ? String(fallbackIndex) : "",
+        ]
+          .join("|")
+          .trim()
+          .toLowerCase();
+        return `sig:${signature || `idx:${fallbackIndex}`}`;
+      }
+
+      function listingIdFromKey(key) {
+        const value = String(key || "").trim();
+        if (!value.startsWith("id:")) return null;
+        const numeric = Number(value.slice(3));
+        if (!Number.isInteger(numeric) || numeric <= 0) return null;
+        return numeric;
+      }
+
+      function listingIdentity(listing, index = -1) {
+        return {
+          key: listingKeyFromListing(listing, index),
+          id: listing && listing.id !== undefined && listing.id !== null ? String(listing.id) : "",
+          address: listing && (listing.address || listing.title || "Apartment listing"),
+          borough: listing && listing.borough ? listing.borough : "",
+          neighborhood: listing && listing.neighborhood ? listing.neighborhood : "",
+          price: listing && Number.isFinite(Number(listing.price)) ? Number(listing.price) : null,
+        };
+      }
+
+      function parseSavedIdsFromParams(params) {
+        const raw = String(params.get("saved") || "").trim();
+        if (!raw) return [];
+        return raw
+          .split(",")
+          .map((part) => Number(part.trim()))
+          .filter((value) => Number.isInteger(value) && value > 0)
+          .filter((value, index, array) => array.indexOf(value) === index);
+      }
+
+      function parseSavedKeysFromParams(params) {
+        const raw = String(params.get("savedKeys") || "").trim();
+        if (!raw) return [];
+        const out = [];
+        raw.split(",").forEach((part) => {
+          const token = String(part || "").trim();
+          if (!token) return;
+          try {
+            const decoded = decodeURIComponent(token).trim();
+            if (decoded) out.push(decoded);
+          } catch (_error) {
+            // Ignore malformed URL components.
+          }
+        });
+        return out.filter((value, index, array) => array.indexOf(value) === index);
+      }
+
+      function getSavedIdsFromState() {
+        return [...savedListingKeys]
+          .map((key) => listingIdFromKey(key))
+          .filter((id) => Number.isInteger(id) && id > 0);
+      }
+
+      function buildSavedWorkspaceUrl() {
+        const url = new URL(window.location.href);
+        const keys = [...savedListingKeys].map((key) => String(key || "").trim()).filter(Boolean);
+        const ids = getSavedIdsFromState();
+        [
+          "q",
+          "minPrice",
+          "maxPrice",
+          "boroughs",
+          "beds",
+          "baths",
+          "neighborhoods",
+          "features",
+          "subway",
+          "page",
+          "borough",
+          "minBeds",
+          "minBaths",
+          "petsPolicy",
+        ].forEach((key) => {
+          url.searchParams.delete(key);
+        });
+        url.searchParams.set("view", "saved");
+        if (ids.length) url.searchParams.set("saved", ids.join(","));
+        else url.searchParams.delete("saved");
+        const nonIdKeys = keys.filter((key) => !key.startsWith("id:"));
+        if (nonIdKeys.length) {
+          url.searchParams.set(
+            "savedKeys",
+            nonIdKeys.map((key) => encodeURIComponent(key)).join(",")
+          );
+        } else {
+          url.searchParams.delete("savedKeys");
+        }
+        url.searchParams.delete("listing");
+        return url.toString();
+      }
+
+      function buildBrowseUrl() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("view");
+        url.searchParams.delete("saved");
+        url.searchParams.delete("savedKeys");
+        url.searchParams.delete("listing");
+        return url.toString();
+      }
+
+      function syncSavedWorkspaceModeFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const requestedView = String(params.get("view") || "").trim().toLowerCase();
+        const savedIds = parseSavedIdsFromParams(params);
+        const savedKeysFromUrl = parseSavedKeysFromParams(params);
+        const shouldUseSavedWorkspace = requestedView === "saved" || savedIds.length > 0 || savedKeysFromUrl.length > 0;
+        if (savedIds.length || savedKeysFromUrl.length) {
+          savedListingKeys.clear();
+          savedIds.forEach((id) => {
+            savedListingKeys.add(`id:${id}`);
+          });
+          savedKeysFromUrl.forEach((key) => {
+            savedListingKeys.add(key);
+          });
+          persistSavedListingKeys();
+        }
+        isSavedWorkspace = shouldUseSavedWorkspace;
+        document.body.classList.toggle("saved-workspace", isSavedWorkspace);
+        savedWorkspaceHead.hidden = !isSavedWorkspace;
+        updateCopilotLauncherLabel();
+        if (isSavedWorkspace) {
+          closeSearch();
+          closeFilterPanel();
+          closeSavedPanel();
+        }
+        return isSavedWorkspace;
+      }
+
+      function updateSavedWorkspaceUi() {
+        if (!isSavedWorkspace) return;
+        const count = savedListingKeys.size;
+        if (!count) {
+          savedWorkspaceMeta.textContent = "No saved listings yet. Go back and save a few apartments.";
+        } else {
+          savedWorkspaceMeta.textContent = `${count} saved listing${count === 1 ? "" : "s"} · copy link to share`;
+        }
+        savedWorkspaceCopyBtn.disabled = count === 0;
+        savedWorkspaceCopilotBtn.disabled = count === 0;
+      }
+
+      function getListingGallery(listing, max = 5) {
+        const out = [];
+        const seen = new Set();
+        const primary = [
+          listing && listing.imageUrl,
+          listing && listing.floorplanImageUrl,
+          listing && listing.floorPlanImageUrl,
+          listing && listing.mapImageUrl,
+        ];
+        const arrays = [
+          ...(Array.isArray(listing && listing.images) ? listing.images : []),
+          ...(Array.isArray(listing && listing.photos) ? listing.photos : []),
+          ...(Array.isArray(listing && listing.gallery) ? listing.gallery : []),
+        ];
+        [...primary, ...arrays].forEach((candidate) => {
+          const url =
+            typeof candidate === "string"
+              ? candidate
+              : candidate && typeof candidate.url === "string"
+                ? candidate.url
+                : "";
+          const clean = String(url || "").trim();
+          if (!clean || seen.has(clean)) return;
+          seen.add(clean);
+          out.push(clean);
+        });
+        return out.slice(0, max);
+      }
+
+      function cacheListingsForReuse(data) {
+        if (!Array.isArray(data)) return;
+        data.forEach((listing, index) => {
+          const key = listingKeyFromListing(listing, index);
+          listingCacheByKey.set(key, listing);
+        });
+      }
+
+      function getListingByKey(key) {
+        return listingCacheByKey.get(key) || null;
+      }
+
+      function loadSavedListingKeysFromStorage() {
+        let rows = [];
+        try {
+          rows = JSON.parse(localStorage.getItem(STORAGE_SAVED_KEY) || "[]");
+        } catch (_error) {
+          rows = [];
+        }
+        savedListingKeys.clear();
+        (Array.isArray(rows) ? rows : []).forEach((key) => {
+          const clean = String(key || "").trim();
+          if (clean) savedListingKeys.add(clean);
+        });
+      }
+
+      function persistSavedListingKeys() {
+        localStorage.setItem(STORAGE_SAVED_KEY, JSON.stringify([...savedListingKeys]));
+      }
+
+      function isListingSaved(listing, index = -1) {
+        return savedListingKeys.has(listingKeyFromListing(listing, index));
+      }
+
+      function syncHeroSaveButton() {
+        const listing = listings[activeIndex];
+        if (!listing) {
+          heroSaveBtn.classList.remove("is-saved");
+          return;
+        }
+        const saved = isListingSaved(listing, activeIndex);
+        heroSaveBtn.classList.toggle("is-saved", saved);
+        heroSaveBtn.setAttribute("aria-label", saved ? "Remove from saved" : "Save listing");
+      }
+
+      function syncCardSaveButtons() {
+        cardsGrid.querySelectorAll(".card-save-btn").forEach((button) => {
+          const key = String(button.dataset.key || "").trim();
+          const isSaved = key && savedListingKeys.has(key);
+          button.classList.toggle("is-saved", Boolean(isSaved));
+          button.setAttribute("aria-label", isSaved ? "Remove from saved" : "Save listing");
+        });
+      }
+
+      function trackEvent(name, props = {}, options = {}) {
+        const payload = {
+          name: String(name || "").trim(),
+          ts: new Date().toISOString(),
+          sessionId: analyticsSessionId,
+          props: props && typeof props === "object" ? props : {},
+        };
+        if (!payload.name) return;
+
+        try {
+          const queueKey = "apt_analytics_event_queue_v1";
+          const existing = JSON.parse(localStorage.getItem(queueKey) || "[]");
+          const rows = Array.isArray(existing) ? existing : [];
+          rows.push(payload);
+          if (rows.length > 600) rows.splice(0, rows.length - 600);
+          localStorage.setItem(queueKey, JSON.stringify(rows));
+        } catch (_error) {
+          // Ignore localStorage write errors.
+        }
+
+        const endpoint = `${apiBaseUrl}/api/events`;
+        const body = JSON.stringify({ event: payload });
+        if (navigator.sendBeacon) {
+          const blob = new Blob([body], { type: "application/json" });
+          navigator.sendBeacon(endpoint, blob);
+        } else {
+          fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+            keepalive: true,
+          }).catch(() => {
+            // Analytics failures should never break UX.
+          });
+        }
+
+        if (options.skipFunnels) return;
+
+        if (payload.name === "search_submitted") {
+          funnelProgress.hasSearchSubmitted = true;
+        } else if (payload.name === "listing_opened") {
+          if (funnelProgress.hasSearchSubmitted && !funnelProgress.searchToListingTracked) {
+            funnelProgress.searchToListingTracked = true;
+            trackEvent("funnel_search_to_listing", { listingId: payload.props.listingId || "" }, { skipFunnels: true });
+          }
+          funnelProgress.hasListingOpened = true;
+        } else if (payload.name === "3d_view_opened") {
+          if (funnelProgress.hasListingOpened && !funnelProgress.listingTo3dTracked) {
+            funnelProgress.listingTo3dTracked = true;
+            trackEvent("funnel_listing_to_3d", { listingId: payload.props.listingId || "" }, { skipFunnels: true });
+          }
+        } else if (
+          payload.name === "save_added" ||
+          payload.name === "contact_clicked" ||
+          payload.name === "tour_request_clicked" ||
+          payload.name === "tour_request_scheduled"
+        ) {
+          if (funnelProgress.hasListingOpened && !funnelProgress.listingToActionTracked) {
+            funnelProgress.listingToActionTracked = true;
+            trackEvent(
+              "funnel_listing_to_save_or_contact",
+              { actionEvent: payload.name, listingId: payload.props.listingId || "" },
+              { skipFunnels: true }
+            );
+          }
+        }
+      }
+
+      function scheduleFilterChangedAnalytics(reason) {
+        if (filterTrackThrottleTimer) return;
+        filterTrackThrottleTimer = setTimeout(() => {
+          filterTrackThrottleTimer = null;
+          trackEvent("filter_changed", {
+            reason,
+            selectedFilterCount: selectedCount(filterState),
+          });
+        }, 240);
+      }
+
+      function updateSavedDockUi() {
+        const count = savedListingKeys.size;
+        savedDockCount.textContent = String(count);
+        savedDockBtn.classList.toggle("is-empty", count === 0);
+        savedDockBtn.setAttribute(
+          "aria-label",
+          count > 0 ? `Open saved page (${count})` : "Open saved page"
+        );
+        updateSavedWorkspaceUi();
+      }
+
+      function persistAndRefreshSavedUi() {
+        persistSavedListingKeys();
+        updateSavedDockUi();
+        syncCardSaveButtons();
+        syncHeroSaveButton();
+        renderSavedPanel();
+      }
+
+      function toggleSavedListing(listing, { source = "unknown", index = -1 } = {}) {
+        const identity = listingIdentity(listing, index);
+        const key = identity.key;
+        if (!key) return false;
+        cacheListingsForReuse([listing]);
+        const wasSaved = savedListingKeys.has(key);
+        if (wasSaved) {
+          savedListingKeys.delete(key);
+          compareListingKeys.delete(key);
+          trackEvent("save_removed", {
+            source,
+            listingId: identity.id,
+            listingKey: key,
+            address: identity.address,
+          });
+        } else {
+          savedListingKeys.add(key);
+          trackEvent("save_added", {
+            source,
+            listingId: identity.id,
+            listingKey: key,
+            address: identity.address,
+          });
+        }
+        persistAndRefreshSavedUi();
+        if (isSavedWorkspace && heroOverlay.hidden) {
+          void loadSavedWorkspaceListings();
+        }
+        if (!wasSaved) {
+          maybePromptCopilotAtSavedMilestone();
+        }
+        return !wasSaved;
+      }
+
+      function savedListingsInMemory() {
+        const out = [];
+        savedListingKeys.forEach((key) => {
+          const listing = getListingByKey(key);
+          if (listing) out.push(listing);
+        });
+        return out;
+      }
+
+      async function hydrateSavedListingsFromApi() {
+        const idKeys = [...savedListingKeys]
+          .map((key) => ({ key, id: listingIdFromKey(key) }))
+          .filter((row) => Number.isInteger(row.id) && !listingCacheByKey.has(row.key));
+        if (!idKeys.length) return;
+
+        const idsCsv = idKeys.map((row) => row.id).join(",");
+        const url = new URL(`${apiBaseUrl}/api/listings`);
+        url.searchParams.set("ids", idsCsv);
+        url.searchParams.set("limit", String(Math.max(12, idKeys.length)));
+        try {
+          const response = await fetch(url.toString());
+          if (!response.ok) return;
+          const payload = await response.json();
+          const rows = Array.isArray(payload.data) ? payload.data : [];
+          cacheListingsForReuse(rows);
+        } catch (_error) {
+          // keep whatever is already cached
+        }
+      }
+
+      async function loadSavedWorkspaceListings() {
+        await hydrateSavedListingsFromApi();
+        listings = savedListingsInMemory();
+        listingsLoadError = "";
+        renderCards(listings);
+        updateSavedDockUi();
+        updateSavedWorkspaceUi();
+        trackEvent("results_viewed", {
+          count: Array.isArray(listings) ? listings.length : 0,
+          source: "saved_workspace",
+        });
+      }
+
+      function setSavedPanelOpen(open) {
+        isSavedPanelOpen = Boolean(open);
+        savedPanel.classList.toggle("is-open", isSavedPanelOpen);
+        savedPanel.setAttribute("aria-hidden", isSavedPanelOpen ? "false" : "true");
+        savedScrim.hidden = !isSavedPanelOpen;
+      }
+
+      async function openSavedPanel() {
+        await hydrateSavedListingsFromApi();
+        renderSavedPanel();
+        setSavedPanelOpen(true);
+      }
+
+      function closeSavedPanel() {
+        setSavedPanelOpen(false);
+      }
+
+      function compareEligibleCount() {
+        return compareListingKeys.size;
+      }
+
+      function syncCompareSelectionControls() {
+        const count = compareEligibleCount();
+        const enabled = count >= 2 && count <= 5;
+        savedCompareBtn.disabled = !enabled;
+        savedCompareBtn.textContent = count ? `Compare ${count}` : "Compare 2-5";
+      }
+
+      function renderSavedPanel() {
+        [...compareListingKeys].forEach((key) => {
+          if (!savedListingKeys.has(key)) compareListingKeys.delete(key);
+        });
+        const rows = [];
+        savedListingKeys.forEach((key) => {
+          const listing = getListingByKey(key);
+          if (listing) {
+            rows.push({ key, listing });
+          }
+        });
+        rows.sort((a, b) => Number(b.listing.price || 0) - Number(a.listing.price || 0));
+
+        if (!rows.length) {
+          savedPanelBody.innerHTML = `<p class=\"saved-empty\">No saved listings yet. Tap the heart on any listing to build your shortlist.</p>`;
+          syncCompareSelectionControls();
+          return;
+        }
+
+        savedPanelBody.innerHTML = rows
+          .map(({ key, listing }) => {
+            const gallery = getListingGallery(listing, 1);
+            const image = gallery[0] || "";
+            const isCompared = compareListingKeys.has(key);
+            const address = listing.address || listing.title || "Apartment listing";
+            const priceText = Number.isFinite(Number(listing.price))
+              ? `$${formatNumber(Number(listing.price))}/mo`
+              : "Price N/A";
+            return `
+              <article class=\"saved-item\" data-key=\"${escapeHtml(key)}\">
+                <div class=\"saved-item-media\">${
+                  image
+                    ? `<img src=\"${escapeHtml(image)}\" alt=\"${escapeHtml(address)}\" loading=\"lazy\" decoding=\"async\" />`
+                    : ""
+                }</div>
+                <div class=\"saved-item-body\">
+                  <h4 class=\"saved-item-title\">${escapeHtml(address)}</h4>
+                  <p class=\"saved-item-meta\">${escapeHtml(priceText)} · ${escapeHtml(miniMeta(listing))}</p>
+                  <div class=\"saved-item-actions\">
+                    <button class=\"saved-mini-btn\" data-action=\"open\" type=\"button\">Open</button>
+                    <button class=\"saved-mini-btn\" data-action=\"compare\" type=\"button\">${
+                      isCompared ? "Compared" : "Add to Compare"
+                    }</button>
+                    <button class=\"saved-mini-btn\" data-action=\"remove\" type=\"button\">Remove</button>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+        syncCompareSelectionControls();
+      }
+
+      function getComparedListings() {
+        const out = [];
+        compareListingKeys.forEach((key) => {
+          const listing = getListingByKey(key);
+          if (listing) out.push({ key, listing });
+        });
+        return out;
+      }
+
+      function formatCompareValue(label, listing) {
+        if (label === "price") return Number.isFinite(Number(listing.price)) ? `$${formatNumber(Number(listing.price))}` : "N/A";
+        if (label === "bedsBaths") return miniMeta(listing) || "N/A";
+        if (label === "neighborhood") return `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`;
+        if (label === "layout3d")
+          return listing.floorplanImageUrl || listing.floorPlanImageUrl ? "Available" : "Not available";
+        if (label === "fees") return listing.fees ? String(listing.fees) : "N/A";
+        if (label === "sqft") return listing.sqft ? `${listing.sqft} sqft` : "N/A";
+        if (label === "floorLevel") return listing.floorLevel ? String(listing.floorLevel) : "N/A";
+        if (label === "commute") {
+          if (listing.commuteNotes) return String(listing.commuteNotes);
+          if (Array.isArray(listing.subwayLines) && listing.subwayLines.length) {
+            return `${listing.subwayLines.slice(0, 4).join(", ")} lines nearby`;
+          }
+          return "N/A";
+        }
+        if (label === "amenities") {
+          const values = Array.isArray(listing.buildingFeatures) ? listing.buildingFeatures : [];
+          return values.length ? values.slice(0, 4).join(", ") : "N/A";
+        }
+        return "N/A";
+      }
+
+      function renderCompareModal() {
+        const rows = getComparedListings();
+        if (rows.length < 2) {
+          compareGrid.innerHTML = `<p class=\"saved-empty\">Select at least two saved listings to compare.</p>`;
+          return;
+        }
+
+        const fields = [
+          { key: "price", label: "Price" },
+          { key: "bedsBaths", label: "Beds/Baths" },
+          { key: "neighborhood", label: "Neighborhood" },
+          { key: "layout3d", label: "3D Layout" },
+          { key: "fees", label: "Fees" },
+          { key: "sqft", label: "Sqft" },
+          { key: "floorLevel", label: "Floor" },
+          { key: "commute", label: "Commute" },
+          { key: "amenities", label: "Amenities" },
+        ];
+
+        const hideEqual = Boolean(compareDifferencesOnly.checked);
+        const visibleFields = hideEqual
+          ? fields.filter((field) => {
+              const uniqueValues = new Set(
+                rows.map(({ listing }) => String(formatCompareValue(field.key, listing)).trim().toLowerCase())
+              );
+              return uniqueValues.size > 1;
+            })
+          : fields;
+
+        compareGrid.innerHTML = rows
+          .map(({ listing }) => {
+            const gallery = getListingGallery(listing, 5);
+            const mainImage = gallery[0] || "";
+            const thumbs = gallery.slice(1, 5);
+            return `
+              <article class=\"compare-card\">
+                <div class=\"compare-card-media\">
+                  ${mainImage ? `<img src=\"${escapeHtml(mainImage)}\" alt=\"${escapeHtml(listing.address || listing.title || "Listing image")}\" />` : ""}
+                </div>
+                <div class=\"compare-card-body\">
+                  <div class=\"saved-item-title\">${escapeHtml(listing.address || listing.title || "Apartment")}</div>
+                  ${
+                    thumbs.length
+                      ? `<div class=\"compare-thumb-row\">${thumbs
+                          .map(
+                            (url, idx) =>
+                              `<img class=\"compare-thumb\" src=\"${escapeHtml(url)}\" alt=\"${escapeHtml(
+                                `${listing.address || listing.title || "Listing"} photo ${idx + 2}`
+                              )}\" loading=\"lazy\" decoding=\"async\" />`
+                          )
+                          .join("")}</div>`
+                      : ""
+                  }
+                  <dl class=\"compare-kv\">
+                    ${visibleFields
+                      .map(
+                        (field) =>
+                          `<div><dt>${escapeHtml(field.label)}</dt><dd>${escapeHtml(
+                            formatCompareValue(field.key, listing)
+                          )}</dd></div>`
+                      )
+                      .join("")}
+                  </dl>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function openCompareModal() {
+        renderCompareModal();
+        compareOverlay.hidden = false;
+        isCompareOpen = true;
+        trackEvent("compare_opened", {
+          count: compareListingKeys.size,
+        });
+      }
+
+      function closeCompareModal() {
+        isCompareOpen = false;
+        compareOverlay.hidden = true;
+      }
+
+      function appendCopilotMessage(role, text) {
+        const cleanRole = role === "user" || role === "system" ? role : "assistant";
+        const cleanText = String(text || "").trim();
+        if (!cleanText) return;
+        copilotMessages.push({ role: cleanRole, text: cleanText, ts: Date.now() });
+        if (copilotMessages.length > 60) {
+          copilotMessages.splice(0, copilotMessages.length - 60);
+        }
+      }
+
+      function getCopilotInputPlaceholder(context) {
+        const mode = String((context && context.mode) || "");
+        if (mode === "tour_assistant") {
+          return "Ask about this listing or schedule a tour. Include your name, email/phone, and preferred date/time.";
+        }
+        if (mode === "compare_qa" || mode === "saved_compare") {
+          return "Compare these saved listings: tradeoffs, value, commute impact, and best fit.";
+        }
+        if (mode === "listing_qa") {
+          return "Ask anything about this listing: fees, transit, fit, pros/cons, and negotiation angles.";
+        }
+        return "Ask about these results: shortlist strategy, tradeoffs, commute, and next best step.";
+      }
+
+      function renderCopilotMessages() {
+        if (!copilotMessages.length) {
+          copilotBody.innerHTML = "";
+          return;
+        }
+        copilotBody.innerHTML = copilotMessages
+          .map((msg) => `<div class=\"copilot-msg ${msg.role}\">${escapeHtml(msg.text)}</div>`)
+          .join("");
+        copilotBody.scrollTop = copilotBody.scrollHeight;
+      }
+
+      function syncCopilotLauncherVisibility() {
+        if (!copilotLauncherBtn) return;
+        const shouldHide = isCopilotOpen || !heroOverlay.hidden;
+        copilotLauncherBtn.hidden = shouldHide;
+      }
+
+      function updateCopilotLauncherLabel() {
+        if (!copilotLauncherBtn) return;
+        const label = isSavedWorkspace ? "Compare Listings" : "Ask Kreshnik";
+        copilotLauncherBtn.textContent = label;
+        copilotLauncherBtn.setAttribute("aria-label", label);
+      }
+
+      function setCopilotOpen(open) {
+        const shouldOpen = Boolean(open);
+        if (copilotCloseTimer) {
+          clearTimeout(copilotCloseTimer);
+          copilotCloseTimer = null;
+        }
+
+        if (shouldOpen) {
+          isCopilotOpen = true;
+          copilotOverlay.hidden = false;
+          syncCopilotLauncherVisibility();
+          requestAnimationFrame(() => {
+            copilotOverlay.classList.add("is-open");
+          });
+          return;
+        }
+
+        isCopilotOpen = false;
+        copilotOverlay.classList.remove("is-open");
+        syncCopilotLauncherVisibility();
+        copilotCloseTimer = setTimeout(() => {
+          if (!isCopilotOpen) {
+            copilotOverlay.hidden = true;
+            syncCopilotLauncherVisibility();
+          }
+        }, 260);
+      }
+
+      function openCopilotWithContext({ mode, listings: contextListings, title }) {
+        const rows = Array.isArray(contextListings) ? contextListings.filter(Boolean) : [];
+        if (!rows.length) return;
+        const contextMode = mode || "saved_compare";
+        const nextSignature = rows
+          .map((listing, index) => listingKeyFromListing(listing, index))
+          .sort()
+          .join("|");
+        const fullSignature = `${contextMode}::${nextSignature}`;
+        if (fullSignature && fullSignature !== copilotContextSignature) {
+          copilotMessages.splice(0, copilotMessages.length);
+        }
+        copilotContextSignature = fullSignature;
+        const truncatedCount = Math.min(rows.length, COPILOT_MAX_LISTINGS);
+        copilotContext = {
+          mode: contextMode,
+          listings: rows.slice(0, truncatedCount),
+          title: title || "Decision Copilot",
+        };
+        copilotInput.placeholder = getCopilotInputPlaceholder(copilotContext);
+        renderCopilotMessages();
+        setCopilotOpen(true);
+        setTimeout(() => {
+          try {
+            copilotInput.focus({ preventScroll: true });
+          } catch (_error) {
+            // Ignore focus errors.
+          }
+        }, 40);
+        trackEvent("copilot_opened", {
+          mode: copilotContext.mode,
+          listingCount: copilotContext.listings.length,
+        });
+      }
+
+      function closeCopilot() {
+        setCopilotOpen(false);
+      }
+
+      function formatTourDateTime(isoValue, timeZone) {
+        const safeIso = String(isoValue || "").trim();
+        if (!safeIso) return "the requested time";
+        const date = new Date(safeIso);
+        if (!Number.isFinite(date.getTime())) return safeIso;
+        const tz = String(timeZone || "").trim() || "America/New_York";
+        try {
+          return new Intl.DateTimeFormat("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            timeZone: tz,
+            timeZoneName: "short",
+          }).format(date);
+        } catch (_error) {
+          return date.toISOString();
+        }
+      }
+
+      async function maybeCreateTourBooking(tourBookingPayload) {
+        if (!tourBookingPayload || typeof tourBookingPayload !== "object") return false;
+        const payload = tourBookingPayload;
+        if (!payload.ready) return false;
+        const listing = Array.isArray(copilotContext.listings) ? copilotContext.listings[0] : null;
+        if (!listing) return false;
+
+        const startAt = String(payload.startAt || "").trim();
+        const clientName = String(payload.name || payload.clientName || "").trim();
+        const clientEmail = String(payload.email || payload.clientEmail || "").trim();
+        const clientPhone = String(payload.phone || payload.clientPhone || "").trim();
+        if (!startAt || !clientName || (!clientEmail && !clientPhone)) return false;
+
+        const dedupeKey = `${listing.id || listing.address || listing.title || "listing"}|${startAt}|${clientName}|${clientEmail}|${clientPhone}`.toLowerCase();
+        if (scheduledTourSignatures.has(dedupeKey)) return false;
+        scheduledTourSignatures.add(dedupeKey);
+
+        const numericDuration = Number(payload.durationMinutes);
+        const durationMinutes = Number.isFinite(numericDuration)
+          ? clampNumber(Math.round(numericDuration), 20, 240)
+          : 45;
+
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/tours`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              listingId:
+                listing && listing.id !== null && listing.id !== undefined && Number.isFinite(Number(listing.id))
+                  ? Number(listing.id)
+                  : null,
+              listingTitle: listing.title || listing.address || "Apartment listing",
+              listingAddress: listing.address || listing.title || "Apartment listing",
+              clientName,
+              clientEmail: clientEmail || null,
+              clientPhone: clientPhone || null,
+              startAt,
+              endAt: String(payload.endAt || "").trim() || null,
+              durationMinutes,
+              timezone:
+                String(payload.timezone || "").trim() ||
+                Intl.DateTimeFormat().resolvedOptions().timeZone ||
+                "America/New_York",
+              notes: String(payload.notes || "").trim() || null,
+              source: "copilot",
+            }),
+          });
+          const apiPayload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(apiPayload.error || `Tour save failed (${response.status})`);
+          }
+          const savedTour = apiPayload && apiPayload.tour ? apiPayload.tour : null;
+          if (!savedTour) throw new Error("Tour API returned no tour.");
+
+          appendCopilotMessage(
+            "system",
+            `Tour requested for ${formatTourDateTime(savedTour.startAt, savedTour.timezone)}. Our team will confirm it shortly.`
+          );
+          trackEvent("tour_request_scheduled", {
+            listingId: listing.id ? String(listing.id) : "",
+            address: listing.address || listing.title || "",
+            source: "copilot",
+            tourId: savedTour.id ? String(savedTour.id) : "",
+          });
+          return true;
+        } catch (error) {
+          scheduledTourSignatures.delete(dedupeKey);
+          appendCopilotMessage(
+            "assistant",
+            `I captured the request but could not save the tour yet. ${String(error && error.message ? error.message : "")}`.trim()
+          );
+          return false;
+        }
+      }
+
+      async function submitCopilotQuestion(question) {
+        const cleanQuestion = String(question || "").trim();
+        if (!cleanQuestion) return;
+
+        appendCopilotMessage("user", cleanQuestion);
+        renderCopilotMessages();
+        copilotSubmitBtn.disabled = true;
+        trackEvent("ai_question_sent", {
+          mode: copilotContext.mode,
+          listingCount: copilotContext.listings.length,
+        });
+
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/ai/copilot`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: copilotContext.mode,
+              question: cleanQuestion,
+              listings: copilotContext.listings,
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(payload.error || `Copilot request failed (${response.status})`);
+          }
+          appendCopilotMessage("assistant", payload.answer || "No answer returned.");
+          if (copilotContext.mode === "tour_assistant" && payload.tourBooking) {
+            await maybeCreateTourBooking(payload.tourBooking);
+          }
+          trackEvent("ai_answer_received", {
+            mode: copilotContext.mode,
+            listingCount: copilotContext.listings.length,
+          });
+        } catch (error) {
+          appendCopilotMessage(
+            "assistant",
+            `Copilot is unavailable right now. ${String(error && error.message ? error.message : "")}`.trim()
+          );
+        } finally {
+          copilotSubmitBtn.disabled = false;
+          renderCopilotMessages();
+        }
+      }
+
+      async function maybePromptCopilotAtSavedMilestone() {
+        if (isSavedWorkspace) return;
+        if (savedListingKeys.size < 5) return;
+        if (localStorage.getItem(STORAGE_COPILOT_PROMPTED_KEY) === "1") return;
+        await hydrateSavedListingsFromApi();
+        const shortlist = savedListingsInMemory().slice(0, 5);
+        if (shortlist.length < 5) return;
+        localStorage.setItem(STORAGE_COPILOT_PROMPTED_KEY, "1");
+        openCopilotWithContext({
+          mode: "saved_compare",
+          listings: shortlist,
+          title: "Decision Copilot · Saved 5",
+        });
+      }
+
+      async function openCopilotFromCurrentView() {
+        if (!heroOverlay.hidden) {
+          const listing = listings[activeIndex];
+          if (!listing) return;
+          openCopilotWithContext({
+            mode: "listing_qa",
+            listings: [listing],
+            title: "Decision Copilot · This Listing",
+          });
+          return;
+        }
+
+        if (isSavedWorkspace) {
+          await hydrateSavedListingsFromApi();
+          const rows = savedListingsInMemory();
+          if (!rows.length) return;
+          openCopilotWithContext({
+            mode: "saved_compare",
+            listings: rows,
+            title: "Decision Copilot · Saved Listings",
+          });
+          return;
+        }
+
+        const rows = Array.isArray(listings) ? listings.slice(0, COPILOT_MAX_LISTINGS) : [];
+        if (!rows.length) return;
+        openCopilotWithContext({
+          mode: "results_qa",
+          listings: rows,
+          title: "Decision Copilot · Results",
+        });
+      }
+
+      async function applyAiIntentFromSearch() {
+        const query = String(pageSearchInput.value || "").trim();
+        if (!query) return false;
+        try {
+          const response = await fetch(`${apiBaseUrl}/api/ai/intent-filters`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query }),
+          });
+          if (!response.ok) return false;
+          const payload = await response.json();
+          const intent = payload && payload.intent ? payload.intent : null;
+          if (!intent || typeof intent !== "object") return false;
+
+          const hasStructuredFilters =
+            (Array.isArray(intent.boroughs) && intent.boroughs.length > 0) ||
+            (Array.isArray(intent.beds) && intent.beds.length > 0) ||
+            (Array.isArray(intent.baths) && intent.baths.length > 0) ||
+            (Array.isArray(intent.neighborhoods) && intent.neighborhoods.length > 0) ||
+            (Array.isArray(intent.features) && intent.features.length > 0) ||
+            (Array.isArray(intent.amenities) && intent.amenities.length > 0) ||
+            (Array.isArray(intent.subway) && intent.subway.length > 0) ||
+            Boolean(intent.minPrice) ||
+            Boolean(intent.maxPrice);
+
+          if (!hasStructuredFilters && !intent.searchQuery) return false;
+
+          clearFilterState();
+          filterState.minPrice = String(intent.minPrice || "").trim();
+          filterState.maxPrice = String(intent.maxPrice || "").trim();
+          filterState.boroughs = (Array.isArray(intent.boroughs) ? intent.boroughs : []).slice(0, 2);
+          filterState.beds = (Array.isArray(intent.beds) ? intent.beds : []).slice(0, 2);
+          filterState.baths = (Array.isArray(intent.baths) ? intent.baths : []).slice(0, 2);
+          filterState.neighborhoods = Array.isArray(intent.neighborhoods) ? intent.neighborhoods : [];
+          filterState.features = Array.isArray(intent.features) ? intent.features : [];
+          filterState.amenities = Array.isArray(intent.amenities) ? intent.amenities : [];
+          filterState.subway = Array.isArray(intent.subway) ? intent.subway : [];
+          syncPriceSlidersFromState();
+          pruneNeighborhoodSelection();
+          pruneTransitSelection();
+          renderNeighborhoodChips();
+          renderTransitChips();
+          applyFilterStateToUi();
+
+          pageSearchInput.value = String(intent.searchQuery || "").trim();
+          trackEvent("ai_intent_applied", {
+            hadStructuredFilters: hasStructuredFilters,
+            model: payload.model || "",
+          });
+          trackEvent("filter_changed", {
+            reason: "ai_intent",
+            selectedFilterCount: selectedCount(filterState),
+          });
+          return true;
+        } catch (_error) {
+          return false;
+        }
+      }
+
+      function buildTourRequestMessage(listing) {
+        const address = listing.address || listing.title || "this listing";
+        return [
+          `Hi, I want to request a tour for ${address}.`,
+          "",
+          "Could you confirm:",
+          "- Is this net or gross rent?",
+          "- What are total move-in fees?",
+          "- Earliest move-in date and lease term options?",
+        ].join("\\n");
+      }
+
+      function isMobileUa() {
+        const ua = navigator.userAgent || "";
+        return /iPhone|iPad|iPod|Android/i.test(ua);
+      }
+
+      function openContactFlow(listing, { mode = "tour" } = {}) {
+        if (!listing) return;
+        const subjectPrefix = mode === "tour" ? "Tour Request" : "Question";
+        const subject = `${subjectPrefix}: ${listing.address || listing.title || "Apartment listing"}`;
+        const body = buildTourRequestMessage(listing);
+        const encodedSubject = encodeURIComponent(subject);
+        const encodedBody = encodeURIComponent(body);
+        const href = isMobileUa()
+          ? `sms:?&body=${encodedBody}`
+          : `mailto:?subject=${encodedSubject}&body=${encodedBody}`;
+        window.location.href = href;
+        trackEvent(mode === "tour" ? "tour_request_clicked" : "contact_clicked", {
+          listingId: listing.id ? String(listing.id) : "",
+          address: listing.address || listing.title || "",
+        });
       }
 
       function getListingImage(listing) {
@@ -2344,7 +4470,7 @@
         const minVisiblePanelHeight = 140;
         const cardBottom = cardRect.bottom;
         const minTop = safeTop + 8;
-        const preferredTop = Math.max(minTop, cardBottom + 8);
+        const preferredTop = Math.max(minTop, cardBottom + 2);
         const maxTop = Math.max(minTop, viewportHeight - safeBottom - minVisiblePanelHeight);
         const nextTop = clampNumber(preferredTop, minTop, maxTop);
         heroMobileDetailsBaseTop = nextTop;
@@ -2401,7 +4527,10 @@
             fill: "none",
           }
         );
-        animation.onfinish = () => animation.cancel();
+        animation.onfinish = () => {
+          animation.cancel();
+          scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 120 });
+        };
       }
 
       function clampPan() {
@@ -2557,6 +4686,7 @@
       function renderActiveHeroMedia({ preserveZoom = false } = {}) {
         const requestId = ++heroMediaRenderRequestId;
         const activeMedia = heroMediaItems[heroMediaIndex] || null;
+        const activeListing = listings[activeIndex] || null;
         const selectedImageUrl = activeMedia ? activeMedia.url : "";
         heroFloorplan.hidden = true;
         syncHeroMediaArrows();
@@ -2568,6 +4698,16 @@
         }
         if (activeMedia) {
           setHeroAspectRatio(heroPrimaryAspectRatio);
+          if (activeMedia.type === "floorplan" && activeListing) {
+            const key = listingKeyFromListing(activeListing, activeIndex);
+            if (!shown3dListingKeys.has(key)) {
+              shown3dListingKeys.add(key);
+              trackEvent("3d_view_opened", {
+                listingId: activeListing.id ? String(activeListing.id) : "",
+                listingKey: key,
+              });
+            }
+          }
         }
 
         if (!selectedImageUrl) {
@@ -2700,12 +4840,19 @@
       }
 
       function renderCards(data) {
+        cacheListingsForReuse(data);
         if (!Array.isArray(data) || data.length === 0) {
           const isApiFailure = Boolean(listingsLoadError);
-          const emptyTitle = isApiFailure ? "Could not load listings" : "No listings found";
+          const emptyTitle = isSavedWorkspace
+            ? "No saved listings yet"
+            : isApiFailure
+              ? "Could not load listings"
+              : "No listings found";
           const emptyMeta = isApiFailure
             ? `${listingsLoadError} If this page is opened via file://, CORS may be blocking the API request.`
-            : "Try adjusting filters or adding a new listing.";
+            : isSavedWorkspace
+              ? "Go back to Browse and tap the heart icon to save listings."
+              : "Try adjusting filters or adding a new listing.";
           cardsGrid.innerHTML = `
             <article class="apartment-card" style="opacity:1; transform:none; cursor:default;">
               <div class="photo photo-tone-2" aria-label="No listings available"></div>
@@ -2723,31 +4870,42 @@
             const toneClass = tones[index % tones.length];
             const possibleImage = getListingImage(listing);
             const photoClass = possibleImage ? "photo has-image" : `photo ${toneClass}`;
+            const listingKey = listingKeyFromListing(listing, index);
+            const isSaved = savedListingKeys.has(listingKey);
             const photoMedia = possibleImage
               ? `<img class="photo-image" src="${escapeHtml(possibleImage)}" alt="${escapeHtml(
                   listing.title || "Apartment image"
                 )}" loading="lazy" decoding="async" />`
               : "";
-            const addressText = listing.address || listing.title || "Apartment listing";
-            const priceText = typeof listing.price === "number" ? `$${formatNumber(listing.price)}/mo` : "";
+            const titleText = listing.title || listing.address || "Apartment listing";
             return `
-              <article class="apartment-card" data-index="${index}" style="animation-delay:${index * 70}ms">
+              <article class="apartment-card" data-index="${index}" data-key="${escapeHtml(
+                listingKey
+              )}" style="animation-delay:${index * 70}ms">
                 <div class="${photoClass}" aria-label="${escapeHtml(listing.title || "Apartment image")}">
                   ${photoMedia}
-                  <div class="card-top-meta">
-                    <span class="card-top-address">${escapeHtml(addressText)}</span>
-                    <span class="card-top-price">${escapeHtml(priceText)}</span>
+                  <button class="card-save-btn ${isSaved ? "is-saved" : ""}" data-key="${escapeHtml(
+                    listingKey
+                  )}" data-index="${index}" type="button" aria-label="${isSaved ? "Remove from saved" : "Save listing"}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 20.6l-1-.9C6.2 15.4 3 12.5 3 8.9 3 6 5.3 3.8 8.2 3.8c1.7 0 3.4.8 4.5 2.1 1.1-1.3 2.8-2.1 4.5-2.1C20.1 3.8 22.4 6 22.4 8.9c0 3.6-3.2 6.5-8 10.8l-1 .9z" />
+                    </svg>
+                  </button>
+                  <div class="card-title-row">
+                    <span class="card-title-chip">${escapeHtml(titleText)}</span>
                   </div>
                 </div>
               </article>
             `;
           })
           .join("");
+        syncCardSaveButtons();
       }
 
       function renderHero() {
         const listing = listings[activeIndex];
         if (!listing) return;
+        cacheListingsForReuse([listing]);
         const toneClass = tones[activeIndex % tones.length];
         heroMediaItems = buildHeroMediaItems(listing);
         heroMediaIndex = 0;
@@ -2773,6 +4931,7 @@
         const mapImageUrl = listing.mapImageUrl || "./image.png";
         heroMapImage.src = mapImageUrl;
         void preloadImage(mapImageUrl, 2400);
+        syncHeroSaveButton();
         scheduleHeroMobileLayoutSync({ immediate: true, trailingDelay: 100 });
       }
 
@@ -2955,6 +5114,7 @@
 
         handlePriceSliderChange(target);
         applyFilterStateToUi();
+        scheduleFilterChangedAnalytics("price_track_click");
       }
 
       function asSet(values) {
@@ -3394,6 +5554,22 @@
         pageSearchForm.classList.remove("is-open");
       }
 
+      async function submitSearchFromInput({ source = "search", useAiIntent = true } = {}) {
+        const query = String(pageSearchInput.value || "").trim();
+        trackEvent("search_submitted", {
+          source,
+          queryLength: query.length,
+          useAiIntent: Boolean(useAiIntent),
+        });
+
+        if (useAiIntent && query) {
+          await applyAiIntentFromSearch();
+        }
+
+        writeFilterValuesToUrl(buildFilterValuesFromState());
+        await loadListings();
+      }
+
       function openFilterPanel() {
         if (isFilterPanelOpen) return;
         isFilterPanelOpen = true;
@@ -3508,6 +5684,7 @@
         }
         heroOverlay.classList.remove("is-open");
         heroOverlay.hidden = false;
+        syncCopilotLauncherVisibility();
         requestAnimationFrame(() => {
           heroOverlay.classList.add("is-open");
           animateHeroFromSourceRect(sourceRect);
@@ -3529,6 +5706,11 @@
           clearTimeout(detailsHintTimer);
           detailsHintTimer = null;
         }
+        trackEvent("listing_opened", {
+          listingId: listing.id ? String(listing.id) : "",
+          listingKey: listingKeyFromListing(listing, index),
+          source: sourceRect ? "card" : "url_or_navigation",
+        });
       }
 
       function closeHero({ syncUrl = true, replaceUrl = true } = {}) {
@@ -3554,10 +5736,14 @@
         heroCloseTimer = setTimeout(() => {
           heroOverlay.hidden = true;
           heroCloseTimer = null;
+          syncCopilotLauncherVisibility();
         }, 220);
         document.body.style.overflow = "";
         if (syncUrl) {
           setListingParam("", { replace: replaceUrl });
+        }
+        if (isSavedWorkspace) {
+          void loadSavedWorkspaceListings();
         }
       }
 
@@ -3723,6 +5909,12 @@
         applyFilterStateToUi();
 
         renderCards(listings);
+        updateSavedDockUi();
+        renderSavedPanel();
+        trackEvent("results_viewed", {
+          count: Array.isArray(listings) ? listings.length : 0,
+          hasSearchQuery: Boolean(String(params.get("q") || "").trim()),
+        });
 
         const selectedToken = new URLSearchParams(window.location.search).get("listing");
         const selectedIndex = findListingIndexFromToken(selectedToken);
@@ -3802,6 +5994,18 @@
       }
 
       cardsGrid.addEventListener("click", (event) => {
+        const saveButton = event.target.closest(".card-save-btn");
+        if (saveButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          const index = Number(saveButton.dataset.index);
+          const listing = listings[index];
+          if (listing) {
+            toggleSavedListing(listing, { source: "card", index });
+          }
+          return;
+        }
+
         const card = event.target.closest(".apartment-card");
         if (!card) return;
         const index = Number(card.dataset.index);
@@ -3816,6 +6020,27 @@
       heroPrev.addEventListener("click", () => navigateHeroMedia(-1));
       heroNext.addEventListener("click", () => navigateHeroMedia(1));
       heroClose.addEventListener("click", closeHero);
+      heroSaveBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const listing = listings[activeIndex];
+        if (!listing) return;
+        toggleSavedListing(listing, { source: "hero", index: activeIndex });
+      });
+      heroScheduleBtn.addEventListener("click", () => {
+        const listing = listings[activeIndex];
+        if (!listing) return;
+        trackEvent("tour_request_clicked", {
+          listingId: listing.id ? String(listing.id) : "",
+          address: listing.address || listing.title || "",
+          source: "hero_copilot_cta",
+        });
+        openCopilotWithContext({
+          mode: "tour_assistant",
+          listings: [listing],
+          title: "Schedule a Tour",
+        });
+      });
       heroDetailsToggle.addEventListener("click", (event) => {
         event.stopPropagation();
         setHeroDetailsOpen(!heroDetailsOpen);
@@ -3932,6 +6157,14 @@
       window.addEventListener("popstate", () => {
         syncFilterStateFromUrl();
         syncSearchStateFromUrl();
+        const inSavedWorkspace = syncSavedWorkspaceModeFromUrl();
+        if (inSavedWorkspace) {
+          if (!heroOverlay.hidden) {
+            closeHero({ syncUrl: false });
+          }
+          void loadSavedWorkspaceListings();
+          return;
+        }
         const selectedToken = new URLSearchParams(window.location.search).get("listing");
         const selectedIndex = findListingIndexFromToken(selectedToken);
 
@@ -3979,6 +6212,18 @@
 
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
+          if (isCopilotOpen) {
+            closeCopilot();
+            return;
+          }
+          if (isCompareOpen) {
+            closeCompareModal();
+            return;
+          }
+          if (isSavedPanelOpen) {
+            closeSavedPanel();
+            return;
+          }
           if (heroDetailsOpen && !heroOverlay.hidden) {
             setHeroDetailsOpen(false);
             return;
@@ -4007,8 +6252,15 @@
           openSearch();
           return;
         }
-        writeFilterValuesToUrl(buildFilterValuesFromState());
-        await loadListings();
+        await submitSearchFromInput({ source: "search_button", useAiIntent: true });
+      });
+      pageAiBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+        if (!isSearchOpen) {
+          openSearch();
+          return;
+        }
+        await submitSearchFromInput({ source: "ai_button", useAiIntent: true });
       });
       pageSearchInput.addEventListener("keydown", async (event) => {
         if (event.key === "Escape") {
@@ -4018,8 +6270,7 @@
         }
         if (event.key !== "Enter") return;
         event.preventDefault();
-        writeFilterValuesToUrl(buildFilterValuesFromState());
-        await loadListings();
+        await submitSearchFromInput({ source: "search_enter", useAiIntent: true });
       });
       document.addEventListener("pointerdown", (event) => {
         if (!isSearchOpen) return;
@@ -4032,6 +6283,7 @@
         if (!chip) return;
         toggleFilterChip(chip);
         applyFilterStateToUi();
+        scheduleFilterChangedAnalytics("chip");
       });
       neighborhoodMoreBtn.addEventListener("click", () => {
         showAllNeighborhoods = !showAllNeighborhoods;
@@ -4041,10 +6293,12 @@
       priceMinRange.addEventListener("input", () => {
         handlePriceSliderChange("min");
         applyFilterStateToUi();
+        scheduleFilterChangedAnalytics("price_min");
       });
       priceMaxRange.addEventListener("input", () => {
         handlePriceSliderChange("max");
         applyFilterStateToUi();
+        scheduleFilterChangedAnalytics("price_max");
       });
       if (priceTracks) {
         priceTracks.addEventListener("click", (event) => {
@@ -4058,18 +6312,159 @@
       filterResetBtn.addEventListener("click", () => {
         clearFilterState();
         applyFilterStateToUi();
+        scheduleFilterChangedAnalytics("reset");
       });
       filterApplyBtn.addEventListener("click", async () => {
         if (!heroOverlay.hidden) closeHero();
+        trackEvent("filter_changed", {
+          reason: "apply",
+          selectedFilterCount: selectedCount(filterState),
+        });
         writeFilterValuesToUrl(buildFilterValuesFromState());
         closeFilterPanel();
         await loadListings();
       });
+      copilotLauncherBtn.addEventListener("click", () => {
+        void openCopilotFromCurrentView();
+      });
+      savedDockBtn.addEventListener("click", () => {
+        window.location.href = buildSavedWorkspaceUrl();
+      });
+      savedWorkspaceBackBtn.addEventListener("click", () => {
+        window.location.href = buildBrowseUrl();
+      });
+      savedWorkspaceCopyBtn.addEventListener("click", async () => {
+        const shareUrl = buildSavedWorkspaceUrl();
+        let copied = false;
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            copied = true;
+          } catch (_error) {
+            copied = false;
+          }
+        }
+        if (!copied) {
+          window.prompt("Copy this saved link:", shareUrl);
+        }
+        const originalLabel = savedWorkspaceCopyBtn.textContent;
+        savedWorkspaceCopyBtn.textContent = copied ? "Copied" : "Copy Link";
+        setTimeout(() => {
+          savedWorkspaceCopyBtn.textContent = originalLabel;
+        }, 1200);
+      });
+      savedWorkspaceCopilotBtn.addEventListener("click", async () => {
+        await hydrateSavedListingsFromApi();
+        const rows = savedListingsInMemory();
+        if (!rows.length) return;
+        openCopilotWithContext({
+          mode: "saved_compare",
+          listings: rows,
+          title: "Decision Copilot · Saved Listings",
+        });
+      });
+      savedPanelClose.addEventListener("click", closeSavedPanel);
+      savedScrim.addEventListener("click", closeSavedPanel);
+      savedPanelBody.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-action]");
+        if (!button) return;
+        const action = String(button.dataset.action || "").trim();
+        const item = button.closest(".saved-item");
+        if (!item) return;
+        const key = String(item.dataset.key || "").trim();
+        if (!key) return;
+        const listing = getListingByKey(key);
+        if (!listing) return;
+
+        if (action === "open") {
+          const index = listings.findIndex((row, rowIndex) => listingKeyFromListing(row, rowIndex) === key);
+          if (index >= 0) {
+            closeSavedPanel();
+            openHero(index);
+          } else {
+            listings = [
+              listing,
+              ...listings.filter(
+                (row, rowIndex) => listingKeyFromListing(row, rowIndex) !== key
+              ),
+            ];
+            renderCards(listings);
+            closeSavedPanel();
+            openHero(0);
+          }
+          return;
+        }
+
+        if (action === "remove") {
+          toggleSavedListing(listing, { source: "saved_panel_remove" });
+          return;
+        }
+
+        if (action === "compare") {
+          if (compareListingKeys.has(key)) {
+            compareListingKeys.delete(key);
+          } else if (compareListingKeys.size < 5) {
+            compareListingKeys.add(key);
+          }
+          renderSavedPanel();
+        }
+      });
+      savedCompareBtn.addEventListener("click", () => {
+        if (compareListingKeys.size < 2 || compareListingKeys.size > 5) return;
+        openCompareModal();
+      });
+      savedCopilotBtn.addEventListener("click", async () => {
+        await hydrateSavedListingsFromApi();
+        const rows = savedListingsInMemory();
+        if (!rows.length) return;
+        openCopilotWithContext({
+          mode: "saved_compare",
+          listings: rows,
+          title: "Decision Copilot · Saved Shortlist",
+        });
+      });
+      compareCloseBtn.addEventListener("click", closeCompareModal);
+      compareOverlay.addEventListener("click", (event) => {
+        if (event.target === compareOverlay) closeCompareModal();
+      });
+      compareDifferencesOnly.addEventListener("change", () => {
+        if (!isCompareOpen) return;
+        renderCompareModal();
+      });
+      compareCopilotBtn.addEventListener("click", () => {
+        const rows = getComparedListings().map((row) => row.listing);
+        if (!rows.length) return;
+        openCopilotWithContext({
+          mode: "compare_qa",
+          listings: rows,
+          title: "Decision Copilot · Compare",
+        });
+      });
+      copilotCloseBtn.addEventListener("click", closeCopilot);
+      copilotOverlay.addEventListener("click", (event) => {
+        if (event.target === copilotOverlay) closeCopilot();
+      });
+      copilotForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const question = String(copilotInput.value || "").trim();
+        if (!question) return;
+        copilotInput.value = "";
+        await submitCopilotQuestion(question);
+      });
       (async () => {
+        loadSavedListingKeysFromStorage();
+        const initialSavedWorkspace = syncSavedWorkspaceModeFromUrl();
+        updateSavedDockUi();
+        renderSavedPanel();
+        if (initialSavedWorkspace) {
+          await loadSavedWorkspaceListings();
+          return;
+        }
         await loadFilterMeta();
         syncFilterStateFromUrl();
         syncSearchStateFromUrl();
         await loadListings();
+        await maybePromptCopilotAtSavedMilestone();
       })();
     </script>
   </body>
