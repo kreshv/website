@@ -3786,17 +3786,7 @@
       }
 
       function getCopilotInputPlaceholder(context) {
-        const mode = String((context && context.mode) || "");
-        if (mode === "tour_assistant") {
-          return "Ask about this listing or schedule a tour. Include your name, email/phone, and preferred date/time.";
-        }
-        if (mode === "compare_qa" || mode === "saved_compare") {
-          return "Compare these saved listings: tradeoffs, value, commute impact, and best fit.";
-        }
-        if (mode === "listing_qa") {
-          return "";
-        }
-        return "Ask about these results: shortlist strategy, tradeoffs, commute, and next best step.";
+        return "";
       }
 
       function renderCopilotMessages() {
