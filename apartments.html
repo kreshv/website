@@ -86,6 +86,10 @@
         stroke-linejoin: round;
       }
 
+      .page-search[hidden] {
+        display: none;
+      }
+
       .page-search {
         position: fixed;
         top: calc(18px + var(--safe-top));
@@ -209,8 +213,8 @@
 
       .saved-dock-btn {
         position: fixed;
+        top: calc(18px + var(--safe-top));
         right: calc(18px + var(--safe-right));
-        bottom: calc(22px + var(--safe-bottom));
         border: 1px solid rgba(236, 216, 188, 0.44);
         border-radius: 999px;
         background: rgba(36, 29, 22, 0.72);
@@ -1788,168 +1792,144 @@
         text-align: right;
       }
 
-      .copilot-launcher {
+      /* ── Chat Bar ── */
+      /* ── Chat FAB + Panel ── */
+      .chat-fab {
         position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: calc(-2px + var(--safe-bottom));
-        z-index: 63;
-        border: 1px solid rgba(187, 104, 63, 0.16);
-        background: linear-gradient(135deg, rgba(255, 247, 236, 0.98), rgba(253, 238, 220, 0.94));
-        color: #503f2f;
-        border-radius: 30px 30px 14px 14px;
-        font: inherit;
-        font-size: 0.9rem;
-        font-weight: 500;
-        letter-spacing: 0.01em;
-        min-width: min(232px, calc(100vw - 180px));
-        padding: 8px 18px 10px;
+        bottom: calc(22px + var(--safe-bottom));
+        right: calc(18px + var(--safe-right));
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 999px;
+        background: #3f3224;
+        color: #fff;
         cursor: pointer;
-        box-shadow:
-          0 9px 18px rgba(36, 24, 14, 0.17),
-          inset 0 1px 0 rgba(255, 255, 255, 0.75);
-        text-align: center;
-        transition:
-          transform 200ms ease,
-          box-shadow 200ms ease,
-          background-color 160ms ease;
-        overflow: hidden;
-      }
-
-      .copilot-launcher:hover {
-        transform: translateX(-50%) translateY(-1px);
-        box-shadow:
-          0 18px 30px rgba(36, 24, 14, 0.28),
-          inset 0 1px 0 rgba(255, 255, 255, 0.8);
-      }
-
-      .copilot-launcher::before,
-      .copilot-launcher::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        width: 20px;
-        height: 12px;
-        background: linear-gradient(180deg, rgba(255, 246, 233, 0.95), rgba(250, 233, 211, 0.95));
-        border: 1px solid rgba(187, 104, 63, 0.16);
-        border-top: 0;
-        pointer-events: none;
-      }
-
-      .copilot-launcher::before {
-        left: -12px;
-        border-right: 0;
-        border-radius: 0 0 0 12px;
-      }
-
-      .copilot-launcher::after {
-        right: -12px;
-        border-left: 0;
-        border-radius: 0 0 12px 0;
-      }
-
-      .copilot-launcher[hidden] {
-        display: none;
-      }
-
-      .copilot-overlay {
-        z-index: 62;
-        position: fixed;
-        inset: 0;
+        z-index: 63;
         display: grid;
-        place-items: end center;
-        padding: calc(12px + var(--safe-top)) calc(12px + var(--safe-right))
-          calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
-        background: rgba(29, 21, 14, 0);
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-        pointer-events: auto;
-        transition:
-          background-color 240ms ease,
-          backdrop-filter 240ms ease,
-          -webkit-backdrop-filter 240ms ease;
+        place-items: center;
+        box-shadow:
+          0 6px 20px rgba(22, 16, 10, 0.28),
+          0 2px 6px rgba(22, 16, 10, 0.12);
+        transition: transform 160ms ease, background-color 140ms ease, box-shadow 160ms ease;
       }
 
-      .copilot-overlay[hidden] {
+      .chat-fab:hover {
+        transform: translateY(-2px);
+        background: #28201a;
+        box-shadow:
+          0 10px 28px rgba(22, 16, 10, 0.34),
+          0 3px 8px rgba(22, 16, 10, 0.14);
+      }
+
+      .chat-fab:active {
+        transform: translateY(0);
+      }
+
+      .chat-fab svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .chat-fab[hidden] {
         display: none;
       }
 
-      .copilot-overlay.is-open {
-        background: rgba(29, 21, 14, 0.44);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-      }
-
-      .copilot-modal {
-        width: min(760px, 100%);
-        max-height: min(56vh, 560px);
-        background: rgba(255, 249, 239, 0.98);
-        border: 1px solid #e4d2b8;
+      .chat-panel {
+        position: fixed;
+        bottom: calc(22px + var(--safe-bottom));
+        right: calc(18px + var(--safe-right));
+        width: min(380px, calc(100vw - 36px));
+        max-height: min(520px, calc(100vh - 80px));
+        background: rgba(255, 249, 239, 0.99);
+        border: 1px solid #e0ccb0;
         border-radius: 18px;
-        box-shadow: 0 24px 44px rgba(29, 21, 14, 0.35);
+        box-shadow: 0 16px 40px rgba(29, 21, 14, 0.28);
+        z-index: 64;
         display: grid;
         grid-template-rows: auto 1fr auto;
         overflow: hidden;
-        pointer-events: auto;
-        transform: translateY(22px);
         opacity: 0;
-        padding: 12px;
-        gap: 8px;
+        transform: translateY(12px) scale(0.96);
+        pointer-events: none;
         transition:
-          transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
-          opacity 200ms ease;
+          opacity 220ms ease,
+          transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
       }
 
-      .copilot-overlay.is-open .copilot-modal {
-        transform: translateY(0);
+      .chat-panel.is-open {
         opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
       }
 
-      .copilot-head {
-        padding: 0 0 2px;
-        border: 0;
+      .chat-panel-head {
         display: flex;
-        justify-content: flex-end;
         align-items: center;
-        gap: 0;
+        justify-content: space-between;
+        padding: 10px 10px 4px 16px;
+      }
+      .chat-panel-title {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #3f3224;
+        letter-spacing: 0.01em;
       }
 
-      .copilot-title {
-        display: none;
-      }
-
-      .copilot-close {
-        border: 1px solid rgba(193, 169, 137, 0.64);
+      .chat-panel-close {
+        border: 1px solid rgba(193, 169, 137, 0.5);
         background: rgba(255, 247, 236, 0.92);
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         border-radius: 999px;
         color: #705f4c;
-        font-size: 1.2rem;
-        line-height: 1;
         cursor: pointer;
         display: grid;
         place-items: center;
       }
 
+      .chat-panel-close svg {
+        width: 11px;
+        height: 11px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
       .copilot-body {
-        padding: 2px 2px 0;
-        overflow: auto;
+        padding: 4px 12px 8px;
+        overflow-y: auto;
         display: grid;
         gap: 8px;
         align-content: start;
-        background: transparent;
       }
 
       .copilot-body:empty {
-        display: none;
+        display: grid;
+        min-height: 120px;
+      }
+      .copilot-body:empty::before {
+        content: "Ask me anything about these listings — comparisons, commute tips, scheduling tours, and more.";
+        color: #a08b72;
+        font-size: 13px;
+        line-height: 1.45;
+        text-align: center;
+        padding: 28px 20px 0;
+        align-self: start;
       }
 
       .copilot-msg {
         border: 1px solid #e4d1b4;
         border-radius: 14px;
-        padding: 9px 11px;
-        max-width: min(88%, 560px);
+        padding: 9px 12px;
+        max-width: min(86%, 320px);
         font-size: 0.84rem;
         line-height: 1.5;
         color: #4d3e30;
@@ -1970,58 +1950,83 @@
         border-color: rgba(120, 171, 140, 0.42);
       }
 
-      .copilot-form {
-        border-top: 0;
-        padding: 0;
+      .copilot-ctx-divider {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: transparent;
+        padding: 4px 0;
+        font-size: 0.74rem;
+        color: #a0907c;
+        justify-self: stretch;
       }
 
-      .copilot-input {
+      .copilot-ctx-divider-line {
+        flex: 1;
+        height: 1px;
+        background: #e4d1b4;
+      }
+
+      .copilot-ctx-divider-label {
+        white-space: nowrap;
+      }
+
+      .chat-panel-form {
+        padding: 8px 10px 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .chat-panel-input {
         flex: 1 1 auto;
-        border: 1px solid #d9c4a5;
+        border: 1px solid #d5bfa0;
         border-radius: 14px;
-        padding: 12px 14px;
-        min-height: 50px;
-        max-height: 120px;
-        resize: none;
+        padding: 10px 14px;
         font: inherit;
         font-size: 0.84rem;
         background: #fffdf8;
         color: #35291f;
+        outline: none;
+        min-width: 0;
+        transition: border-color 160ms ease;
       }
 
-      .copilot-submit {
+      .chat-panel-input:focus {
+        border-color: #b89a78;
+      }
+
+      .chat-panel-input::placeholder {
+        color: #a8967e;
+      }
+
+      .chat-panel-send {
         width: 32px;
         height: 32px;
+        flex: 0 0 auto;
         border: none;
         border-radius: 999px;
-        background: #0a0a0a;
-        color: #ffffff;
+        background: #3f3224;
+        color: #fff;
         cursor: pointer;
-        flex: 0 0 auto;
         display: grid;
         place-items: center;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.16);
-        transition: transform 120ms ease, background-color 140ms ease;
+        transition: background-color 140ms ease, transform 120ms ease;
       }
 
-      .copilot-submit:hover {
-        background: #1b1b1b;
+      .chat-panel-send:hover {
+        background: #28201a;
       }
 
-      .copilot-submit:active {
-        transform: scale(0.96);
+      .chat-panel-send:active {
+        transform: scale(0.94);
       }
 
-      .copilot-submit svg {
+      .chat-panel-send svg {
         width: 13px;
         height: 13px;
         stroke: currentColor;
         fill: none;
-        stroke-width: 1.8;
+        stroke-width: 2;
         stroke-linecap: round;
         stroke-linejoin: round;
       }
@@ -2272,7 +2277,7 @@
 
         .saved-dock-btn {
           right: calc(10px + var(--safe-right));
-          bottom: calc(12px + var(--safe-bottom));
+          top: calc(14px + var(--safe-top));
           min-height: 36px;
           min-width: 36px;
           padding: 7px 10px 7px 8px;
@@ -2350,39 +2355,18 @@
           max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 16px);
         }
 
-        .copilot-launcher {
-          left: 50%;
-          transform: translateX(-50%);
-          bottom: calc(-2px + var(--safe-bottom));
-          min-width: min(204px, calc(100vw - 112px));
-          padding: 7px 14px 9px;
-          font-size: 0.84rem;
+        .chat-fab {
+          bottom: calc(16px + var(--safe-bottom));
+          right: calc(12px + var(--safe-right));
+          width: 44px;
+          height: 44px;
         }
 
-        .copilot-launcher::before,
-        .copilot-launcher::after {
-          width: 16px;
-          height: 10px;
-        }
-
-        .copilot-launcher::before {
-          left: -10px;
-        }
-
-        .copilot-launcher::after {
-          right: -10px;
-        }
-
-        .copilot-overlay {
-          place-items: end stretch;
-          padding: calc(8px + var(--safe-top)) calc(8px + var(--safe-right))
-            calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left));
-        }
-
-        .copilot-modal {
-          width: 100%;
-          max-height: min(calc(100vh - var(--safe-top) - var(--safe-bottom) - 16px), 68vh);
-          border-radius: 16px;
+        .chat-panel {
+          bottom: calc(16px + var(--safe-bottom));
+          right: calc(12px + var(--safe-right));
+          width: calc(100vw - 24px);
+          max-height: min(480px, calc(100vh - 60px));
         }
 
         .hero-overlay.has-details-open {
@@ -2533,7 +2517,7 @@
         <circle cx="11" cy="19" r="1.9" />
       </svg>
     </button>
-    <form class="page-search" id="pageSearchForm" role="search" aria-label="Search listings">
+    <form class="page-search" id="pageSearchForm" role="search" aria-label="Search listings" hidden>
       <button class="page-search-btn" id="pageSearchBtn" type="button" aria-label="Search">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="11" cy="11" r="6"></circle>
@@ -2608,31 +2592,39 @@
       </div>
     </div>
 
-    <button class="copilot-launcher" id="copilotLauncherBtn" type="button" aria-label="Open copilot">
-      Ask Kreshnik
+    <button class="chat-fab" id="chatFabBtn" type="button" aria-label="Open chat">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+      </svg>
     </button>
 
-    <div class="copilot-overlay" id="copilotOverlay" hidden>
-      <div class="copilot-modal" role="dialog" aria-modal="true" aria-label="Decision Copilot">
-        <div class="copilot-head">
-          <button class="copilot-close" id="copilotCloseBtn" type="button" aria-label="Close copilot">&times;</button>
-        </div>
-        <div class="copilot-body" id="copilotBody"></div>
-        <form class="copilot-form" id="copilotForm">
-          <textarea
-            class="copilot-input"
-            id="copilotInput"
-            placeholder="Ask Kreshnik anything about listings, tradeoffs, or scheduling a tour."
-            aria-label="Ask copilot"
-          ></textarea>
-          <button class="copilot-submit" id="copilotSubmitBtn" type="submit" aria-label="Send message">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 19V5"></path>
-              <path d="M6.5 10.5 12 5l5.5 5.5"></path>
-            </svg>
-          </button>
-        </form>
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-panel-head">
+        <span class="chat-panel-title">Apartment Copilot</span>
+        <button class="chat-panel-close" id="copilotCloseBtn" type="button" aria-label="Close chat">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6L6 18"></path>
+            <path d="M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
+      <div class="copilot-body" id="copilotBody"></div>
+      <form class="chat-panel-form" id="copilotForm">
+        <input
+          class="chat-panel-input"
+          id="copilotInput"
+          type="text"
+          placeholder="Ask anything about these listings…"
+          aria-label="Ask about listings"
+          autocomplete="off"
+        />
+        <button class="chat-panel-send" id="copilotSubmitBtn" type="submit" aria-label="Send message">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 19V5"></path>
+            <path d="M6.5 10.5 12 5l5.5 5.5"></path>
+          </svg>
+        </button>
+      </form>
     </div>
 
     <div class="filter-scrim" id="filterScrim" hidden></div>
@@ -2794,8 +2786,8 @@
       const compareCloseBtn = document.getElementById("compareCloseBtn");
       const compareDifferencesOnly = document.getElementById("compareDifferencesOnly");
       const compareCopilotBtn = document.getElementById("compareCopilotBtn");
-      const copilotLauncherBtn = document.getElementById("copilotLauncherBtn");
-      const copilotOverlay = document.getElementById("copilotOverlay");
+      const chatFabBtn = document.getElementById("chatFabBtn");
+      const chatPanel = document.getElementById("chatPanel");
       const copilotBody = document.getElementById("copilotBody");
       const copilotCloseBtn = document.getElementById("copilotCloseBtn");
       const copilotForm = document.getElementById("copilotForm");
@@ -3821,22 +3813,22 @@
           return;
         }
         copilotBody.innerHTML = copilotMessages
-          .map((msg) => `<div class=\"copilot-msg ${msg.role}\">${escapeHtml(msg.text)}</div>`)
+          .map((msg) => {
+            if (msg.role === "context_change") {
+              return `<div class="copilot-ctx-divider"><span class="copilot-ctx-divider-line"></span><span class="copilot-ctx-divider-label">${escapeHtml(msg.text)}</span><span class="copilot-ctx-divider-line"></span></div>`;
+            }
+            return `<div class="copilot-msg ${msg.role}">${escapeHtml(msg.text)}</div>`;
+          })
           .join("");
         copilotBody.scrollTop = copilotBody.scrollHeight;
       }
 
       function syncCopilotLauncherVisibility() {
-        if (!copilotLauncherBtn) return;
-        const shouldHide = isCopilotOpen || !heroOverlay.hidden;
-        copilotLauncherBtn.hidden = shouldHide;
+        // FAB is always visible — no hiding when hero is open
       }
 
       function updateCopilotLauncherLabel() {
-        if (!copilotLauncherBtn) return;
-        const label = isSavedWorkspace ? "Compare Listings" : "Ask Kreshnik";
-        copilotLauncherBtn.textContent = label;
-        copilotLauncherBtn.setAttribute("aria-label", label);
+        // No-op — fab has no label
       }
 
       function setCopilotOpen(open) {
@@ -3845,26 +3837,15 @@
           clearTimeout(copilotCloseTimer);
           copilotCloseTimer = null;
         }
-
         if (shouldOpen) {
           isCopilotOpen = true;
-          copilotOverlay.hidden = false;
-          syncCopilotLauncherVisibility();
-          requestAnimationFrame(() => {
-            copilotOverlay.classList.add("is-open");
-          });
+          chatPanel.classList.add("is-open");
+          if (chatFabBtn) chatFabBtn.hidden = true;
           return;
         }
-
         isCopilotOpen = false;
-        copilotOverlay.classList.remove("is-open");
-        syncCopilotLauncherVisibility();
-        copilotCloseTimer = setTimeout(() => {
-          if (!isCopilotOpen) {
-            copilotOverlay.hidden = true;
-            syncCopilotLauncherVisibility();
-          }
-        }, 260);
+        chatPanel.classList.remove("is-open");
+        if (chatFabBtn) chatFabBtn.hidden = false;
       }
 
       function openCopilotWithContext({ mode, listings: contextListings, title }) {
@@ -3877,7 +3858,13 @@
           .join("|");
         const fullSignature = `${contextMode}::${nextSignature}`;
         if (fullSignature && fullSignature !== copilotContextSignature) {
-          copilotMessages.splice(0, copilotMessages.length);
+          if (copilotMessages.length > 0) {
+            copilotMessages.push({
+              role: "context_change",
+              text: title || "New context",
+              ts: Date.now(),
+            });
+          }
         }
         copilotContextSignature = fullSignature;
         const truncatedCount = Math.min(rows.length, COPILOT_MAX_LISTINGS);
@@ -6324,7 +6311,7 @@
         closeFilterPanel();
         await loadListings();
       });
-      copilotLauncherBtn.addEventListener("click", () => {
+      chatFabBtn.addEventListener("click", () => {
         void openCopilotFromCurrentView();
       });
       savedDockBtn.addEventListener("click", () => {
@@ -6441,9 +6428,6 @@
         });
       });
       copilotCloseBtn.addEventListener("click", closeCopilot);
-      copilotOverlay.addEventListener("click", (event) => {
-        if (event.target === copilotOverlay) closeCopilot();
-      });
       copilotForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         const question = String(copilotInput.value || "").trim();
