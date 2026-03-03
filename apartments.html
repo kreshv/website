@@ -3304,6 +3304,7 @@
           closeSearch();
           closeFilterPanel();
           closeSavedPanel();
+          trackEvent("saved_workspace_opened", { savedCount: savedListingKeys.size });
         }
         return isSavedWorkspace;
       }
@@ -6422,6 +6423,7 @@
         const initialSavedWorkspace = syncSavedWorkspaceModeFromUrl();
         updateSavedDockUi();
         renderSavedPanel();
+        trackEvent("app_loaded", { view: initialSavedWorkspace ? "saved_workspace" : "browse" });
         if (initialSavedWorkspace) {
           await loadSavedWorkspaceListings();
           return;

@@ -135,3 +135,16 @@ model ListingSubwayLine {
   @@id([listingId, subwayLineId])
   @@index([subwayLineId])
 }
+
+model AnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(80)
+  sessionId String   @default("") @db.VarChar(120)
+  ts        DateTime
+  props     Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([name])
+  @@index([sessionId])
+  @@index([createdAt])
+}

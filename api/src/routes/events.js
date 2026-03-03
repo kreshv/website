@@ -1,5 +1,6 @@
 const express = require("express");
 const { z } = require("zod");
+const prisma = require("../prisma");
 
 const router = express.Router();
 
@@ -15,32 +16,13 @@ const ingestSchema = z
     event: eventSchema.optional(),
     events: z.array(eventSchema).min(1).max(200).optional(),
   })
-  .refine((payload) => payload.event || (Array.isArray(payload.events) && payload.events.length > 0), {
-    message: "event or events is required",
-  });
+  .refine(
+    (payload) =>
+      payload.event || (Array.isArray(payload.events) && payload.events.length > 0),
+    { message: "event or events is required" }
+  );
 
-const MAX_EVENT_BUFFER = 5000;
-const analyticsEvents = [];
-
-function appendEvent(event) {
-  analyticsEvents.push(event);
-  if (analyticsEvents.length > MAX_EVENT_BUFFER) {
-    analyticsEvents.splice(0, analyticsEvents.length - MAX_EVENT_BUFFER);
-  }
-}
-
-function bySession() {
-  const sessions = new Map();
-  analyticsEvents.forEach((event) => {
-    const sessionId = event.sessionId || "anon";
-    if (!sessions.has(sessionId)) {
-      sessions.set(sessionId, new Set());
-    }
-    sessions.get(sessionId).add(event.name);
-  });
-  return sessions;
-}
-
+// POST /api/events — fire-and-forget DB write, responds immediately
 router.post("/", (req, res) => {
   const parsed = ingestSchema.safeParse(req.body || {});
   if (!parsed.success) {
@@ -51,85 +33,144 @@ router.post("/", (req, res) => {
   if (parsed.data.event) incoming.push(parsed.data.event);
   if (Array.isArray(parsed.data.events)) incoming.push(...parsed.data.events);
 
-  const nowIso = new Date().toISOString();
-  incoming.forEach((event) => {
-    appendEvent({
-      name: event.name,
-      ts: event.ts || nowIso,
-      receivedAt: nowIso,
-      sessionId: event.sessionId || "",
-      props: event.props || {},
+  const now = new Date();
+  const rows = incoming.map((e) => ({
+    name: e.name,
+    sessionId: e.sessionId || "",
+    ts: e.ts && !isNaN(new Date(e.ts).getTime()) ? new Date(e.ts) : now,
+    props: e.props || {},
+  }));
+
+  // Non-blocking: respond immediately, persist in background
+  void prisma.analyticsEvent.createMany({ data: rows }).catch((err) => {
+    console.error("analytics createMany failed", err);
+  });
+
+  return res.status(202).json({ ok: true, accepted: incoming.length });
+});
+
+// GET /api/events — event counts by name
+router.get("/", async (_req, res) => {
+  try {
+    const rows = await prisma.analyticsEvent.groupBy({
+      by: ["name"],
+      _count: { name: true },
+      orderBy: { _count: { name: "desc" } },
     });
-  });
 
-  return res.status(202).json({ ok: true, accepted: incoming.length, buffered: analyticsEvents.length });
+    const counts = {};
+    let total = 0;
+    for (const row of rows) {
+      counts[row.name] = row._count.name;
+      total += row._count.name;
+    }
+
+    return res.json({ total, uniqueEvents: rows.length, counts });
+  } catch (err) {
+    console.error("GET /api/events failed", err);
+    return res.status(500).json({ error: "Failed to fetch event counts" });
+  }
 });
 
-router.get("/", (_req, res) => {
-  const counts = {};
-  analyticsEvents.forEach((event) => {
-    counts[event.name] = (counts[event.name] || 0) + 1;
-  });
+// GET /api/events/listings — per-listing click counts (most clicked first)
+router.get("/listings", async (_req, res) => {
+  try {
+    const rows = await prisma.$queryRaw`
+      SELECT
+        props->>'listingId' AS "listingId",
+        COUNT(*)::int        AS "clicks"
+      FROM "AnalyticsEvent"
+      WHERE name = 'listing_opened'
+        AND props->>'listingId' IS NOT NULL
+        AND props->>'listingId' != ''
+      GROUP BY props->>'listingId'
+      ORDER BY "clicks" DESC
+    `;
 
-  return res.json({
-    total: analyticsEvents.length,
-    uniqueEvents: Object.keys(counts).length,
-    counts,
-  });
+    return res.json({ listings: rows });
+  } catch (err) {
+    console.error("GET /api/events/listings failed", err);
+    return res.status(500).json({ error: "Failed to fetch listing click counts" });
+  }
 });
 
-router.get("/funnels", (_req, res) => {
-  const sessions = bySession();
-  let searchSubmittedSessions = 0;
-  let listingOpenedSessions = 0;
-  let searchToListingSessions = 0;
-  let listingTo3dSessions = 0;
-  let listingToActionSessions = 0;
+// GET /api/events/funnels — session-based conversion funnels
+router.get("/funnels", async (_req, res) => {
+  try {
+    // Fetch all distinct (sessionId, name) pairs from DB
+    const rows = await prisma.$queryRaw`
+      SELECT DISTINCT "sessionId", "name"
+      FROM "AnalyticsEvent"
+      WHERE "sessionId" != ''
+    `;
 
-  sessions.forEach((names) => {
-    const hasSearch = names.has("search_submitted");
-    const hasListing = names.has("listing_opened");
-    const has3d = names.has("3d_view_opened");
-    const hasAction =
-      names.has("save_added") ||
-      names.has("contact_clicked") ||
-      names.has("tour_request_clicked") ||
-      names.has("tour_request_scheduled");
+    // Rebuild sessions map in Node — same logic as the previous in-memory version
+    const sessions = new Map();
+    for (const row of rows) {
+      if (!sessions.has(row.sessionId)) sessions.set(row.sessionId, new Set());
+      sessions.get(row.sessionId).add(row.name);
+    }
 
-    if (hasSearch) searchSubmittedSessions += 1;
-    if (hasListing) listingOpenedSessions += 1;
-    if (hasSearch && hasListing) searchToListingSessions += 1;
-    if (hasListing && has3d) listingTo3dSessions += 1;
-    if (hasListing && hasAction) listingToActionSessions += 1;
-  });
+    let searchSubmittedSessions = 0;
+    let listingOpenedSessions = 0;
+    let searchToListingSessions = 0;
+    let listingTo3dSessions = 0;
+    let listingToActionSessions = 0;
 
-  const searchToListingRate =
-    searchSubmittedSessions > 0 ? Number((searchToListingSessions / searchSubmittedSessions).toFixed(4)) : 0;
-  const listingTo3dRate =
-    listingOpenedSessions > 0 ? Number((listingTo3dSessions / listingOpenedSessions).toFixed(4)) : 0;
-  const listingToActionRate =
-    listingOpenedSessions > 0 ? Number((listingToActionSessions / listingOpenedSessions).toFixed(4)) : 0;
+    sessions.forEach((names) => {
+      const hasSearch = names.has("search_submitted");
+      const hasListing = names.has("listing_opened");
+      const has3d = names.has("3d_view_opened");
+      const hasAction =
+        names.has("save_added") ||
+        names.has("contact_clicked") ||
+        names.has("tour_request_clicked") ||
+        names.has("tour_request_scheduled");
 
-  return res.json({
-    sessions: sessions.size,
-    funnels: {
-      search_to_listing: {
-        from: searchSubmittedSessions,
-        completed: searchToListingSessions,
-        conversionRate: searchToListingRate,
+      if (hasSearch) searchSubmittedSessions += 1;
+      if (hasListing) listingOpenedSessions += 1;
+      if (hasSearch && hasListing) searchToListingSessions += 1;
+      if (hasListing && has3d) listingTo3dSessions += 1;
+      if (hasListing && hasAction) listingToActionSessions += 1;
+    });
+
+    const searchToListingRate =
+      searchSubmittedSessions > 0
+        ? Number((searchToListingSessions / searchSubmittedSessions).toFixed(4))
+        : 0;
+    const listingTo3dRate =
+      listingOpenedSessions > 0
+        ? Number((listingTo3dSessions / listingOpenedSessions).toFixed(4))
+        : 0;
+    const listingToActionRate =
+      listingOpenedSessions > 0
+        ? Number((listingToActionSessions / listingOpenedSessions).toFixed(4))
+        : 0;
+
+    return res.json({
+      sessions: sessions.size,
+      funnels: {
+        search_to_listing: {
+          from: searchSubmittedSessions,
+          completed: searchToListingSessions,
+          conversionRate: searchToListingRate,
+        },
+        listing_to_3d: {
+          from: listingOpenedSessions,
+          completed: listingTo3dSessions,
+          conversionRate: listingTo3dRate,
+        },
+        listing_to_save_or_contact: {
+          from: listingOpenedSessions,
+          completed: listingToActionSessions,
+          conversionRate: listingToActionRate,
+        },
       },
-      listing_to_3d: {
-        from: listingOpenedSessions,
-        completed: listingTo3dSessions,
-        conversionRate: listingTo3dRate,
-      },
-      listing_to_save_or_contact: {
-        from: listingOpenedSessions,
-        completed: listingToActionSessions,
-        conversionRate: listingToActionRate,
-      },
-    },
-  });
+    });
+  } catch (err) {
+    console.error("GET /api/events/funnels failed", err);
+    return res.status(500).json({ error: "Failed to compute funnels" });
+  }
 });
 
 module.exports = router;
