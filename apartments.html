@@ -1798,8 +1798,8 @@
         position: fixed;
         bottom: calc(22px + var(--safe-bottom));
         right: calc(18px + var(--safe-right));
-        width: 48px;
-        height: 48px;
+        width: 38px;
+        height: 38px;
         border: none;
         border-radius: 999px;
         background: #3f3224;
@@ -1870,15 +1870,8 @@
 
       .chat-panel-head {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 10px 4px 16px;
-      }
-      .chat-panel-title {
-        font-size: 13.5px;
-        font-weight: 600;
-        color: #3f3224;
-        letter-spacing: 0.01em;
+        justify-content: flex-end;
+        padding: 8px 10px 4px;
       }
 
       .chat-panel-close {
@@ -2358,8 +2351,8 @@
         .chat-fab {
           bottom: calc(16px + var(--safe-bottom));
           right: calc(12px + var(--safe-right));
-          width: 44px;
-          height: 44px;
+          width: 34px;
+          height: 34px;
         }
 
         .chat-panel {
@@ -2600,7 +2593,6 @@
 
     <div class="chat-panel" id="chatPanel">
       <div class="chat-panel-head">
-        <span class="chat-panel-title">Apartment Copilot</span>
         <button class="chat-panel-close" id="copilotCloseBtn" type="button" aria-label="Close chat">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M18 6L6 18"></path>
@@ -2614,7 +2606,7 @@
           class="chat-panel-input"
           id="copilotInput"
           type="text"
-          placeholder="Ask anything about these listings…"
+          placeholder=""
           aria-label="Ask about listings"
           autocomplete="off"
         />
