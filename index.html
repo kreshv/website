@@ -37,64 +37,61 @@
       }
 
       .criteria-wrap {
-        position: relative;
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
       }
 
       .criteria-input {
-        width: 100%;
+        flex: 1 1 auto;
         min-height: 78px;
         max-height: 180px;
-        border: 1px solid transparent;
+        border: 1px solid #d5bfa0;
         border-radius: 14px;
-        padding: 14px 54px 18px 16px;
-        font-size: 0.92rem;
+        padding: 14px 16px;
+        font-size: 14px;
+        font-family: inherit;
         line-height: 1.5;
         color: #2d2a26;
-        background:
-          linear-gradient(#fffdf8, #fffdf8) padding-box,
-          linear-gradient(90deg, #e8dcc8, #ccb089, #e8dcc8) border-box;
-        background-size: 100% 100%, 220% 100%;
-        animation: thinking-border 1.3s ease-in-out infinite alternate;
+        background: rgba(255, 249, 239, 0.95);
         resize: none;
         outline: none;
-        box-shadow: 0 10px 30px rgba(130, 108, 78, 0.08);
-        transition: border-color 140ms ease, box-shadow 140ms ease;
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+        box-shadow: 0 8px 24px rgba(130, 108, 78, 0.08);
       }
 
       .criteria-input:focus {
-        box-shadow: 0 14px 34px rgba(130, 108, 78, 0.14);
+        border-color: #b89a78;
+        box-shadow: 0 10px 28px rgba(130, 108, 78, 0.13);
       }
 
       .criteria-submit {
-        position: absolute;
-        right: 5px;
-        bottom: 8px;
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
+        flex: 0 0 auto;
         border: none;
         border-radius: 999px;
-        background: #0a0a0a;
-        color: #ffffff;
+        background: #3f3224;
+        color: #fff;
         display: grid;
         place-items: center;
         cursor: pointer;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.16);
-        transition: transform 120ms ease, background-color 140ms ease;
+        transition: background-color 140ms ease, transform 120ms ease;
+        margin-bottom: 4px;
       }
 
       .criteria-submit:hover {
-        background: #1b1b1b;
+        background: #28201a;
       }
 
       .criteria-submit:active {
-        transform: scale(0.96);
+        transform: scale(0.94);
       }
 
       .criteria-submit:disabled {
-        background: #c8c8c8;
-        color: #f4f4f4;
+        background: #c8b99e;
+        color: #f4ece0;
         cursor: not-allowed;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         transform: none;
       }
 
@@ -108,18 +105,9 @@
         height: 13px;
         stroke: currentColor;
         fill: none;
-        stroke-width: 1.8;
+        stroke-width: 2.2;
         stroke-linecap: round;
         stroke-linejoin: round;
-      }
-
-      @keyframes thinking-border {
-        0% {
-          background-position: 0 0, 0% 50%;
-        }
-        100% {
-          background-position: 0 0, 100% 50%;
-        }
       }
     </style>
   </head>

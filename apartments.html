@@ -1918,6 +1918,10 @@
         align-self: start;
       }
 
+      .chat-panel[data-mode="tour_assistant"] .copilot-body:empty::before {
+        content: "Ask me anything about this listing, or schedule a tour — just tell me when you're available.";
+      }
+
       .copilot-msg {
         border: 1px solid #e4d1b4;
         border-radius: 14px;
@@ -3835,6 +3839,7 @@
         const rows = Array.isArray(contextListings) ? contextListings.filter(Boolean) : [];
         if (!rows.length) return;
         const contextMode = mode || "saved_compare";
+        chatPanel.dataset.mode = contextMode;
         const nextSignature = rows
           .map((listing, index) => listingKeyFromListing(listing, index))
           .sort()
