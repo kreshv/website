@@ -3404,6 +3404,46 @@
         });
       }
 
+      // Flush events from previous sessions that may have been dropped during
+      // Render cold-start. Called ~6s after app load when the server is warm.
+      async function flushAnalyticsQueue() {
+        try {
+          const queueKey = "apt_analytics_event_queue_v1";
+          const all = JSON.parse(localStorage.getItem(queueKey) || "[]");
+          if (!Array.isArray(all) || all.length === 0) return;
+
+          // Only retry events that belong to a previous session
+          const stale = all.filter(
+            (e) => e.sessionId && e.sessionId !== analyticsSessionId
+          );
+
+          if (stale.length === 0) {
+            // Nothing to retry — trim queue to just the current session
+            const fresh = all.filter(
+              (e) => !e.sessionId || e.sessionId === analyticsSessionId
+            );
+            localStorage.setItem(queueKey, JSON.stringify(fresh));
+            return;
+          }
+
+          const res = await fetch(`${apiBaseUrl}/api/events`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ events: stale }),
+          });
+
+          if (res.ok) {
+            // Flush succeeded — keep only the current session's events
+            const fresh = all.filter(
+              (e) => !e.sessionId || e.sessionId === analyticsSessionId
+            );
+            localStorage.setItem(queueKey, JSON.stringify(fresh));
+          }
+        } catch (_) {
+          // Silent — analytics must never break UX.
+        }
+      }
+
       function trackEvent(name, props = {}, options = {}) {
         const payload = {
           name: String(name || "").trim(),
@@ -6267,6 +6307,9 @@
         updateSavedDockUi();
         renderSavedPanel();
         trackEvent("app_loaded", { view: initialSavedWorkspace ? "saved_workspace" : "browse" });
+        // Retry any events queued from previous sessions that were lost during
+        // Render cold-start. 6s delay gives the server time to fully wake up.
+        setTimeout(flushAnalyticsQueue, 6000);
         if (initialSavedWorkspace) {
           await loadSavedWorkspaceListings();
           return;
