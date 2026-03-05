@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Admin Analytics</title>
+    <style>
+      :root {
+        --page-bg: #f8f1e6;
+        --card-bg: #fffdfa;
+        --line: #eadcc8;
+        --ink: #28231d;
+        --muted: #6e655a;
+        --accent: #3f3224;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 15% 10%, #fff7ea 0%, transparent 36%),
+          radial-gradient(circle at 87% 88%, #fff3df 0%, transparent 40%),
+          var(--page-bg);
+        color: var(--ink);
+        min-height: 100vh;
+      }
+
+      .wrap {
+        width: min(900px, 94vw);
+        margin: calc(26px + var(--safe-top)) auto calc(40px + var(--safe-bottom));
+      }
+
+      .panel {
+        background: rgba(255, 250, 242, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 14px 28px rgba(44, 29, 16, 0.12);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 1.3rem;
+      }
+
+      h2 {
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+
+      .description {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        background: rgba(130, 108, 78, 0.06);
+        border-left: 3px solid var(--accent);
+        border-radius: 8px;
+        font-size: 0.86rem;
+        color: var(--ink);
+        line-height: 1.5;
+      }
+
+      /* ── Auth row ── */
+      .auth-row {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 10px;
+        align-items: end;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--muted);
+      }
+
+      input, button { font: inherit; }
+
+      input {
+        width: 100%;
+        border: 1px solid #d5bfa0;
+        border-radius: 14px;
+        padding: 10px 14px;
+        background: rgba(255, 249, 239, 0.95);
+        color: var(--ink);
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      input:focus {
+        border-color: #b89a78;
+        box-shadow: 0 4px 12px rgba(130, 108, 78, 0.1);
+      }
+
+      input::placeholder { color: #a89880; }
+
+      button {
+        border: 1px solid #d7c1a0;
+        background: #fff8ed;
+        color: #5d5040;
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 0.84rem;
+        cursor: pointer;
+        transition: background-color 140ms ease, transform 120ms ease;
+        white-space: nowrap;
+      }
+
+      button:hover { background: #f5e8d3; }
+      button:active { transform: translateY(1px); }
+      button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+      .btn-primary {
+        border: 1px solid #3f3224;
+        background: #3f3224;
+        color: #fff5e8;
+        padding: 10px 20px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        align-self: end;
+      }
+
+      .btn-primary:hover { background: #28201a; }
+
+      .btn-secondary {
+        border: 1px solid #d7c1a0;
+        background: #fffaf1;
+        padding: 6px 12px;
+        font-size: 0.78rem;
+      }
+
+      /* ── Mode tabs ── */
+      .mode-switch {
+        margin-top: 14px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .mode-btn {
+        border: 1px solid #d7c1a0;
+        background: #fffaf1;
+        color: #4c3d2d;
+        font-size: 0.84rem;
+        padding: 8px 16px;
+        border-radius: 999px;
+        transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .mode-btn:hover { background: #f5e8d3; }
+      .mode-btn:active { transform: translateY(1px); }
+
+      .mode-btn.active {
+        background: #615443;
+        border-color: #615443;
+        color: #fff5e8;
+        box-shadow: 0 4px 10px rgba(45, 32, 19, 0.15);
+      }
+
+      .mode-section[hidden] { display: none; }
+
+      /* ── Status ── */
+      .status {
+        margin-top: 12px;
+        font-size: 0.84rem;
+        color: var(--muted);
+        min-height: 1.2em;
+      }
+
+      .status.error { color: #b83232; }
+      .status.loading { color: var(--accent); }
+
+      /* ── Header row with timestamp and refresh ── */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 12px;
+      }
+
+      .last-updated {
+        font-size: 0.76rem;
+        color: var(--muted);
+      }
+
+      /* ── Stat cards grid ── */
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      .stat-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card-bg);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: transform 150ms ease, box-shadow 150ms ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(110, 87, 58, 0.08);
+      }
+
+      .stat-label {
+        font-size: 0.74rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1;
+      }
+
+      .stat-sub {
+        font-size: 0.76rem;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      /* ── Funnel ── */
+      .funnel-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 4px;
+      }
+
+      .funnel-step {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card-bg);
+        padding: 16px;
+      }
+
+      .funnel-step-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 10px;
+      }
+
+      .funnel-step-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      .funnel-step-rate {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #3f3224;
+      }
+
+      .funnel-bar-track {
+        height: 8px;
+        border-radius: 999px;
+        background: #ede4d6;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+
+      .funnel-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #8b7355, #3f3224);
+        transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        width: 0%;
+      }
+
+      .funnel-step-meta {
+        font-size: 0.77rem;
+        color: var(--muted);
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .funnel-step-meta strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      /* ── Listings table ── */
+      .listing-rank-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .listing-rank-item {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card-bg);
+        padding: 12px 16px;
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+      }
+
+      .listing-rank-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(110, 87, 58, 0.08);
+        border-color: #d5bfa0;
+      }
+
+      .rank-num {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--muted);
+        text-align: center;
+        width: 28px;
+      }
+
+      .rank-num.top { color: #3f3224; }
+
+      .rank-address {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+
+      .rank-clicks {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .rank-clicks-num {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #3f3224;
+      }
+
+      .rank-clicks-label {
+        font-size: 0.74rem;
+        color: var(--muted);
+      }
+
+      /* ── Events breakdown ── */
+      .event-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .event-item {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card-bg);
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: transform 150ms ease, box-shadow 150ms ease;
+      }
+
+      .event-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(110, 87, 58, 0.08);
+      }
+
+      .event-name {
+        flex: 1;
+        font-size: 0.86rem;
+        font-weight: 500;
+        color: var(--ink);
+        font-family: "SF Mono", "Fira Code", monospace;
+      }
+
+      .event-bar-wrap {
+        flex: 2;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .event-bar-track {
+        flex: 1;
+        height: 6px;
+        border-radius: 999px;
+        background: #ede4d6;
+        overflow: hidden;
+      }
+
+      .event-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #b09474, #615443);
+        transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        width: 0%;
+      }
+
+      .event-count {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #3f3224;
+        min-width: 42px;
+        text-align: right;
+      }
+
+      /* ── Empty state ── */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 760px) {
+        .auth-row { grid-template-columns: 1fr; }
+        .stat-grid { grid-template-columns: repeat(2, 1fr); }
+        .wrap { margin-top: calc(16px + var(--safe-top)); margin-bottom: calc(20px + var(--safe-bottom)); }
+      }
+
+      @media (max-width: 480px) {
+        .wrap {
+          width: calc(100vw - 16px);
+          margin: calc(12px + var(--safe-top)) auto calc(16px + var(--safe-bottom));
+        }
+        .panel { padding: 14px 12px; border-radius: 14px; }
+        h1 { font-size: 1.15rem; }
+        .stat-grid { grid-template-columns: 1fr 1fr; }
+        .stat-value { font-size: 1.6rem; }
+        .mode-switch { flex-wrap: wrap; gap: 6px; }
+        .mode-btn { padding: 7px 12px; font-size: 0.8rem; flex: 1 1 auto; text-align: center; min-width: 0; }
+        .listing-rank-item { grid-template-columns: 24px 1fr auto; gap: 8px; padding: 10px 12px; }
+        .funnel-step-rate { font-size: 1.2rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <!-- Header + Auth -->
+      <section class="panel">
+        <h1>📊 Analytics Dashboard</h1>
+        <p>Real-time usage insights from your apartments site.</p>
+
+        <div class="auth-row">
+          <label>
+            API Base URL
+            <input id="apiBase" type="text" value="https://apartment-api-ptpn.onrender.com" />
+          </label>
+          <label>
+            Admin Key
+            <input id="adminKey" type="password" autocomplete="off" placeholder="Enter your admin key" />
+          </label>
+          <button class="btn-primary" id="loadBtn" type="button">Load Data</button>
+        </div>
+
+        <div class="mode-switch" id="tabBar" hidden>
+          <button class="mode-btn active" id="tabOverview" type="button">Overview</button>
+          <button class="mode-btn" id="tabFunnels" type="button">Funnels</button>
+          <button class="mode-btn" id="tabListings" type="button">Top Listings</button>
+          <button class="mode-btn" id="tabEvents" type="button">Events</button>
+        </div>
+
+        <div class="status" id="status">Enter your admin key and click Load Data to see analytics.</div>
+      </section>
+
+      <!-- ── Overview ── -->
+      <section class="mode-section panel" id="sectionOverview" hidden>
+        <div class="section-header">
+          <h2>Overview</h2>
+          <div class="last-updated" id="lastUpdated"></div>
+        </div>
+        <div class="description">
+          📈 <strong>Key metrics</strong> about user engagement, searches, and conversions. Last 30 days of activity.
+        </div>
+        <div class="stat-grid" id="statGrid">
+          <!-- populated by JS -->
+        </div>
+      </section>
+
+      <!-- ── Funnels ── -->
+      <section class="mode-section panel" id="sectionFunnels" hidden>
+        <h2>🔄 Conversion Funnels</h2>
+        <div class="description">
+          How users progress through your site: <strong>Search → View Listing → Take Action</strong>. Each session is counted once per step.
+        </div>
+        <div class="funnel-list" id="funnelList">
+          <!-- populated by JS -->
+        </div>
+      </section>
+
+      <!-- ── Top Listings ── -->
+      <section class="mode-section panel" id="sectionListings" hidden>
+        <h2>⭐ Most Viewed Listings</h2>
+        <div class="description">
+          Your <strong>top 50 listings</strong> by number of times users opened them.
+        </div>
+        <div class="listing-rank-list" id="listingRankList">
+          <!-- populated by JS -->
+        </div>
+      </section>
+
+      <!-- ── All Events ── -->
+      <section class="mode-section panel" id="sectionEvents" hidden>
+        <h2>🎯 All Tracked Events</h2>
+        <div class="description">
+          Complete breakdown of <strong>every event type</strong> your site tracks. Sorted by frequency.
+        </div>
+        <div class="event-list" id="eventList">
+          <!-- populated by JS -->
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const apiBaseInput  = document.getElementById("apiBase");
+      const adminKeyInput = document.getElementById("adminKey");
+      const loadBtn       = document.getElementById("loadBtn");
+      const statusEl      = document.getElementById("status");
+      const tabBar        = document.getElementById("tabBar");
+      const lastUpdated   = document.getElementById("lastUpdated");
+
+      const tabs = {
+        overview: { btn: document.getElementById("tabOverview"), sec: document.getElementById("sectionOverview") },
+        funnels:  { btn: document.getElementById("tabFunnels"),  sec: document.getElementById("sectionFunnels")  },
+        listings: { btn: document.getElementById("tabListings"), sec: document.getElementById("sectionListings") },
+        events:   { btn: document.getElementById("tabEvents"),   sec: document.getElementById("sectionEvents")   },
+      };
+
+      let activeTab = "overview";
+
+      if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
+        apiBaseInput.value = window.APP_CONFIG.API_BASE_URL;
+      }
+
+      function setStatus(msg, type = "normal") {
+        statusEl.textContent = msg;
+        statusEl.className = "status" + (type === "error" ? " error" : type === "loading" ? " loading" : "");
+      }
+
+      function switchTab(name) {
+        activeTab = name;
+        Object.entries(tabs).forEach(([k, { btn, sec }]) => {
+          btn.classList.toggle("active", k === name);
+          sec.hidden = k !== name;
+        });
+      }
+
+      Object.keys(tabs).forEach((name) => {
+        tabs[name].btn.addEventListener("click", () => switchTab(name));
+      });
+
+      function apiBase() {
+        return apiBaseInput.value.replace(/\/$/, "");
+      }
+
+      function headers() {
+        return { "x-admin-key": adminKeyInput.value };
+      }
+
+      async function fetchJSON(path) {
+        const res = await fetch(apiBase() + path, { headers: headers() });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        return res.json();
+      }
+
+      function fmt(n) {
+        return Number.isFinite(n) ? n.toLocaleString() : "—";
+      }
+
+      function fmtPct(rate) {
+        return (rate * 100).toFixed(1) + "%";
+      }
+
+      // ── Render Overview ──
+      function renderOverview(eventsData, funnelsData) {
+        const c = eventsData.counts || {};
+        const stats = [
+          {
+            label: "Total Events",
+            value: fmt(eventsData.total),
+            sub: `${eventsData.uniqueEvents} event types fired`,
+          },
+          {
+            label: "Unique Sessions",
+            value: fmt(funnelsData.sessions),
+            sub: "Distinct user sessions",
+          },
+          {
+            label: "Listings Opened",
+            value: fmt(c["listing_opened"] || 0),
+            sub: "Clicks into listing details",
+          },
+          {
+            label: "Searches",
+            value: fmt(c["search_submitted"] || 0),
+            sub: "Text + filter-based searches",
+          },
+          {
+            label: "Listings Saved",
+            value: fmt(c["save_added"] || 0),
+            sub: "Favorites / saved listings",
+          },
+          {
+            label: "Tour Requests",
+            value: fmt((c["tour_request_clicked"] || 0) + (c["tour_request_scheduled"] || 0)),
+            sub: `${fmt(c["tour_request_scheduled"] || 0)} scheduled via AI`,
+          },
+          {
+            label: "AI Questions",
+            value: fmt(c["ai_question_sent"] || 0),
+            sub: "Messages sent to copilot",
+          },
+          {
+            label: "Comparisons",
+            value: fmt(c["compare_opened"] || 0),
+            sub: "Side-by-side listing views",
+          },
+          {
+            label: "Filter Changes",
+            value: fmt(c["filter_changed"] || 0),
+            sub: "Manual + AI-driven updates",
+          },
+        ];
+
+        const grid = document.getElementById("statGrid");
+        grid.innerHTML = stats
+          .map(
+            (s) => `
+          <div class="stat-card">
+            <span class="stat-label">${s.label}</span>
+            <span class="stat-value">${s.value}</span>
+            <span class="stat-sub">${s.sub}</span>
+          </div>`
+          )
+          .join("");
+      }
+
+      // ── Render Funnels ──
+      function renderFunnels(data) {
+        const f = data.funnels;
+        const steps = [
+          {
+            label: "Search → Listing Opened",
+            desc: "Of those who searched, what % opened a listing?",
+            from: f.search_to_listing.from,
+            completed: f.search_to_listing.completed,
+            rate: f.search_to_listing.conversionRate,
+            fromLabel: "searched",
+            completedLabel: "opened a listing",
+          },
+          {
+            label: "Listing → 3D / Floor Plan View",
+            desc: "Of those who opened a listing, what % viewed 3D?",
+            from: f.listing_to_3d.from,
+            completed: f.listing_to_3d.completed,
+            rate: f.listing_to_3d.conversionRate,
+            fromLabel: "opened a listing",
+            completedLabel: "viewed 3D / floor plan",
+          },
+          {
+            label: "Listing → Action (Save / Tour / Contact)",
+            desc: "Of those who opened a listing, what % took action?",
+            from: f.listing_to_save_or_contact.from,
+            completed: f.listing_to_save_or_contact.completed,
+            rate: f.listing_to_save_or_contact.conversionRate,
+            fromLabel: "opened a listing",
+            completedLabel: "saved, toured, or contacted",
+          },
+        ];
+
+        const list = document.getElementById("funnelList");
+        list.innerHTML = steps
+          .map(
+            (s) => `
+          <div class="funnel-step">
+            <div class="funnel-step-head">
+              <div>
+                <div class="funnel-step-label">${s.label}</div>
+                <div style="font-size: 0.77rem; color: var(--muted); margin-top: 4px;">${s.desc}</div>
+              </div>
+              <span class="funnel-step-rate">${fmtPct(s.rate)}</span>
+            </div>
+            <div class="funnel-bar-track">
+              <div class="funnel-bar-fill" data-width="${(s.rate * 100).toFixed(2)}"></div>
+            </div>
+            <div class="funnel-step-meta">
+              <span><strong>${fmt(s.from)}</strong> ${s.fromLabel}</span>
+              <span>→</span>
+              <span><strong>${fmt(s.completed)}</strong> ${s.completedLabel}</span>
+            </div>
+          </div>`
+          )
+          .join("");
+
+        requestAnimationFrame(() => {
+          list.querySelectorAll(".funnel-bar-fill").forEach((el) => {
+            el.style.width = el.dataset.width + "%";
+          });
+        });
+      }
+
+      // ── Render Listings ──
+      function renderListings(data) {
+        const rows = data.listings || [];
+        const list = document.getElementById("listingRankList");
+
+        if (!rows.length) {
+          list.innerHTML = `<div class="empty-state">No listing data yet.</div>`;
+          return;
+        }
+
+        list.innerHTML = rows
+          .slice(0, 50)
+          .map(
+            (row, i) => `
+          <div class="listing-rank-item">
+            <span class="rank-num ${i < 3 ? "top" : ""}">#${i + 1}</span>
+            <span class="rank-address" title="${row.address || row.listingId}">${row.address || row.listingId}</span>
+            <span class="rank-clicks">
+              <span class="rank-clicks-num">${fmt(Number(row.clicks))}</span>
+              <span class="rank-clicks-label">opens</span>
+            </span>
+          </div>`
+          )
+          .join("");
+      }
+
+      // ── Render Events ──
+      function renderEvents(data) {
+        const counts = data.counts || {};
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        const max = sorted[0]?.[1] || 1;
+        const list = document.getElementById("eventList");
+
+        if (!sorted.length) {
+          list.innerHTML = `<div class="empty-state">No event data yet.</div>`;
+          return;
+        }
+
+        list.innerHTML = sorted
+          .map(
+            ([name, count]) => `
+          <div class="event-item">
+            <span class="event-name">${name}</span>
+            <div class="event-bar-wrap">
+              <div class="event-bar-track">
+                <div class="event-bar-fill" data-width="${((count / max) * 100).toFixed(2)}"></div>
+              </div>
+            </div>
+            <span class="event-count">${fmt(count)}</span>
+          </div>`
+          )
+          .join("");
+
+        requestAnimationFrame(() => {
+          list.querySelectorAll(".event-bar-fill").forEach((el) => {
+            el.style.width = el.dataset.width + "%";
+          });
+        });
+      }
+
+      // ── Main load ──
+      loadBtn.addEventListener("click", async () => {
+        if (!adminKeyInput.value.trim()) {
+          setStatus("⚠️  Enter your admin key first.", "error");
+          return;
+        }
+
+        loadBtn.disabled = true;
+        setStatus("📡 Loading analytics…", "loading");
+
+        try {
+          const [eventsData, funnelsData, listingsData] = await Promise.all([
+            fetchJSON("/api/events"),
+            fetchJSON("/api/events/funnels"),
+            fetchJSON("/api/events/listings"),
+          ]);
+
+          renderOverview(eventsData, funnelsData);
+          renderFunnels(funnelsData);
+          renderListings(listingsData);
+          renderEvents(eventsData);
+
+          const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          lastUpdated.textContent = `Loaded at ${now}`;
+
+          tabBar.hidden = false;
+          switchTab(activeTab);
+          setStatus("✅ Analytics loaded successfully.");
+        } catch (err) {
+          setStatus(`❌ Error: ${err.message}`, "error");
+        } finally {
+          loadBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

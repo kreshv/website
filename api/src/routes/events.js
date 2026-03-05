@@ -72,19 +72,29 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// GET /api/events/listings — per-listing click counts (most clicked first)
+// GET /api/events/listings — per-listing click counts with address (most clicked first)
+// JOINs against the Listing table so address is always resolved, even for old events
+// that never stored address in their props.
 router.get("/listings", async (_req, res) => {
   try {
     const rows = await prisma.$queryRaw`
       SELECT
-        props->>'listingId' AS "listingId",
-        COUNT(*)::int        AS "clicks"
-      FROM "AnalyticsEvent"
-      WHERE name = 'listing_opened'
-        AND props->>'listingId' IS NOT NULL
-        AND props->>'listingId' != ''
-      GROUP BY props->>'listingId'
-      ORDER BY "clicks" DESC
+        ae.props->>'listingId'                                  AS "listingId",
+        COALESCE(
+          NULLIF(MAX(ae.props->>'address'), ''),
+          MAX(l.address),
+          MAX(l.title)
+        )                                                        AS "address",
+        COUNT(*)::int                                            AS "clicks"
+      FROM   "AnalyticsEvent" ae
+      LEFT   JOIN "Listing" l
+             ON l.id = (ae.props->>'listingId')::int
+      WHERE  ae.name                = 'listing_opened'
+        AND  ae.props->>'listingId' IS NOT NULL
+        AND  ae.props->>'listingId' != ''
+        AND  ae.props->>'listingId' ~ '^\d+$'
+      GROUP  BY ae.props->>'listingId'
+      ORDER  BY "clicks" DESC
     `;
 
     return res.json({ listings: rows });

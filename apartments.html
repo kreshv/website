@@ -953,18 +953,9 @@
           filter 220ms ease;
       }
 
-      .hero-card.is-inactive {
-        opacity: 0.74;
-        filter: saturate(0.7) brightness(0.74);
-      }
-
       .hero-card.is-inactive .hero-media,
       .hero-card.is-inactive .hero-details-toggle {
         pointer-events: none;
-      }
-
-      .hero-card.is-inactive .hero-details-toggle {
-        opacity: 0.42;
       }
 
       .hero-card::before {
@@ -1247,44 +1238,6 @@
         top: 49%;
         right: 10%;
         transform: translateY(-50%) rotate(-90deg);
-      }
-
-      .hero-zoom-hint {
-        position: absolute;
-        left: 50%;
-        bottom: 18px;
-        transform: translateX(-50%) translateY(0);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 236, 210, 0.35);
-        background: rgba(24, 17, 12, 0.68);
-        color: #fff6e8;
-        font-size: 0.78rem;
-        letter-spacing: 0.01em;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        pointer-events: none;
-        opacity: 0;
-        z-index: 6;
-      }
-
-      .hero-zoom-hint-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 999px;
-        background: #ffe6bf;
-        box-shadow: 0 0 0 0 rgba(255, 230, 191, 0.5);
-      }
-
-      .hero-zoom-hint.is-visible {
-        animation: zoom-hint-fade 2200ms ease forwards;
-      }
-
-      .hero-zoom-hint.is-visible .hero-zoom-hint-dot {
-        animation: zoom-hint-pulse 1200ms ease-out 2;
       }
 
       .hero-details {
@@ -2109,31 +2062,6 @@
         }
       }
 
-      @keyframes zoom-hint-fade {
-        0% {
-          opacity: 0;
-          transform: translateX(-50%) translateY(8px);
-        }
-        12%,
-        72% {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-        100% {
-          opacity: 0;
-          transform: translateX(-50%) translateY(-6px);
-        }
-      }
-
-      @keyframes zoom-hint-pulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(255, 230, 191, 0.5);
-        }
-        100% {
-          box-shadow: 0 0 0 12px rgba(255, 230, 191, 0);
-        }
-      }
-
       @keyframes details-laser-sweep {
         0% {
           left: -55%;
@@ -2366,6 +2294,34 @@
           max-height: min(480px, calc(100vh - 60px));
         }
 
+        /* When the copilot is opened from the hero "Schedule a Tour" button,
+           make it a full-width bottom sheet that covers the hero overlay.
+           Uses fixed height so the chat body expands (grid 1fr) even when empty. */
+        .chat-panel.is-hero-tour.is-open {
+          bottom: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          height: calc(100vh - 260px);
+          max-height: calc(100vh - 260px);
+          border-radius: 22px 22px 0 0;
+          box-shadow: 0 -6px 40px rgba(29, 21, 14, 0.32);
+          background: #fff9ef;
+          z-index: 65;
+        }
+
+        /* Shade overlay on the hero when copilot chat is open (Schedule a Tour).
+           A semi-transparent layer dims the card + details so the chat feels primary. */
+        .hero-overlay.is-tour-shaded::after {
+          content: "";
+          position: fixed;
+          inset: 0;
+          background: rgba(24, 18, 13, 0.35);
+          z-index: 44;
+          pointer-events: none;
+          transition: opacity 200ms ease;
+        }
+
         .hero-overlay.has-details-open {
           place-items: start center;
         }
@@ -2376,9 +2332,19 @@
         }
 
         .hero-overlay.has-details-open .hero-card {
-          width: min(var(--hero-mobile-content-width), calc(46vh * var(--hero-aspect)));
-          height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), 46vh);
-          min-height: 190px;
+          width: min(var(--hero-mobile-content-width), calc(var(--hero-card-avail-h, 42vh) * var(--hero-aspect)));
+          height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), var(--hero-card-avail-h, 42vh));
+          min-height: 160px;
+        }
+
+        /* No width/height transitions while the user is actively dragging the panel */
+        .hero-shell.is-panel-lifting .hero-card {
+          transition: opacity 200ms ease;
+        }
+
+        /* Hide the panel toggle button on mobile — the overlay X button replaces it */
+        .hero-details-toggle {
+          display: none !important;
         }
 
         .hero-shell {
@@ -2411,11 +2377,12 @@
           left: calc(8px + var(--safe-left));
           right: calc(8px + var(--safe-right));
           top: calc(var(--hero-mobile-details-top) - var(--hero-mobile-details-lift));
-          bottom: calc(8px + var(--safe-bottom));
+          bottom: 0;
+          border-radius: 22px 22px 0 0;
           width: auto;
           height: auto;
           min-height: 220px;
-          max-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 16px);
+          max-height: calc(100vh - var(--safe-top, 0px) - 8px);
           overflow-x: hidden;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
@@ -2458,6 +2425,7 @@
 
         .hero-shell.has-details .hero-details {
           padding-top: 14px;
+          padding-bottom: calc(16px + var(--safe-bottom));
         }
 
         .hero-nav {
@@ -2471,12 +2439,6 @@
           pointer-events: none;
         }
 
-        .hero-zoom-hint {
-          bottom: 10px;
-          font-size: 0.73rem;
-          padding: 7px 10px;
-        }
-
       }
 
       @supports (height: 100dvh) {
@@ -2487,20 +2449,74 @@
           }
 
           .hero-overlay.has-details-open .hero-card {
-            width: min(var(--hero-mobile-content-width), calc(46dvh * var(--hero-aspect)));
-            height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), 46dvh);
+            width: min(var(--hero-mobile-content-width), calc(var(--hero-card-avail-h, 42dvh) * var(--hero-aspect)));
+            height: min(calc(var(--hero-mobile-content-width) / var(--hero-aspect)), var(--hero-card-avail-h, 42dvh));
           }
 
           .hero-shell.has-details .hero-details-panel {
-            max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px);
+            max-height: calc(100dvh - var(--safe-top, 0px) - 8px);
             overflow-x: hidden;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
             transform: translateY(0);
           }
+
+          .chat-panel.is-hero-tour.is-open {
+            height: calc(100dvh - 260px);
+            max-height: calc(100dvh - 260px);
+          }
         }
       }
+
+      @media (max-width: 400px) {
+        .cards-grid {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+
+        .filter-panel {
+          width: 100vw;
+          border-radius: 0;
+        }
+
+        .filter-chip {
+          padding: 6px 9px;
+          font-size: 0.76rem;
+        }
+
+        .chat-panel {
+          width: calc(100vw - 16px);
+          right: calc(8px + var(--safe-right));
+        }
+      }
+
+      /* ── Hero overlay close button (mobile – shown when details panel open) ── */
+      .hero-overlay-close-btn {
+        display: none;
+      }
+
+      @media (max-width: 680px) {
+        .hero-overlay.has-details-open .hero-overlay-close-btn {
+          display: grid;
+          place-items: center;
+          position: fixed;
+          top: max(8px, var(--safe-top));
+          right: calc(10px + var(--safe-right));
+          z-index: 55;
+          width: 34px;
+          height: 34px;
+          border-radius: 999px;
+          border: 1px solid rgba(220, 195, 160, 0.55);
+          background: rgba(28, 20, 13, 0.68);
+          color: #fff6eb;
+          font-size: 0.9rem;
+          cursor: pointer;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+        }
+      }
+
     </style>
   </head>
   <body>
@@ -2713,10 +2729,6 @@
               <span class="hero-dim-label width">22 ft</span>
               <span class="hero-dim-label depth">18 ft</span>
             </div>
-            <div class="hero-zoom-hint" id="heroZoomHint" hidden>
-              <span class="hero-zoom-hint-dot" aria-hidden="true"></span>
-              <span>Scroll or pinch to zoom</span>
-            </div>
           </div>
           <button class="hero-details-toggle" id="heroDetailsToggle" type="button" aria-expanded="false" aria-label="Show details"></button>
         </div>
@@ -2753,6 +2765,7 @@
         </div>
       </div>
       <button class="hero-nav hero-next" id="heroNext" type="button" aria-label="Next apartment">&#8250;</button>
+      <button class="hero-overlay-close-btn" id="heroOverlayClose" type="button" aria-label="Close listing">&#10005;</button>
     </div>
 
     <script src="app-config.js"></script>
@@ -2833,7 +2846,6 @@
       const heroDetailsPanel = document.getElementById("heroDetailsPanel");
       const heroDetailsDragHandle = document.getElementById("heroDetailsDragHandle");
       const heroFloorplan = document.getElementById("heroFloorplan");
-      const heroZoomHint = document.getElementById("heroZoomHint");
       const heroScheduleBtn = document.getElementById("heroScheduleBtn");
 
       heroMapImage.tabIndex = 0;
@@ -2844,21 +2856,6 @@
       let listingsLoadError = "";
       let activeIndex = 0;
       let heroHasImage = false;
-      let zoomScale = 1;
-      let zoomX = 0;
-      let zoomY = 0;
-      const minZoom = 1;
-      const maxZoom = 4;
-      const pointers = new Map();
-      let dragPointerId = null;
-      let dragStartX = 0;
-      let dragStartY = 0;
-      let dragOriginX = 0;
-      let dragOriginY = 0;
-      let pinchStartDistance = 0;
-      let pinchStartScale = 1;
-      let zoomHintTimer = null;
-      let zoomHintStartTimer = null;
       let detailsHintTimer = null;
       let heroCloseTimer = null;
       let heroOpenRequestId = 0;
@@ -2882,7 +2879,6 @@
       let heroDetailsPanelTouchVelocity = 0;
       let heroDetailsPanelTouchMoved = false;
       let heroDetailsLiftAnimationFrame = 0;
-      const HERO_ZOOM_HINT_AFTER_OPEN_MS = 5000;
       const preloadedImageCache = new Map();
       const preloadedImageRatioCache = new Map();
       let isFilterPanelOpen = false;
@@ -3811,7 +3807,13 @@
       }
 
       function syncCopilotLauncherVisibility() {
-        // FAB is always visible — no hiding when hero is open
+        if (!chatFabBtn) return;
+        // On mobile: hide the FAB while the hero is open — "Schedule a Tour" is the entry point
+        if (isHeroMobileViewport() && !heroOverlay.hidden) {
+          chatFabBtn.hidden = true;
+        } else if (!isCopilotOpen) {
+          chatFabBtn.hidden = false;
+        }
       }
 
       function updateCopilotLauncherLabel() {
@@ -3832,7 +3834,9 @@
         }
         isCopilotOpen = false;
         chatPanel.classList.remove("is-open");
-        if (chatFabBtn) chatFabBtn.hidden = false;
+        chatPanel.classList.remove("is-hero-tour");
+        heroOverlay.classList.remove("is-tour-shaded");
+        syncCopilotLauncherVisibility();
       }
 
       function openCopilotWithContext({ mode, listings: contextListings, title }) {
@@ -4290,6 +4294,7 @@
         if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
         if (!event.touches || event.touches.length !== 1) return;
         cancelHeroDetailsLiftAnimation();
+        heroShell.classList.add("is-panel-lifting");
         heroDetailsPanelTouchY = event.touches[0].clientY;
         heroDetailsPanelTouchTimestamp = performance.now();
         heroDetailsPanelTouchVelocity = 0;
@@ -4365,6 +4370,8 @@
         if (velocity <= -0.24) targetLift = maxLift;
         if (velocity >= 0.24) targetLift = 0;
         animateHeroDetailsLiftTo(targetLift, { duration: 170 });
+        // Re-enable card size transitions after snap animation completes
+        setTimeout(() => heroShell.classList.remove("is-panel-lifting"), 200);
       }
 
       function handleHeroDetailsPanelWheel(event) {
@@ -4383,26 +4390,11 @@
       }
 
       function syncHeroMainInactiveState() {
-        let nextInactive = false;
-        if (
-          !heroOverlay.hidden &&
-          heroDetailsOpen &&
-          isHeroMobileViewport() &&
-          Number(heroMobileDetailsBaseTop) > 0
-        ) {
-          const cardRect = heroCard.getBoundingClientRect();
-          if (cardRect.width > 0 && cardRect.height > 0) {
-            const panelTop = Number(heroMobileDetailsBaseTop) - Number(heroMobileDetailsLift);
-            const enterThreshold = cardRect.bottom - 8;
-            const exitThreshold = cardRect.bottom + 2;
-            nextInactive = heroMainInactive
-              ? panelTop <= exitThreshold
-              : panelTop <= enterThreshold;
-          }
-        }
-
-        heroMainInactive = nextInactive;
-        heroCard.classList.toggle("is-inactive", heroMainInactive);
+        // On mobile, keep the card visually active (no dimming) even when the
+        // details panel is swiped up over it. The panel's higher z-index handles
+        // touch-event blocking so interaction on the covered card is prevented.
+        heroMainInactive = false;
+        heroCard.classList.remove("is-inactive");
       }
 
       function applyHeroDetailsLift() {
@@ -4410,6 +4402,17 @@
         heroMobileDetailsLift = nextLift;
         heroShell.style.setProperty("--hero-mobile-details-lift", `${nextLift}px`);
         syncHeroMainInactiveState();
+
+        // Dynamic card shrink: as the panel is lifted, shrink the card so it
+        // always stays just above the panel top (Instagram/Twitter reel style).
+        if (nextLift >= 1 && isHeroMobileViewport() && heroDetailsOpen && heroMobileDetailsBaseTop > 0) {
+          const panelTop = heroMobileDetailsBaseTop - nextLift;
+          const gap = 10; // px gap between card bottom and panel top
+          const availH = Math.max(160, panelTop - heroMobileDetailsMinTop - gap);
+          heroShell.style.setProperty("--hero-card-avail-h", `${availH}px`);
+        } else {
+          heroShell.style.removeProperty("--hero-card-avail-h");
+        }
       }
 
       function resetHeroDetailsLift({ resetScroll = false } = {}) {
@@ -4422,6 +4425,8 @@
         heroMobileDetailsLift = 0;
         heroMobileDetailsBaseTop = 0;
         heroMobileDetailsMinTop = 0;
+        heroShell.classList.remove("is-panel-lifting");
+        heroShell.style.removeProperty("--hero-card-avail-h");
         applyHeroDetailsLift();
         if (resetScroll) {
           heroDetailsPanel.scrollTop = 0;
@@ -4508,94 +4513,6 @@
         };
       }
 
-      function clampPan() {
-        if (!heroHasImage || zoomScale <= 1) {
-          zoomX = 0;
-          zoomY = 0;
-          return;
-        }
-
-        const rect = heroMedia.getBoundingClientRect();
-        const maxX = ((zoomScale - 1) * rect.width) / 2;
-        const maxY = ((zoomScale - 1) * rect.height) / 2;
-        zoomX = clampNumber(zoomX, -maxX, maxX);
-        zoomY = clampNumber(zoomY, -maxY, maxY);
-      }
-
-      function applyImageTransform() {
-        clampPan();
-        heroImage.style.transform = `translate(${zoomX}px, ${zoomY}px) scale(${zoomScale})`;
-      }
-
-      function setZoomScale(nextScale) {
-        zoomScale = clampNumber(nextScale, minZoom, maxZoom);
-        if (zoomScale <= 1) {
-          zoomX = 0;
-          zoomY = 0;
-        }
-        applyImageTransform();
-      }
-
-      function setZoomScaleAt(nextScale, originX, originY) {
-        const previousScale = zoomScale;
-        const clampedScale = clampNumber(nextScale, minZoom, maxZoom);
-        if (clampedScale === previousScale) return;
-
-        if (previousScale > 0 && clampedScale > 1) {
-          const scaleRatio = clampedScale / previousScale;
-          zoomX = originX - (originX - zoomX) * scaleRatio;
-          zoomY = originY - (originY - zoomY) * scaleRatio;
-        }
-
-        zoomScale = clampedScale;
-        if (zoomScale <= 1) {
-          zoomX = 0;
-          zoomY = 0;
-        }
-        applyImageTransform();
-      }
-
-      function resetImageTransform() {
-        pointers.clear();
-        dragPointerId = null;
-        pinchStartDistance = 0;
-        heroMedia.classList.remove("is-dragging");
-        zoomScale = 1;
-        zoomX = 0;
-        zoomY = 0;
-        applyImageTransform();
-      }
-
-      function showZoomHint() {
-        if (!heroHasImage) return;
-        if (zoomHintTimer) {
-          clearTimeout(zoomHintTimer);
-          zoomHintTimer = null;
-        }
-        heroZoomHint.hidden = false;
-        heroZoomHint.classList.remove("is-visible");
-        void heroZoomHint.offsetWidth;
-        heroZoomHint.classList.add("is-visible");
-        zoomHintTimer = setTimeout(() => {
-          heroZoomHint.classList.remove("is-visible");
-          heroZoomHint.hidden = true;
-          zoomHintTimer = null;
-        }, 2300);
-      }
-
-      function clearZoomHint() {
-        if (zoomHintStartTimer) {
-          clearTimeout(zoomHintStartTimer);
-          zoomHintStartTimer = null;
-        }
-        if (zoomHintTimer) {
-          clearTimeout(zoomHintTimer);
-          zoomHintTimer = null;
-        }
-        heroZoomHint.classList.remove("is-visible");
-        heroZoomHint.hidden = true;
-      }
-
       function triggerDetailsHint() {
         if (detailsHintTimer) {
           clearTimeout(detailsHintTimer);
@@ -4658,7 +4575,7 @@
         heroNext.setAttribute("aria-label", "Next image");
       }
 
-      function renderActiveHeroMedia({ preserveZoom = false } = {}) {
+      function renderActiveHeroMedia() {
         const requestId = ++heroMediaRenderRequestId;
         const activeMedia = heroMediaItems[heroMediaIndex] || null;
         const activeListing = listings[activeIndex] || null;
@@ -4689,11 +4606,6 @@
           heroHasImage = false;
           heroMedia.classList.remove("has-image");
           heroImage.src = "";
-          if (!preserveZoom) {
-            resetImageTransform();
-          } else {
-            applyImageTransform();
-          }
           return;
         }
 
@@ -4717,11 +4629,6 @@
         }
 
         heroMedia.classList.toggle("is-floorplan", Boolean(activeMedia && activeMedia.type === "floorplan"));
-        if (!preserveZoom) {
-          resetImageTransform();
-        } else {
-          applyImageTransform();
-        }
 
         const finishSwitch = () => {
           if (requestId !== heroMediaRenderRequestId) return;
@@ -4794,24 +4701,16 @@
         return preloadPromise;
       }
 
-      function setHeroMediaIndex(nextIndex, { preserveZoom = false } = {}) {
+      function setHeroMediaIndex(nextIndex) {
         if (!heroMediaItems.length) return;
         const count = heroMediaItems.length;
         heroMediaIndex = ((nextIndex % count) + count) % count;
-        void renderActiveHeroMedia({ preserveZoom });
+        void renderActiveHeroMedia();
       }
 
       function navigateHeroMedia(step) {
         if (heroMediaItems.length <= 1) return;
         setHeroMediaIndex(heroMediaIndex + step);
-      }
-
-      function distanceBetweenPointers() {
-        const points = [...pointers.values()];
-        if (points.length < 2) return 0;
-        const dx = points[0].x - points[1].x;
-        const dy = points[0].y - points[1].y;
-        return Math.hypot(dx, dy);
       }
 
       function renderCards(data) {
@@ -4895,7 +4794,6 @@
             void preloadImage(item.url);
           });
         }
-        clearZoomHint();
         heroTitle.textContent = listing.address || listing.title || "Apartment Listing";
         heroLocation.textContent = `${listing.neighborhood || "N/A"}, ${listing.borough || "N/A"}`;
         heroPrice.textContent = `$${formatNumber(listing.price)}/mo`;
@@ -5669,20 +5567,13 @@
         if (syncUrl) {
           setListingParam(listingTokenForIndex(index), { replace: replaceUrl });
         }
-        if (zoomHintStartTimer) {
-          clearTimeout(zoomHintStartTimer);
-        }
-        zoomHintStartTimer = setTimeout(() => {
-          zoomHintStartTimer = null;
-          if (heroOverlay.hidden) return;
-          showZoomHint();
-        }, HERO_ZOOM_HINT_AFTER_OPEN_MS);
         if (detailsHintTimer) {
           clearTimeout(detailsHintTimer);
           detailsHintTimer = null;
         }
         trackEvent("listing_opened", {
           listingId: listing.id ? String(listing.id) : "",
+          address: listing.address || listing.title || "",
           listingKey: listingKeyFromListing(listing, index),
           source: sourceRect ? "card" : "url_or_navigation",
         });
@@ -5690,7 +5581,6 @@
 
       function closeHero({ syncUrl = true, replaceUrl = true } = {}) {
         heroOpenRequestId += 1;
-        clearZoomHint();
         if (heroMobileLayoutRafId) {
           cancelAnimationFrame(heroMobileLayoutRafId);
           heroMobileLayoutRafId = 0;
@@ -5705,8 +5595,8 @@
         }
         heroDetailsToggle.classList.remove("is-hinting");
         setHeroDetailsOpen(false);
-        resetImageTransform();
         heroOverlay.classList.remove("is-open");
+        heroOverlay.classList.remove("is-tour-shaded");
         if (heroCloseTimer) clearTimeout(heroCloseTimer);
         heroCloseTimer = setTimeout(() => {
           heroOverlay.hidden = true;
@@ -5742,6 +5632,7 @@
         if (!heroDetailsOpen || heroOverlay.hidden || !isHeroMobileViewport()) return;
         if (event.pointerType === "mouse" && event.button !== 0) return;
         cancelHeroDetailsLiftAnimation();
+        heroShell.classList.add("is-panel-lifting");
 
         heroDetailsDragPointerId = event.pointerId;
         heroDetailsDragStartY = event.clientY;
@@ -5782,6 +5673,7 @@
         if (shouldToggleSnap) {
           toggleHeroDetailsLiftSnap();
         }
+        setTimeout(() => heroShell.classList.remove("is-panel-lifting"), 200);
       }
 
       async function loadListings() {
@@ -5995,6 +5887,7 @@
       heroPrev.addEventListener("click", () => navigateHeroMedia(-1));
       heroNext.addEventListener("click", () => navigateHeroMedia(1));
       heroClose.addEventListener("click", closeHero);
+      document.getElementById("heroOverlayClose").addEventListener("click", closeHero);
       heroSaveBtn.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -6010,11 +5903,13 @@
           address: listing.address || listing.title || "",
           source: "hero_copilot_cta",
         });
-        openCopilotWithContext({
-          mode: "tour_assistant",
-          listings: [listing],
-          title: "Schedule a Tour",
-        });
+        // On mobile: mark the chat so it opens as a full-width sheet over the hero,
+        // and shade the hero so it feels slightly inactive behind the chat.
+        if (isHeroMobileViewport()) {
+          chatPanel.classList.add("is-hero-tour");
+          heroOverlay.classList.add("is-tour-shaded");
+        }
+        openCopilotWithContext({ mode: "tour_assistant", listings: [listing], title: "Schedule a Tour" });
       });
       heroDetailsToggle.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -6027,88 +5922,31 @@
         }
       });
 
-      heroMedia.addEventListener(
-        "wheel",
-        (event) => {
-          if (!heroHasImage) return;
-          event.preventDefault();
-          const factor = event.deltaY < 0 ? 1.035 : 1 / 1.035;
-          const rect = heroMedia.getBoundingClientRect();
-          const pointerX = event.clientX - (rect.left + rect.width / 2);
-          const pointerY = event.clientY - (rect.top + rect.height / 2);
-          setZoomScaleAt(zoomScale * factor, pointerX, pointerY);
-        },
-        { passive: false }
-      );
+      // ── Touch swipe left/right on hero image to navigate gallery ──
+      let heroImageSwipeTouchId = null;
+      let heroImageSwipeStartX = 0;
+      let heroImageSwipeStartY = 0;
 
-      heroMedia.addEventListener("dblclick", () => {
-        if (!heroHasImage) return;
-        setZoomScale(zoomScale > 1 ? 1 : 2);
-      });
+      heroMedia.addEventListener("touchstart", (event) => {
+        if (event.touches.length !== 1) { heroImageSwipeTouchId = null; return; }
+        const t = event.touches[0];
+        heroImageSwipeTouchId = t.identifier;
+        heroImageSwipeStartX = t.clientX;
+        heroImageSwipeStartY = t.clientY;
+      }, { passive: true });
 
-      heroMedia.addEventListener("pointerdown", (event) => {
-        if (!heroHasImage) return;
-        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        heroMedia.setPointerCapture(event.pointerId);
+      heroMedia.addEventListener("touchend", (event) => {
+        if (heroImageSwipeTouchId === null) return;
+        const t = [...event.changedTouches].find((c) => c.identifier === heroImageSwipeTouchId);
+        heroImageSwipeTouchId = null;
+        if (!t) return;
+        if (heroMediaItems.length <= 1) return;       // only one image, nothing to swipe
+        const dx = t.clientX - heroImageSwipeStartX;
+        const dy = t.clientY - heroImageSwipeStartY;
+        if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.1) return; // not a horizontal swipe
+        navigateHeroMedia(dx < 0 ? 1 : -1);
+      }, { passive: true });
 
-        if (pointers.size === 2) {
-          pinchStartDistance = distanceBetweenPointers();
-          pinchStartScale = zoomScale;
-          heroMedia.classList.remove("is-dragging");
-          dragPointerId = null;
-          return;
-        }
-
-        dragPointerId = event.pointerId;
-        dragStartX = event.clientX;
-        dragStartY = event.clientY;
-        dragOriginX = zoomX;
-        dragOriginY = zoomY;
-        heroMedia.classList.add("is-dragging");
-      });
-
-      heroMedia.addEventListener("pointermove", (event) => {
-        if (!heroHasImage || !pointers.has(event.pointerId)) return;
-        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-
-        if (pointers.size >= 2) {
-          const nextDistance = distanceBetweenPointers();
-          if (pinchStartDistance > 0 && nextDistance > 0) {
-            setZoomScale(pinchStartScale * (nextDistance / pinchStartDistance));
-          }
-          return;
-        }
-
-        if (event.pointerId === dragPointerId && zoomScale > 1) {
-          zoomX = dragOriginX + (event.clientX - dragStartX);
-          zoomY = dragOriginY + (event.clientY - dragStartY);
-          applyImageTransform();
-        }
-      });
-
-      function handlePointerEnd(event) {
-        pointers.delete(event.pointerId);
-        if (event.pointerId === dragPointerId) {
-          heroMedia.classList.remove("is-dragging");
-          dragPointerId = null;
-        }
-
-        if (pointers.size < 2) {
-          pinchStartDistance = 0;
-        }
-
-        if (pointers.size === 1) {
-          const [id, point] = pointers.entries().next().value;
-          dragPointerId = id;
-          dragStartX = point.x;
-          dragStartY = point.y;
-          dragOriginX = zoomX;
-          dragOriginY = zoomY;
-        }
-      }
-
-      heroMedia.addEventListener("pointerup", handlePointerEnd);
-      heroMedia.addEventListener("pointercancel", handlePointerEnd);
       heroMapImage.addEventListener("click", () => {
         openListingMapWithSystemPrompt(listings[activeIndex]);
       });
