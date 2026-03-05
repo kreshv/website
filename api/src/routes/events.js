@@ -92,7 +92,7 @@ router.get("/listings", async (_req, res) => {
       WHERE  ae.name                = 'listing_opened'
         AND  ae.props->>'listingId' IS NOT NULL
         AND  ae.props->>'listingId' != ''
-        AND  ae.props->>'listingId' ~ '^\d+$'
+        AND  ae.props->>'listingId' ~ '^[0-9]+$'
       GROUP  BY ae.props->>'listingId'
       ORDER  BY "clicks" DESC
     `;
